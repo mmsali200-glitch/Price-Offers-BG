@@ -1,56 +1,92 @@
-# مستخرج عروض الأسعار | Price Quote Extractor
+# BG Quotes — Business Gate Technical Consulting
 
-تطبيق ويب بسيط لاستخراج البيانات المنظمة من عروض الأسعار تلقائياً، يعمل بالكامل في المتصفح بدون الحاجة إلى خادم.
+منصة متكاملة لإدارة دورة حياة عروض أسعار **Business Gate Technical Consulting**: إنشاء العرض، توليد محتواه بذكاء اصطناعي، إرساله للعميل عبر رابط آمن، والتوقيع الإلكتروني.
 
-A simple web application to automatically extract structured data from price quotes. Runs entirely in the browser — no server required.
+**Integrated quote platform for Business Gate Technical Consulting**: build quotes, AI-generate content, deliver via secure client links, and e-sign.
 
-## المميزات | Features
+---
 
-- 📝 إدخال نصي مباشر أو رفع ملف نصي (`.txt`, `.csv`)
-- 🔍 استخراج تلقائي للبيانات:
-  - رقم عرض السعر
-  - التاريخ
-  - العميل والمورد
-  - الأصناف (الوصف، الكمية، السعر، الإجمالي)
-  - المجموع الفرعي، الضريبة، الإجمالي النهائي
-- 💾 تصدير البيانات بصيغة JSON أو CSV
-- 🖨️ طباعة العرض
-- 🌐 دعم الأرقام العربية والإنجليزية
-- 📱 تصميم متجاوب يعمل على الجوال والحاسوب
+## البنية التقنية | Stack
 
-## التشغيل | Usage
+- **Next.js 15** (App Router, TypeScript, React 19)
+- **TailwindCSS** + نظام تصميم BG (أخضر `#1a5c37` + ذهبي `#c9a84c`) + RTL + Noto Sans Arabic
+- **Supabase** — Postgres + Auth (Magic Link) + RLS + Storage
+- **Claude API** (Sonnet 4.6 + prompt caching) — توليد HTML للعرض النهائي
+- **Resend** — إرسال البريد للعملاء
+- **Puppeteer** — توليد PDF بجودة طباعة A4
+- **react-signature-canvas** — التوقيع الإلكتروني
+- **Vercel** — النشر
 
-افتح ملف `index.html` في أي متصفح حديث:
+---
+
+## الإعداد السريع | Quick Setup
 
 ```bash
-# على نظام Linux
-xdg-open index.html
+# 1. نسخ متغيرات البيئة
+cp .env.example .env.local
+# ثم املأ: Supabase URL + anon key + service_role key
+#          ANTHROPIC_API_KEY + RESEND_API_KEY
 
-# على macOS
-open index.html
+# 2. تثبيت التبعيات
+npm install
 
-# أو شغّل خادماً محلياً بسيطاً
-python3 -m http.server 8000
+# 3. تطبيق مخطط قاعدة البيانات
+# (من Supabase Dashboard → SQL Editor → الصق محتوى supabase/migrations/0001_initial_schema.sql)
+
+# 4. التشغيل المحلي
+npm run dev
+# افتح http://localhost:3000
 ```
 
-ثم اضغط زر **"📋 نص تجريبي"** لتجربة التطبيق بنص نموذجي، أو الصق نص عرض السعر الخاص بك واضغط **"🔍 استخراج البيانات"**.
+---
 
-## الصيغ المدعومة | Supported Formats
+## خارطة الطريق | Roadmap (7 مراحل)
 
-التطبيق يتعرف على عدة صيغ لعرض الأصناف:
+| المرحلة | الحالة | الوصف |
+|--------|-------|-------|
+| 1. الأساس | ✅ | Next.js + Supabase + UI base + RTL |
+| 2. Builder في التطبيق | ⏳ | نقل منطق v3 + حفظ تلقائي |
+| 3. توليد العرض بـ Claude | ⏳ | Streaming API + prompt caching |
+| 4. بوابة العميل + التوقيع | ⏳ | Magic link + react-signature-canvas |
+| 5. لوحة الإحصائيات | ⏳ | KPIs + Pipeline + Filters |
+| 6. PDF + البريد | ⏳ | Puppeteer A4 + Resend |
+| 7. WhatsApp + التشطيب | ⏳ | wa.me links → Business API |
+
+---
+
+## بنية المشروع | Structure
 
 ```
-1. اسم الصنف | الكمية | السعر | الإجمالي
-1. اسم الصنف    5    1500    7500
-اسم الصنف الكمية: 5 السعر: 1500
+app/
+├── (app)/             # صفحات مُصادَقة
+│   ├── dashboard/     # لوحة التحكم
+│   ├── quotes/        # قائمة + Builder
+│   ├── clients/       # العملاء
+│   └── layout.tsx     # Sidebar + Topbar
+├── q/[token]/         # بوابة العميل (Magic link)
+├── api/               # Route handlers
+├── layout.tsx         # Root layout (RTL + Noto Sans Arabic)
+└── page.tsx           # صفحة الترحيب
+
+components/
+├── app-shell.tsx      # wrapper للصفحات المحمية
+├── sidebar.tsx        # Sidebar يمين
+└── topbar.tsx         # Top bar
+
+lib/
+├── supabase/          # client/server/admin
+├── claude.ts          # Anthropic SDK + prompt caching
+├── bg-skill.ts        # Skill v3 (system prompt لـ Claude)
+├── modules-catalog.ts # 46 موديول Odoo + 4 تطبيقات BG
+└── utils.ts           # helpers (cn, fmt, dates, refs)
+
+supabase/
+└── migrations/        # schema + RLS + triggers
 ```
 
-## البنية | Structure
+---
 
-```
-.
-├── index.html    # واجهة المستخدم
-├── styles.css    # التصميم
-├── script.js     # منطق الاستخراج
-└── README.md
-```
+## الاتصال | Contact
+
+**م. محمود عون** — المدير التنفيذي
++965 9999 0412 · OUN@businessesgates.com · www.businessesgates.com
