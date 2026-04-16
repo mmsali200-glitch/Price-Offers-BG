@@ -1,0 +1,2839 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quotation BG202604186 — IMKAN | Business Gate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════
+   CSS Variables — Business Gate Design System
+═══════════════════════════════════════ */
+:root {
+  --green:    #1a5c37;
+  --green2:   #247a4a;
+  --green3:   #2d9052;
+  --gold:     #c9a84c;
+  --gold2:    #e0bc5a;
+  --goldlt:   #fdf5e0;
+  --bg:       #f5f6f4;
+  --bgcard:   #ffffff;
+  --bggray:   #f0f2ef;
+  --gline:    #e2e8e3;
+  --gmid:     #c4d0c8;
+  --tdark:    #141f18;
+  --tmid:     #3e5446;
+  --tgray:    #7a8e80;
+  --green-lt: #eaf3ed;
+  --gold-lt:  #fdf5e0;
+  --sidebar-w: 260px;
+  --topbar-h:  60px;
+  --radius:    10px;
+  --shadow:    0 2px 12px rgba(26,92,55,0.10);
+  --shadow-md: 0 4px 24px rgba(26,92,55,0.13);
+}
+
+/* ═══════════════════════════════════════
+   Reset & Base
+═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', 'Noto Sans Arabic', sans-serif;
+  background: var(--bg);
+  color: var(--tdark);
+  font-size: 14px;
+  line-height: 1.7;
+  direction: ltr;
+}
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+img { max-width: 100%; }
+
+/* ═══════════════════════════════════════
+   Layout Shell
+═══════════════════════════════════════ */
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════════
+   Sidebar
+═══════════════════════════════════════ */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--green);
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  transition: transform 0.3s;
+}
+#sidebar::-webkit-scrollbar { width: 4px; }
+#sidebar::-webkit-scrollbar-thumb { background: var(--green2); }
+
+.sb-brand {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.sb-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.sb-logo-svg { width: 44px; height: 44px; flex-shrink: 0; }
+.sb-brand-text { line-height: 1.2; }
+.sb-brand-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.sb-brand-sub {
+  font-size: 10px;
+  color: rgba(255,255,255,0.55);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+.sb-ref {
+  background: rgba(255,255,255,0.10);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--gold2);
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  font-family: 'Inter', monospace;
+}
+
+.sb-nav { padding: 12px 0; flex: 1; }
+.sb-nav a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  color: rgba(255,255,255,0.75);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+.sb-nav a:hover, .sb-nav a.active {
+  background: rgba(255,255,255,0.09);
+  color: #fff;
+  border-left-color: var(--gold);
+}
+.sb-nav a .nav-num {
+  width: 20px; height: 20px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.sb-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════
+   Main Content Area
+═══════════════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════
+   Topbar
+═══════════════════════════════════════ */
+#topbar {
+  height: var(--topbar-h);
+  background: var(--bgcard);
+  border-bottom: 1px solid var(--gline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 8px rgba(26,92,55,0.06);
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-ref {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  font-family: 'Inter', monospace;
+  letter-spacing: 0.5px;
+}
+.topbar-client {
+  font-size: 12px;
+  color: var(--tgray);
+  padding-left: 12px;
+  border-left: 1px solid var(--gline);
+}
+.topbar-actions { display: flex; gap: 10px; align-items: center; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  font-family: 'Inter', sans-serif;
+}
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--green);
+  color: var(--green);
+}
+.btn-outline:hover { background: var(--green-lt); }
+.btn-primary {
+  background: var(--green);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--green2); }
+.btn-gold {
+  background: var(--gold);
+  color: #fff;
+}
+.btn-gold:hover { background: var(--gold2); }
+#hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: var(--green);
+}
+
+/* ═══════════════════════════════════════
+   Content
+═══════════════════════════════════════ */
+.content { flex: 1; }
+
+/* ═══════════════════════════════════════
+   Section Wrapper
+═══════════════════════════════════════ */
+.section {
+  padding: 56px 40px;
+  border-bottom: 1px solid var(--gline);
+}
+.section:nth-child(even) { background: var(--bgcard); }
+.section:nth-child(odd) { background: var(--bg); }
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.section-num {
+  width: 36px; height: 36px;
+  background: var(--green);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.3px;
+}
+.section-sub {
+  font-size: 13.5px;
+  color: var(--tgray);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════
+   §1 HERO
+═══════════════════════════════════════ */
+#hero {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green2) 60%, #1e6b40 100%);
+  padding: 0;
+  border-bottom: 4px solid var(--gold);
+  position: relative;
+  overflow: hidden;
+}
+.hero-pattern {
+  position: absolute; inset: 0;
+  opacity: 0.04;
+  background-image: repeating-linear-gradient(
+    45deg,
+    #fff 0, #fff 1px,
+    transparent 0, transparent 50%
+  );
+  background-size: 20px 20px;
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 40px;
+  padding: 60px 48px;
+}
+.hero-logo-area {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.hero-logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.hero-logo-svg { width: 64px; height: 64px; }
+.hero-co-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.hero-co-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+.hero-divider {
+  width: 60px; height: 3px;
+  background: var(--gold);
+  border-radius: 2px;
+  margin: 4px 0 20px;
+}
+.hero-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+}
+.hero-title span { color: var(--gold2); }
+.hero-subtitle {
+  font-size: 15px;
+  color: rgba(255,255,255,0.75);
+  margin-top: 10px;
+  max-width: 520px;
+  line-height: 1.6;
+}
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 28px;
+}
+.hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+}
+.hero-badge strong { color: var(--gold2); }
+.hero-client-card {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 28px 24px;
+  min-width: 240px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+.hero-client-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.hero-client-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+.hero-client-arabic {
+  font-family: 'Noto Sans Arabic', sans-serif;
+  font-size: 18px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 16px;
+}
+.hero-client-detail {
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 4px;
+}
+.hero-ref-badge {
+  display: inline-block;
+  background: var(--gold);
+  color: var(--green);
+  font-family: 'Inter', monospace;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-top: 12px;
+  letter-spacing: 0.5px;
+}
+
+/* ═══════════════════════════════════════
+   Cards Grid
+═══════════════════════════════════════ */
+.cards-grid {
+  display: grid;
+  gap: 16px;
+}
+.cards-grid-2 { grid-template-columns: repeat(2, 1fr); }
+.cards-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.cards-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.cards-grid-5 { grid-template-columns: repeat(5, 1fr); }
+.card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.card-green {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+}
+.card-gold {
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+}
+.card-goldlt {
+  background: var(--goldlt);
+  border-color: var(--gold);
+}
+
+/* ═══════════════════════════════════════
+   KPI Cards
+═══════════════════════════════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.kpi-card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  border-top: 3px solid var(--green);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.kpi-card.gold-top { border-top-color: var(--gold); }
+.kpi-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.kpi-card.gold-top .kpi-num { color: var(--gold); }
+.kpi-label {
+  font-size: 11.5px;
+  color: var(--tgray);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* ═══════════════════════════════════════
+   Module Grid (5 per row)
+═══════════════════════════════════════ */
+.mod-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.mod-card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 18px 14px;
+  text-align: center;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.mod-card:hover {
+  border-color: var(--green3);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.mod-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: var(--green-lt);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 10px;
+  font-size: 20px;
+}
+.mod-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+.mod-price {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold);
+}
+.mod-features {
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--tgray);
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   Feature Cards (6 grid)
+═══════════════════════════════════════ */
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.feat-card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow: var(--shadow);
+  transition: all 0.2s;
+}
+.feat-card:hover { border-color: var(--green3); box-shadow: var(--shadow-md); }
+.feat-icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: var(--green-lt);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.feat-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+.feat-desc { font-size: 12px; color: var(--tgray); line-height: 1.5; }
+
+/* ═══════════════════════════════════════
+   Module Detail Table
+═══════════════════════════════════════ */
+.tbl-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+table { width: 100%; border-collapse: collapse; background: var(--bgcard); }
+th {
+  background: var(--green);
+  color: #fff;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+td {
+  padding: 11px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--gline);
+  color: var(--tdark);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) td { background: var(--bggray); }
+.td-price { font-weight: 700; color: var(--gold); white-space: nowrap; }
+.td-green { color: var(--green); font-weight: 600; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.badge-green { background: var(--green-lt); color: var(--green); }
+.badge-gold { background: var(--goldlt); color: #8a5f10; }
+.tbl-footer td {
+  background: var(--green-lt);
+  font-weight: 700;
+  color: var(--green);
+  border-top: 2px solid var(--green);
+}
+
+/* ═══════════════════════════════════════
+   Workflow
+═══════════════════════════════════════ */
+.workflow-list { display: flex; flex-direction: column; gap: 20px; }
+.workflow-item {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  box-shadow: var(--shadow);
+}
+.workflow-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.workflow-title::before {
+  content: '';
+  width: 4px; height: 18px;
+  background: var(--gold);
+  border-radius: 2px;
+  display: inline-block;
+}
+.workflow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.wf-step {
+  background: var(--green-lt);
+  color: var(--green);
+  border: 1px solid var(--gline);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.wf-arrow {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════
+   Phase Cards
+═══════════════════════════════════════ */
+.phases-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.phase-card {
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.phase-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+}
+.phase-1 { background: #eaf3ed; }
+.phase-1::before { background: var(--green); }
+.phase-2 { background: #e8f0ea; }
+.phase-2::before { background: var(--green2); }
+.phase-3 { background: #fdf5e0; }
+.phase-3::before { background: var(--gold); }
+.phase-4 { background: #f0f5f2; }
+.phase-4::before { background: var(--green3); }
+.phase-5 { background: #faf3e8; }
+.phase-5::before { background: var(--gold2); }
+.phase-num {
+  font-size: 36px;
+  font-weight: 800;
+  color: rgba(26,92,55,0.12);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.phase-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.phase-dur {
+  font-size: 11px;
+  color: var(--gold);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.phase-items { list-style: none; }
+.phase-items li {
+  font-size: 11px;
+  color: var(--tmid);
+  padding: 3px 0;
+  padding-left: 14px;
+  position: relative;
+}
+.phase-items li::before {
+  content: '✓';
+  position: absolute; left: 0;
+  color: var(--green3);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════
+   Client Responsibilities
+═══════════════════════════════════════ */
+.resp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.resp-card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  box-shadow: var(--shadow);
+}
+.resp-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gline);
+}
+.resp-list { list-style: none; }
+.resp-list li {
+  font-size: 12px;
+  color: var(--tmid);
+  padding: 3px 0;
+  padding-left: 16px;
+  position: relative;
+}
+.resp-list li::before {
+  content: '→';
+  position: absolute; left: 0;
+  color: var(--gold);
+  font-size: 11px;
+}
+
+/* ═══════════════════════════════════════
+   Configurator
+═══════════════════════════════════════ */
+.configurator {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.cfg-header {
+  background: var(--green);
+  color: #fff;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cfg-header-title { font-size: 14px; font-weight: 700; }
+.cfg-header-sub { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+.cfg-total-live {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold2);
+  font-family: 'Inter', monospace;
+}
+.cfg-total-label { font-size: 10px; color: rgba(255,255,255,0.6); }
+.cfg-body { padding: 0; }
+.cfg-table { width: 100%; border-collapse: collapse; }
+.cfg-table th {
+  background: var(--bggray);
+  color: var(--tmid);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--gline);
+}
+.cfg-table td { padding: 12px 16px; border-bottom: 1px solid var(--gline); font-size: 13px; }
+.cfg-table tr:last-child td { border-bottom: none; }
+.cfg-table tr:hover td { background: var(--green-lt); }
+.cfg-check {
+  width: 18px; height: 18px;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+.cfg-row-selected td { background: var(--green-lt) !important; }
+.cfg-subtotal {
+  padding: 14px 24px;
+  background: var(--green-lt);
+  border-top: 2px solid var(--green);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+}
+.cfg-subtotal-num { font-size: 18px; color: var(--green); }
+
+/* ═══════════════════════════════════════
+   License & Support Cards
+═══════════════════════════════════════ */
+.lic-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+.lic-card {
+  border: 2px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bgcard);
+}
+.lic-card:hover { border-color: var(--green3); }
+.lic-card.selected { border-color: var(--green); background: var(--green-lt); }
+.lic-card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.lic-name { font-size: 14px; font-weight: 700; color: var(--green); }
+.lic-price { font-size: 18px; font-weight: 800; color: var(--gold); }
+.lic-period { font-size: 10px; color: var(--tgray); }
+.lic-desc { font-size: 12px; color: var(--tgray); margin-top: 6px; }
+.lic-note { font-size: 11px; color: var(--gold); font-weight: 600; margin-top: 4px; }
+.radio-lic { accent-color: var(--green); margin-top: 10px; }
+
+.sup-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.sup-card {
+  border: 2px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 18px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bgcard);
+  position: relative;
+}
+.sup-card:hover { border-color: var(--green3); }
+.sup-card.selected { border-color: var(--green); background: var(--green-lt); }
+.sup-badge-best {
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.sup-name { font-size: 12px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+.sup-price { font-size: 20px; font-weight: 800; color: var(--gold); }
+.sup-period { font-size: 10px; color: var(--tgray); }
+.sup-hrs { font-size: 12px; font-weight: 700; color: var(--green); margin: 8px 0 6px; }
+.sup-features { list-style: none; text-align: left; }
+.sup-features li { font-size: 10.5px; color: var(--tmid); padding: 2px 0; padding-left: 12px; position: relative; }
+.sup-features li::before { content: '✓'; position: absolute; left: 0; color: var(--green3); font-size: 9px; font-weight: 700; }
+
+/* ═══════════════════════════════════════
+   Financial Summary
+═══════════════════════════════════════ */
+.fin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 24px;
+}
+.fin-card {
+  border-radius: var(--radius);
+  padding: 24px 22px;
+  box-shadow: var(--shadow-md);
+}
+.fin-card-green { background: var(--green); color: #fff; }
+.fin-card-gold { background: var(--gold); color: #fff; }
+.fin-card-white {
+  background: var(--bgcard);
+  border: 2px solid var(--green);
+  color: var(--tdark);
+}
+.fin-label { font-size: 11px; font-weight: 600; opacity: 0.75; margin-bottom: 8px; letter-spacing: 0.5px; text-transform: uppercase; }
+.fin-card-white .fin-label { color: var(--tgray); }
+.fin-value { font-size: 30px; font-weight: 800; line-height: 1; font-family: 'Inter', monospace; }
+.fin-card-white .fin-value { color: var(--green); }
+.fin-sub { font-size: 11px; opacity: 0.7; margin-top: 6px; }
+.fin-card-white .fin-sub { color: var(--tgray); }
+
+/* ═══════════════════════════════════════
+   Installments
+═══════════════════════════════════════ */
+.inst-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.inst-card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.inst-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+}
+.inst-card:nth-child(1)::before { background: var(--green); }
+.inst-card:nth-child(2)::before { background: var(--gold); }
+.inst-card:nth-child(3)::before { background: var(--green3); }
+.inst-num { font-size: 13px; font-weight: 700; color: var(--tgray); margin-bottom: 12px; }
+.inst-date { font-size: 12px; color: var(--tgray); margin-bottom: 6px; }
+.inst-trigger { font-size: 11px; color: var(--green); font-weight: 600; margin-bottom: 16px; }
+.inst-pct { font-size: 14px; font-weight: 800; color: var(--tmid); margin-bottom: 4px; }
+.inst-amount { font-size: 26px; font-weight: 800; color: var(--green); font-family: 'Inter', monospace; }
+.inst-currency { font-size: 13px; color: var(--tgray); }
+
+/* ═══════════════════════════════════════
+   T&C
+═══════════════════════════════════════ */
+.tc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.tc-group {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.tc-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gline);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tc-list { list-style: none; }
+.tc-list li {
+  font-size: 12px;
+  color: var(--tmid);
+  padding: 5px 0;
+  padding-left: 16px;
+  position: relative;
+  border-bottom: 1px solid var(--bggray);
+  line-height: 1.5;
+}
+.tc-list li:last-child { border-bottom: none; }
+.tc-list li::before {
+  content: '•';
+  position: absolute; left: 0;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ═══════════════════════════════════════
+   Sign Section
+═══════════════════════════════════════ */
+#sign {
+  background: var(--bgcard);
+}
+.sign-header-banner {
+  background: linear-gradient(135deg, var(--green), var(--green2));
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+}
+.sign-header-text { font-size: 15px; font-weight: 600; }
+.sign-header-sub { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+.sign-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+.sign-card {
+  border: 1.5px solid var(--gline);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.sign-card-header {
+  padding: 14px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.sign-card-header.green-bg { background: var(--green); color: #fff; }
+.sign-card-header.gold-bg { background: var(--gold); color: #fff; }
+.sign-card-body { padding: 20px; background: var(--bgcard); }
+.sign-field {
+  margin-bottom: 16px;
+}
+.sign-field-label { font-size: 10.5px; color: var(--tgray); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.sign-field-value { font-size: 13px; color: var(--tdark); font-weight: 600; }
+.sign-line {
+  height: 1.5px;
+  background: var(--gmid);
+  margin-top: 28px;
+  margin-bottom: 6px;
+}
+.sign-line-label { font-size: 10px; color: var(--tgray); }
+
+.sign-footer {
+  background: var(--green);
+  color: #fff;
+  padding: 20px 40px;
+  text-align: center;
+  margin-top: 40px;
+}
+.sign-footer-contact {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 4px;
+}
+.sign-footer-contact strong { color: var(--gold2); }
+.sign-footer-legal {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.45);
+  margin-top: 8px;
+}
+
+/* ═══════════════════════════════════════
+   Executive Summary Cards
+═══════════════════════════════════════ */
+.exec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+.exec-card {
+  background: var(--bgcard);
+  border: 1px solid var(--gline);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--green);
+}
+.exec-card:nth-child(2) { border-left-color: var(--gold); }
+.exec-card:nth-child(3) { border-left-color: var(--green3); }
+.exec-card-icon { font-size: 28px; margin-bottom: 10px; }
+.exec-card-title { font-size: 14px; font-weight: 700; color: var(--green); margin-bottom: 6px; }
+.exec-card-desc { font-size: 12.5px; color: var(--tmid); line-height: 1.6; }
+
+.goal-alert {
+  background: var(--goldlt);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.goal-alert-icon { font-size: 22px; flex-shrink: 0; }
+.goal-alert-text { font-size: 13px; color: var(--tmid); line-height: 1.6; }
+.goal-alert-text strong { color: var(--green); }
+
+/* ═══════════════════════════════════════
+   Utilities
+═══════════════════════════════════════ */
+.text-gold { color: var(--gold); }
+.text-green { color: var(--green); }
+.text-gray { color: var(--tgray); }
+.fw-700 { font-weight: 700; }
+.fw-800 { font-weight: 800; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mb-32 { margin-bottom: 32px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--green-lt);
+  color: var(--green);
+  margin: 2px;
+}
+
+/* Alert box */
+.info-box {
+  background: var(--green-lt);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 12.5px;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* ═══════════════════════════════════════
+   Mobile — Full Responsive
+═══════════════════════════════════════ */
+@media (max-width: 900px) {
+  :root {
+    --sidebar-w: 0px;
+    --topbar-h: 56px;
+  }
+
+  /* Sidebar */
+  #sidebar { transform: translateX(-260px); width: 260px; }
+  #sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  #hamburger { display: flex; }
+
+  /* Topbar */
+  #topbar { padding: 0 14px; gap: 8px; }
+  .topbar-client { display: none; }
+  .topbar-ref { font-size: 12px; }
+  .btn { padding: 6px 10px; font-size: 11px; gap: 4px; }
+  .btn svg { width: 12px; height: 12px; }
+
+  /* Sections */
+  .section { padding: 28px 16px; }
+  .section-title { font-size: 18px; }
+  .section-num { width: 30px; height: 30px; font-size: 11px; }
+
+  /* Hero */
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 28px 18px;
+  }
+  .hero-title { font-size: 22px; }
+  .hero-subtitle { font-size: 13px; }
+  .hero-meta { gap: 8px; }
+  .hero-badge { font-size: 11px; padding: 5px 10px; }
+  .hero-client-card { min-width: unset; padding: 20px 16px; }
+  .hero-client-name { font-size: 22px; }
+  .hero-logo-svg { width: 40px; height: 40px; }
+  .hero-co-name { font-size: 17px; }
+
+  /* KPI */
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .kpi-num { font-size: 22px !important; }
+
+  /* Modules */
+  .mod-grid { grid-template-columns: repeat(2, 1fr); }
+  .mod-icon { width: 36px; height: 36px; font-size: 16px; }
+  .mod-name { font-size: 11px; }
+
+  /* Feature cards */
+  .feat-grid { grid-template-columns: 1fr; }
+  .feat-card { padding: 16px 14px; }
+
+  /* Phases */
+  .phases-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Workflows */
+  .workflow-steps { gap: 4px; }
+  .wf-step { font-size: 10.5px; padding: 4px 8px; }
+
+  /* Responsibilities */
+  .resp-grid { grid-template-columns: 1fr; }
+
+  /* Exec */
+  .exec-grid { grid-template-columns: 1fr; }
+
+  /* License */
+  .lic-grid { grid-template-columns: 1fr; }
+
+  /* Support */
+  .sup-grid { grid-template-columns: 1fr 1fr; }
+  .sup-card { padding: 14px 10px; }
+  .sup-price { font-size: 17px; }
+
+  /* Financial */
+  .fin-grid { grid-template-columns: 1fr; }
+  .fin-value { font-size: 24px; }
+
+  /* Grand total breakdown box — stack vertically on mobile */
+  #financial .breakdown-3col,
+  div[style*="grid-template-columns:1fr 1fr 1fr"] {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Installments */
+  .inst-grid { grid-template-columns: 1fr; }
+  .inst-amount { font-size: 22px; }
+
+  /* Payment summary bar — stack */
+  .inst-summary-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  /* Tables — make scrollable */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 500px; }
+  th, td { padding: 9px 12px !important; font-size: 12px !important; }
+
+  /* TC */
+  .tc-grid { grid-template-columns: 1fr; }
+
+  /* Sign */
+  .sign-grid { grid-template-columns: 1fr; }
+  .sign-header-banner { flex-direction: column; gap: 10px; padding: 16px; }
+  .sign-footer { padding: 16px 18px; }
+  .sign-footer-contact { font-size: 11px; }
+
+  /* Configurator */
+  .cfg-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; }
+  .cfg-total-live { font-size: 20px; }
+  .cfg-table th, .cfg-table td { padding: 9px 12px; font-size: 12px; }
+
+  /* Generic inline grids with many columns */
+  div[style*="grid-template-columns: repeat(5"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Phase 5 grid → 2 col */
+  .phases-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Discount banner in fin summary — stack */
+  .fin-discount-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Formula bar */
+  .formula-bar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* Info box */
+  .info-box { font-size: 11.5px; padding: 10px 14px; }
+
+  /* Goal alert */
+  .goal-alert { flex-direction: column; gap: 8px; }
+
+  /* Workflow items */
+  .workflow-item { padding: 14px 16px; }
+
+  /* Cards grid */
+  .cards-grid-2 { grid-template-columns: 1fr; }
+  .cards-grid-3 { grid-template-columns: 1fr; }
+  .cards-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .section { padding: 22px 12px; }
+  .hero-inner { padding: 22px 14px; }
+  .hero-title { font-size: 19px; }
+  .mod-grid { grid-template-columns: 1fr 1fr; }
+  .phases-grid { grid-template-columns: 1fr; }
+  .sup-grid { grid-template-columns: 1fr; }
+  .kpi-num { font-size: 20px !important; }
+  .kpi-label { font-size: 10.5px; }
+  .hero-meta { flex-direction: column; gap: 6px; }
+  .hero-badge { width: 100%; justify-content: center; }
+  #topbar { padding: 0 10px; }
+  .topbar-actions { gap: 6px; }
+  th, td { padding: 7px 9px !important; font-size: 11px !important; }
+  .fin-value { font-size: 22px; }
+  .inst-amount { font-size: 20px; }
+  .sign-footer-contact { font-size: 10px; }
+}
+
+/* Force all multi-column inline grids to stack on mobile */
+@media (max-width: 700px) {
+  div[style*="grid-template-columns:1fr 1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 1fr 1fr"],
+  div[style*="--mobile-stack:1"] {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  div[style*="grid-template-columns:1fr auto 1fr auto 1fr"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  /* hide formula arrows on mobile */
+  div[style*="font-size:32px; color:var(--gmid)"],
+  div[style*="font-size:30px; color:var(--gold)"] {
+    display: none !important;
+  }
+  .cfg-header { flex-direction: column !important; gap: 8px !important; }
+  .hero-meta { flex-wrap: wrap; }
+  .workflow-steps { gap: 3px; }
+  .wf-step { font-size: 10px; }
+}
+
+/* ═══════════════════════════════════════
+   Print A4
+═══════════════════════════════════════ */
+@media print {
+  #sidebar, #topbar, #hamburger { display: none !important; }
+  .main { margin-left: 0 !important; }
+  .section { padding: 32px !important; page-break-inside: avoid; border-bottom: 1px solid #ddd !important; }
+  .section:nth-child(even), .section:nth-child(odd) { background: white !important; }
+  #hero { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .card-green, .phase-card, .fin-card-green, .fin-card-gold {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .kpi-grid, .mod-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  #scope > div[style*="grid-template-columns:1fr 1fr 2fr"] { grid-template-columns: 1fr 1fr 2fr !important; }
+  .phases-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  @page { size: A4; margin: 1.5cm; }
+  table { page-break-inside: avoid; }
+}
+
+/* Overlay for mobile */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 99;
+}
+.sidebar-overlay.show { display: block; }
+</style>
+</head>
+<body>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════ -->
+<div id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo-wrap">
+      <svg class="sb-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="18" y="14" width="32" height="6" fill="#c9a84c"/>
+        <rect x="18" y="14" width="6" height="72" fill="#c9a84c"/>
+        <rect x="18" y="80" width="32" height="6" fill="#c9a84c"/>
+        <rect x="30" y="46" width="20" height="6" fill="#c9a84c"/>
+        <path d="M44 20 Q74 20 74 36 Q74 50 54 50 Q74 50 74 66 Q74 82 44 82" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="sb-brand-text">
+        <div class="sb-brand-name">BUSINESS GATE</div>
+        <div class="sb-brand-sub">Technical Consulting</div>
+      </div>
+    </div>
+    <div class="sb-ref">BG202604186</div>
+  </div>
+  <nav class="sb-nav">
+    <a href="#hero"><span class="nav-num">1</span> Cover</a>
+    <a href="#scope"><span class="nav-num">2</span> Project Scope</a>
+    <a href="#exec"><span class="nav-num">3</span> Executive Summary</a>
+    <a href="#features"><span class="nav-num">4</span> Exclusive Features</a>
+    <a href="#modules"><span class="nav-num">5</span> Module Details</a>
+    <a href="#workflows"><span class="nav-num">6</span> Business Workflows</a>
+    <a href="#phases"><span class="nav-num">7</span> Implementation Plan</a>
+    <a href="#responsibilities"><span class="nav-num">8</span> Client Responsibilities</a>
+    <a href="#configurator"><span class="nav-num">9</span> Pricing Configurator</a>
+    <a href="#financial"><span class="nav-num">10</span> Financial Summary</a>
+    <a href="#installments"><span class="nav-num">11</span> Payment Schedule</a>
+    <a href="#support"><span class="nav-num">12</span> Support Packages</a>
+    <a href="#terms"><span class="nav-num">13</span> Terms & Conditions</a>
+    <a href="#sign"><span class="nav-num">14</span> Signature & Approval</a>
+  </nav>
+  <div class="sb-footer">
+    Eng. Mahmoud Oun<br>
+    OUN@businessesgates.com | +965 9999 0412<br>
+    Kuwait
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     MAIN
+═══════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="topbar-left">
+      <button id="hamburger" onclick="toggleSidebar()">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+      <span class="topbar-ref">BG202604186</span>
+      <span class="topbar-client">IMKAN — Odoo 18 ERP Implementation</span>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="window.print()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v8H6z"/></svg>
+        Print
+      </button>
+      <a href="#sign" class="btn btn-primary">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        Approve & Sign
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ §1 HERO ═══ -->
+    <section id="hero">
+      <div class="hero-pattern"></div>
+      <div class="hero-inner">
+        <div class="hero-logo-area">
+          <div class="hero-logo-wrap">
+            <svg class="hero-logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="18" y="14" width="32" height="6" fill="#c9a84c"/>
+              <rect x="18" y="14" width="6" height="72" fill="#c9a84c"/>
+              <rect x="18" y="80" width="32" height="6" fill="#c9a84c"/>
+              <rect x="30" y="46" width="20" height="6" fill="#c9a84c"/>
+              <path d="M44 20 Q74 20 74 36 Q74 50 54 50 Q74 50 74 66 Q74 82 44 82" stroke="white" stroke-width="7" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div>
+              <div class="hero-co-name">BUSINESS GATE</div>
+              <div class="hero-co-sub">Technical Consulting | Kuwait</div>
+            </div>
+          </div>
+          <div>
+            <div class="hero-divider"></div>
+            <div class="hero-title">Odoo 18 ERP<br><span>Implementation Proposal</span></div>
+            <div class="hero-subtitle">A comprehensive digital transformation solution for IMKAN — covering 11 integrated modules across commerce, operations, finance, and human resources.</div>
+          </div>
+          <div class="hero-meta">
+            <div class="hero-badge">📋 Ref: <strong>BG202604186</strong></div>
+            <div class="hero-badge">📅 Date: <strong>April 2026</strong></div>
+            <div class="hero-badge">💰 Currency: <strong>KWD د.ك</strong></div>
+            <div class="hero-badge">⏱ Validity: <strong>30 Days</strong></div>
+            <div class="hero-badge">🏢 Sector: <strong>Trade & Distribution</strong></div>
+            <div class="hero-badge">👥 Size: <strong>20–100 Employees</strong></div>
+          </div>
+        </div>
+        <div class="hero-client-card">
+          <div class="hero-client-label">Prepared For</div>
+          <div class="hero-client-name">IMKAN</div>
+          <div class="hero-client-arabic">إمكان الدولية</div>
+          <div class="hero-client-detail">🇰🇼 State of Kuwait — Est. 2004</div>
+          <div class="hero-client-detail">Smart Technologies & Sustainable Solutions</div>
+          <div class="hero-ref-badge">BG202604186</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §2 PROJECT SCOPE ═══ -->
+    <section id="scope" class="section" style="padding-bottom:48px;">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div>
+          <div class="section-title">Project Scope & Requirements</div>
+          <div class="section-sub">11 Odoo 18 modules | Trade & Distribution | 20–100 employees</div>
+        </div>
+      </div>
+
+      <!-- ── Row 1: Stats + Investment Card ── -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 2fr; gap:16px; margin-bottom:20px;">
+
+        <!-- Stat: Modules -->
+        <div style="background:var(--bgcard); border:1.5px solid var(--gline); border-top:4px solid var(--green); border-radius:var(--radius); padding:22px 20px; text-align:center; box-shadow:var(--shadow);">
+          <div style="font-size:48px; font-weight:800; color:var(--green); font-family:'Inter',monospace; line-height:1;">11</div>
+          <div style="font-size:12px; font-weight:600; color:var(--tgray); margin-top:6px; text-transform:uppercase; letter-spacing:0.5px;">Integrated Modules</div>
+          <div style="width:32px; height:3px; background:var(--green); border-radius:2px; margin:10px auto 0;"></div>
+        </div>
+
+        <!-- Stat: Days -->
+        <div style="background:var(--bgcard); border:1.5px solid var(--gline); border-top:4px solid var(--gold); border-radius:var(--radius); padding:22px 20px; text-align:center; box-shadow:var(--shadow);">
+          <div style="font-size:48px; font-weight:800; color:var(--gold); font-family:'Inter',monospace; line-height:1;">60</div>
+          <div style="font-size:12px; font-weight:600; color:var(--tgray); margin-top:6px; text-transform:uppercase; letter-spacing:0.5px;">Implementation Days</div>
+          <div style="width:32px; height:3px; background:var(--gold); border-radius:2px; margin:10px auto 0;"></div>
+        </div>
+
+        <!-- Investment Breakdown Card -->
+        <div style="background:var(--bgcard); border:1.5px solid var(--gline); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-md);">
+          <div style="background:var(--green); padding:10px 18px; display:flex; align-items:center; justify-content:space-between;">
+            <span style="font-size:12px; font-weight:700; color:#fff; letter-spacing:0.3px;">💰 Investment Overview — Year 1</span>
+            <span style="font-size:10px; color:rgba(255,255,255,0.5);">⚠ Odoo figures are indicative</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; --mobile-stack:1; divide-x:1px solid var(--gline);">
+            <div style="padding:14px 16px; text-align:center; border-right:1px solid var(--gline);">
+              <div style="font-size:10px; font-weight:700; color:var(--tgray); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">📦 Modules</div>
+              <div style="font-size:22px; font-weight:800; color:var(--green); font-family:'Inter',monospace;">8,146</div>
+              <div style="font-size:10px; color:var(--tgray); margin-top:3px;">KWD — one-time</div>
+              <div style="font-size:9px; color:var(--gold); margin-top:2px; font-weight:600;">After 10% disc. (was 9,051)</div>
+            </div>
+            <div style="padding:14px 16px; text-align:center; border-right:1px solid var(--gline); background:var(--bggray);">
+              <div style="font-size:10px; font-weight:700; color:var(--tgray); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">☁️ Odoo Annual</div>
+              <div style="font-size:22px; font-weight:800; color:var(--gold); font-family:'Inter',monospace;">2,100</div>
+              <div style="font-size:10px; color:var(--tgray); margin-top:3px;">KWD/year · 175/mo</div>
+              <div style="display:flex; flex-direction:column; gap:3px; margin-top:6px; align-items:center;">
+                <div style="background:var(--goldlt); border:1px solid var(--gold); border-radius:8px; padding:2px 8px; font-size:9px; font-weight:700; color:#8a5f10; white-space:nowrap;">🖥️ Server + 👥 5 Users</div>
+              </div>
+            </div>
+            <div style="padding:14px 16px; text-align:center; background:var(--green);">
+              <div style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.65); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">🏆 Grand Total</div>
+              <div style="font-size:26px; font-weight:800; color:var(--gold2); font-family:'Inter',monospace; line-height:1;">10,200</div>
+              <div style="font-size:10px; color:rgba(255,255,255,0.65); margin-top:3px;">KWD — Year 1</div>
+              <div style="font-size:9px; color:rgba(255,255,255,0.45); margin-top:4px; line-height:1.5;">Modules + Server + 5 Users</div>
+            </div>
+          </div>
+          <!-- Formula bar -->
+          <div style="background:var(--tmid); padding:8px 16px; display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap;">
+            <span style="background:rgba(255,255,255,0.13); border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; color:#fff;">📦 8,146 KWD</span>
+            <span style="color:var(--gold2); font-weight:700; font-size:14px;">+</span>
+            <span style="background:rgba(255,255,255,0.13); border-radius:12px; padding:3px 10px; font-size:11px; font-weight:700; color:#fff;">☁️ 2,100 KWD/yr</span>
+            <span style="color:var(--gold2); font-weight:700; font-size:14px;">=</span>
+            <span style="background:var(--gold); border-radius:12px; padding:3px 12px; font-size:12px; font-weight:800; color:#fff;">🏆 10,200 KWD</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Row 2: Module Cards ── -->
+      <div style="margin-bottom:6px; font-size:11px; font-weight:700; color:var(--tgray); text-transform:uppercase; letter-spacing:0.8px;">Included Modules</div>
+      <div class="mod-grid">
+        <div class="mod-card">
+          <div class="mod-icon">💼</div>
+          <div class="mod-name">Sales</div>
+          <div class="mod-features">Quotations · Custom Pricing · Credit Limits</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">📦</div>
+          <div class="mod-name">Inventory</div>
+          <div class="mod-features">Multi-warehouse · Batch/Expiry Tracking · Internal Moves</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">🛒</div>
+          <div class="mod-name">Purchase</div>
+          <div class="mod-features">RFQ · Vendor Comparison · Multi-approval</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">📊</div>
+          <div class="mod-name">Accounting</div>
+          <div class="mod-features">Auto Journal Entries · AR/AP · Bank Reconciliation</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">🧾</div>
+          <div class="mod-name">Invoicing</div>
+          <div class="mod-features">E-Invoices · Payment Status · Late Notifications</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">💳</div>
+          <div class="mod-name">Expenses</div>
+          <div class="mod-features">Mobile Entry · Approval Flow · Advance Settlement</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">💰</div>
+          <div class="mod-name">Payroll</div>
+          <div class="mod-features">Salaries · Deductions · E-Payslips</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">👤</div>
+          <div class="mod-name">Employees</div>
+          <div class="mod-features">Full Profiles · Org Chart · Contract Tracking</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">🎯</div>
+          <div class="mod-name">Recruitment</div>
+          <div class="mod-features">Job Requests · Postings · Applicant Tracking</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">🌴</div>
+          <div class="mod-name">Time Off</div>
+          <div class="mod-features">E-Leave Requests · Balance Accrual · Absence Reports</div>
+        </div>
+        <div class="mod-card">
+          <div class="mod-icon">⏰</div>
+          <div class="mod-name">Attendance</div>
+          <div class="mod-features">Biometric/Face · Attendance Reports · Device Integration</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §3 EXECUTIVE SUMMARY ═══ -->
+    <section id="exec" class="section">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div>
+          <div class="section-title">Executive Summary</div>
+          <div class="section-sub">Why this solution is the right fit for IMKAN</div>
+        </div>
+      </div>
+
+      <div class="exec-grid">
+        <div class="exec-card">
+          <div class="exec-card-icon">🏗️</div>
+          <div class="exec-card-title">Unified Platform</div>
+          <div class="exec-card-desc">All 11 business functions — from sales and procurement to HR and accounting — operate on a single, integrated Odoo 18 environment. No data silos, no manual reconciliation.</div>
+        </div>
+        <div class="exec-card">
+          <div class="exec-card-icon">⚡</div>
+          <div class="exec-card-title">Instant Decision Intelligence</div>
+          <div class="exec-card-desc">Real-time dashboards and automated reports give IMKAN leadership immediate visibility into operations, inventory positions, financial health, and team performance.</div>
+        </div>
+        <div class="exec-card">
+          <div class="exec-card-icon">🌱</div>
+          <div class="exec-card-title">Sustainable Growth Engine</div>
+          <div class="exec-card-desc">Odoo 18 scales with your business. As IMKAN expands its sustainable technology portfolio, the platform accommodates new entities, users, and processes without replacement.</div>
+        </div>
+      </div>
+
+      <div class="goal-alert">
+        <div class="goal-alert-icon">🎯</div>
+        <div class="goal-alert-text">
+          <strong>Project Goal:</strong> Transform IMKAN's digital operations in the trade & distribution sector by deploying a fully integrated Odoo 18 ERP system — eliminating manual processes, unifying data across all departments, and enabling scalable, sustainable business growth aligned with IMKAN's mission as Kuwait's environmental technology partner since 2004.
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §4 FEATURES ═══ -->
+    <section id="features" class="section">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div>
+          <div class="section-title">Exclusive Features Included</div>
+          <div class="section-sub">Added value delivered as part of this engagement — at no extra cost</div>
+        </div>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-icon">🔗</div>
+          <div>
+            <div class="feat-title">Full Module Integration</div>
+            <div class="feat-desc">All 11 modules are configured to communicate seamlessly — a sales order triggers inventory, accounting, and payroll actions automatically.</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">📱</div>
+          <div>
+            <div class="feat-title">Mobile-Ready System</div>
+            <div class="feat-desc">Full Odoo mobile access for expense submission, leave requests, attendance check-in, and approvals from any device, anywhere.</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🇰🇼</div>
+          <div>
+            <div class="feat-title">Kuwait Localization</div>
+            <div class="feat-desc">Configured for Kuwaiti labor law, VAT, and business regulations — including Arabic/English bilingual support and KWD currency settings.</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">📄</div>
+          <div>
+            <div class="feat-title">Custom Report Templates</div>
+            <div class="feat-desc">Branded invoices, purchase orders, quotations, and payslips designed in IMKAN's corporate identity — print-ready and professional.</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🎓</div>
+          <div>
+            <div class="feat-title">Full Team Training</div>
+            <div class="feat-desc">Comprehensive user training sessions per module, with recorded walkthroughs and a dedicated support contact for the go-live period.</div>
+          </div>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon">🛡️</div>
+          <div>
+            <div class="feat-title">3 Months Free Support</div>
+            <div class="feat-desc">Post-go-live, Business Gate provides 3 months of complimentary technical support — covering bug fixes, user queries, and system optimizations.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §5 MODULE DETAILS ═══ -->
+    <section id="modules" class="section">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div>
+          <div class="section-title">Module Details</div>
+          <div class="section-sub">Detailed breakdown of all 11 modules and their key capabilities</div>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Module</th>
+              <th>Category</th>
+              <th>Key Features</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td class="td-green fw-700">Sales</td>
+              <td><span class="badge badge-green">Operations</span></td>
+              <td>Quotations & sales orders · Custom pricing & discounts · Credit limit verification</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="td-green fw-700">Inventory</td>
+              <td><span class="badge badge-green">Operations</span></td>
+              <td>Multi-warehouse management · Batch & expiry tracking · Internal stock moves</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="td-green fw-700">Purchase</td>
+              <td><span class="badge badge-green">Operations</span></td>
+              <td>Multi-level approval cycle · RFQ & vendor comparison · Invoice receipt & matching</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="td-green fw-700">Accounting</td>
+              <td><span class="badge badge-gold">Finance</span></td>
+              <td>Automatic journal entries from all operations · AR & AP management · Bank reconciliation</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="td-green fw-700">Invoicing</td>
+              <td><span class="badge badge-gold">Finance</span></td>
+              <td>Electronic invoices · Payment status tracking · Overdue notifications</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="td-green fw-700">Expenses</td>
+              <td><span class="badge badge-gold">Finance</span></td>
+              <td>Mobile expense submission · Approval workflow · Advance settlement</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td class="td-green fw-700">Payroll</td>
+              <td><span class="badge badge-green">HR</span></td>
+              <td>Salaries & allowances · Absence & tardiness deductions · Electronic payslips</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="td-green fw-700">Employees</td>
+              <td><span class="badge badge-green">HR</span></td>
+              <td>Complete employee profiles · Organizational chart · Contract & document tracking</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="td-green fw-700">Recruitment</td>
+              <td><span class="badge badge-green">HR</span></td>
+              <td>Hiring request management · Job posting · Applicant tracking pipeline</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="td-green fw-700">Time Off</td>
+              <td><span class="badge badge-green">HR</span></td>
+              <td>Electronic leave requests · Balance & accrual tracking · Absence reports</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="td-green fw-700">Attendance</td>
+              <td><span class="badge badge-green">HR</span></td>
+              <td>Fingerprint/face recognition · Attendance reports · Biometric device integration</td>
+              <td><span class="badge badge-green">✓ Included</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══ §6 WORKFLOWS ═══ -->
+    <section id="workflows" class="section">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <div>
+          <div class="section-title">Main Business Workflows</div>
+          <div class="section-sub">Core operational flows that will be automated and integrated within Odoo 18</div>
+        </div>
+      </div>
+
+      <div class="workflow-list">
+        <div class="workflow-item">
+          <div class="workflow-title">Sales Cycle</div>
+          <div class="workflow-steps">
+            <div class="wf-step">CRM Lead</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Quotation</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Approval</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Sales Order</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Credit Check</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Delivery / Shipment</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Invoice</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Collection</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Auto Journal Entries</div>
+          </div>
+        </div>
+        <div class="workflow-item">
+          <div class="workflow-title">Purchase Cycle</div>
+          <div class="workflow-steps">
+            <div class="wf-step">Internal Request</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Manager Approval</div><div class="wf-arrow">→</div>
+            <div class="wf-step">RFQ to Vendors</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Offer Comparison</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Purchase Order</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Goods Receipt</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Vendor Invoice</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Payment</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Inventory Update</div>
+          </div>
+        </div>
+        <div class="workflow-item">
+          <div class="workflow-title">Inventory Cycle</div>
+          <div class="workflow-steps">
+            <div class="wf-step">Goods Receipt</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Batch & Expiry Entry</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Location Storage</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Internal Transfers</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Reorder Alert</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Periodic Count</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Stock Report</div>
+          </div>
+        </div>
+        <div class="workflow-item">
+          <div class="workflow-title">Accounting Cycle</div>
+          <div class="workflow-steps">
+            <div class="wf-step">Auto Journal Entries</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Bank Reconciliation</div><div class="wf-arrow">→</div>
+            <div class="wf-step">AR / AP Management</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Monthly Close</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Balance Sheet</div><div class="wf-arrow">→</div>
+            <div class="wf-step">P&L Report</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Cash Flow</div>
+          </div>
+        </div>
+        <div class="workflow-item">
+          <div class="workflow-title">Payroll Cycle</div>
+          <div class="workflow-steps">
+            <div class="wf-step">Attendance Data Collection</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Overtime Calculation</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Absence Deductions</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Allowances Processing</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Payslip Approval</div><div class="wf-arrow">→</div>
+            <div class="wf-step">Disbursement & E-Payslips</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §7 PHASES ═══ -->
+    <section id="phases" class="section">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <div>
+          <div class="section-title">Implementation Plan</div>
+          <div class="section-sub">5 structured phases | Total duration: 60 days | Start: May 1, 2026</div>
+        </div>
+      </div>
+
+      <div class="phases-grid">
+        <div class="phase-card phase-1">
+          <div class="phase-num">01</div>
+          <div class="phase-name">Analysis & Design</div>
+          <div class="phase-dur">⏱ 2 Weeks</div>
+          <ul class="phase-items">
+            <li>Requirements document</li>
+            <li>Process design</li>
+            <li>Environment setup</li>
+            <li>Kickoff workshop</li>
+          </ul>
+        </div>
+        <div class="phase-card phase-2">
+          <div class="phase-num">02</div>
+          <div class="phase-name">Core Development</div>
+          <div class="phase-dur">⏱ 8 Weeks</div>
+          <ul class="phase-items">
+            <li>Sales configuration</li>
+            <li>Inventory setup</li>
+            <li>Purchase workflow</li>
+            <li>Accounting integration</li>
+          </ul>
+        </div>
+        <div class="phase-card phase-3">
+          <div class="phase-num">03</div>
+          <div class="phase-name">Advanced Development</div>
+          <div class="phase-dur">⏱ 4 Weeks</div>
+          <ul class="phase-items">
+            <li>Invoicing module</li>
+            <li>Expenses & payroll</li>
+            <li>HR modules setup</li>
+            <li>Attendance integration</li>
+          </ul>
+        </div>
+        <div class="phase-card phase-4">
+          <div class="phase-num">04</div>
+          <div class="phase-name">Testing & Training</div>
+          <div class="phase-dur">⏱ 2 Weeks</div>
+          <ul class="phase-items">
+            <li>Full UAT testing</li>
+            <li>Team training sessions</li>
+            <li>All modules coverage</li>
+            <li>User sign-off</li>
+          </ul>
+        </div>
+        <div class="phase-card phase-5">
+          <div class="phase-num">05</div>
+          <div class="phase-name">Launch & Follow-up</div>
+          <div class="phase-dur">⏱ 2 Weeks</div>
+          <ul class="phase-items">
+            <li>Official Go-Live</li>
+            <li>Intensive support</li>
+            <li>Weekly review calls</li>
+            <li>Performance monitoring</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tbl-wrap mt-24">
+        <table>
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Name</th>
+              <th>Duration</th>
+              <th>Estimated Date</th>
+              <th>Key Deliverables</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-green">Phase 1</span></td>
+              <td class="td-green fw-700">Analysis & Design</td>
+              <td>2 Weeks</td>
+              <td>May 1 – May 14, 2026</td>
+              <td>Requirements doc · Process design · Environment ready</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">Phase 2</span></td>
+              <td class="td-green fw-700">Core Development</td>
+              <td>8 Weeks</td>
+              <td>May 15 – Jul 9, 2026</td>
+              <td>Sales · Inventory · Purchase · Accounting configured</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">Phase 3</span></td>
+              <td class="td-green fw-700">Advanced Development</td>
+              <td>4 Weeks</td>
+              <td>Jul 10 – Aug 6, 2026</td>
+              <td>Invoicing · Expenses · Payroll · HR Modules live</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-gold">Phase 4</span></td>
+              <td class="td-green fw-700">Testing & Training</td>
+              <td>2 Weeks</td>
+              <td>Aug 7 – Aug 20, 2026</td>
+              <td>Full UAT · Team training · All module user sign-off</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-gold">Phase 5</span></td>
+              <td class="td-green fw-700">Launch & Follow-up</td>
+              <td>2 Weeks</td>
+              <td>Aug 21 – Sep 3, 2026</td>
+              <td>Official Go-Live · Intensive support · Weekly reviews</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══ §8 RESPONSIBILITIES ═══ -->
+    <section id="responsibilities" class="section">
+      <div class="section-header">
+        <div class="section-num">8</div>
+        <div>
+          <div class="section-title">Client Responsibilities</div>
+          <div class="section-sub">Data and documentation required from IMKAN to ensure on-time, on-budget delivery</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        ℹ️ The following information must be provided by IMKAN before or during each module's configuration phase. Delays in data submission may affect the overall project timeline.
+      </div>
+
+      <div class="resp-grid">
+        <div class="resp-card">
+          <div class="resp-title">💼 Sales</div>
+          <ul class="resp-list">
+            <li>Customer list with complete data</li>
+            <li>Pricing structure & price lists</li>
+            <li>Credit limits per customer</li>
+            <li>Quotation approval workflow</li>
+            <li>Approved payment terms</li>
+          </ul>
+        </div>
+        <div class="resp-card">
+          <div class="resp-title">📦 Inventory</div>
+          <ul class="resp-list">
+            <li>Product list with units of measure</li>
+            <li>Warehouse structure definition</li>
+            <li>Opening stock balances</li>
+            <li>Valuation policy (FIFO/AVCO)</li>
+            <li>Minimum reorder levels</li>
+          </ul>
+        </div>
+        <div class="resp-card">
+          <div class="resp-title">🛒 Purchase</div>
+          <ul class="resp-list">
+            <li>Vendor list with contact data</li>
+            <li>Purchase & payment terms</li>
+            <li>Purchase approval authority matrix</li>
+            <li>Purchase categories & groups</li>
+          </ul>
+        </div>
+        <div class="resp-card">
+          <div class="resp-title">📊 Accounting</div>
+          <ul class="resp-list">
+            <li>Approved chart of accounts</li>
+            <li>Opening balances</li>
+            <li>Bank account details</li>
+            <li>VAT policy & rates</li>
+            <li>Depreciation policy</li>
+          </ul>
+        </div>
+        <div class="resp-card">
+          <div class="resp-title">💰 Payroll</div>
+          <ul class="resp-list">
+            <li>Salary & allowance structure</li>
+            <li>Attendance schedule</li>
+            <li>Applicable labor law</li>
+            <li>Income tax schedule (if any)</li>
+          </ul>
+        </div>
+        <div class="resp-card">
+          <div class="resp-title">👤 Employees & HR</div>
+          <ul class="resp-list">
+            <li>Complete employee data</li>
+            <li>Organizational chart</li>
+            <li>Contract types defined</li>
+            <li>Attendance & leave policies</li>
+            <li>Recruitment process steps</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §9 CONFIGURATOR ═══ -->
+    <section id="configurator" class="section">
+      <div class="section-header">
+        <div class="section-num">9</div>
+        <div>
+          <div class="section-title">Pricing Configurator</div>
+          <div class="section-sub">Interactive pricing calculator — all amounts in KWD د.ك</div>
+        </div>
+      </div>
+
+      <div class="configurator">
+        <div class="cfg-header">
+          <div>
+            <div class="cfg-header-title">Project Pricing Summary — IMKAN</div>
+            <div class="cfg-header-sub">Select license and support package to calculate total</div>
+          </div>
+          <div style="text-align:right">
+            <div class="cfg-total-label">Current Total</div>
+            <div class="cfg-total-live" id="live-total">8,146 د.ك</div>
+          </div>
+        </div>
+        <div class="cfg-body">
+          <table class="cfg-table">
+            <thead>
+              <tr>
+                <th style="width:48px">Select</th>
+                <th>Item</th>
+                <th>Description</th>
+                <th style="text-align:right">Amount (KWD)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="cfg-row-selected" id="row-dev">
+                <td style="text-align:center">
+                  <input type="checkbox" class="cfg-check" checked disabled>
+                </td>
+                <td class="td-green fw-700">Development & Implementation</td>
+                <td>11 Odoo 18 modules — after 10% discount (9,051 → 8,146)</td>
+                <td style="text-align:right" class="td-price">8,146</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- License -->
+          <div style="padding: 20px 24px; border-top: 1px solid var(--gline);">
+            <div style="font-size:13px; font-weight:700; color:var(--green); margin-bottom:14px;">🔑 Hosting & License</div>
+            <div class="lic-grid">
+              <div class="lic-card selected" id="lic-a" onclick="selectLicense('a', 185)">
+                <div class="lic-card-top">
+                  <div>
+                    <div class="lic-name">Odoo.sh (Cloud)</div>
+                    <div class="lic-desc">Odoo's managed cloud platform — automatic backups, SSL, continuous deployment</div>
+                    <div class="lic-note">⚠ Indicative — confirm with official Odoo quote</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div class="lic-price">185 د.ك</div>
+                    <div class="lic-period">/month</div>
+                  </div>
+                </div>
+                <div style="text-align:center; margin-top:10px">
+                  <input type="radio" class="radio-lic" name="license" checked> Selected
+                </div>
+              </div>
+              <div class="lic-card" id="lic-b" onclick="selectLicense('b', 320)">
+                <div class="lic-card-top">
+                  <div>
+                    <div class="lic-name">Odoo Enterprise (On-Premise)</div>
+                    <div class="lic-desc">Enterprise license for on-premise or private cloud — full control and customization</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div class="lic-price">320 د.ك</div>
+                    <div class="lic-period">/month</div>
+                  </div>
+                </div>
+                <div style="text-align:center; margin-top:10px">
+                  <input type="radio" class="radio-lic" name="license"> Select
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support -->
+          <div style="padding: 0 24px 20px; border-top: 1px solid var(--gline);">
+            <div style="font-size:13px; font-weight:700; color:var(--green); margin:20px 0 14px;">🛟 Technical Support Package</div>
+            <div class="sup-grid">
+              <div class="sup-card" id="sup-none" onclick="selectSupport('none', 0)">
+                <div class="sup-name">No Support</div>
+                <div class="sup-price" style="font-size:15px">0 د.ك</div>
+                <div class="sup-period">/month</div>
+                <div class="sup-hrs">0 hrs/month</div>
+                <ul class="sup-features">
+                  <li>3-month free period only</li>
+                  <li>No paid contract</li>
+                </ul>
+              </div>
+              <div class="sup-card" id="sup-basic" onclick="selectSupport('basic', 250)">
+                <div class="sup-name">Basic</div>
+                <div class="sup-price">250 د.ك</div>
+                <div class="sup-period">/month</div>
+                <div class="sup-hrs">10 hrs/month</div>
+                <ul class="sup-features">
+                  <li>Response within 24 hrs</li>
+                  <li>Email & phone support</li>
+                  <li>Monthly status report</li>
+                </ul>
+              </div>
+              <div class="sup-card" id="sup-adv" onclick="selectSupport('adv', 350)">
+                <div class="sup-name">Advanced</div>
+                <div class="sup-price">350 د.ك</div>
+                <div class="sup-period">/month</div>
+                <div class="sup-hrs">15 hrs/month</div>
+                <ul class="sup-features">
+                  <li>Response within 8 hrs</li>
+                  <li>Dedicated project mgr</li>
+                  <li>Bi-weekly reports</li>
+                  <li>1 training session/month</li>
+                </ul>
+              </div>
+              <div class="sup-card selected" id="sup-prem" onclick="selectSupport('prem', 450)">
+                <div class="sup-badge-best">⭐ SELECTED</div>
+                <div class="sup-name">Premium</div>
+                <div class="sup-price">450 د.ك</div>
+                <div class="sup-period">/month</div>
+                <div class="sup-hrs">20 hrs/month</div>
+                <ul class="sup-features">
+                  <li>Response within 4 hrs</li>
+                  <li>Dedicated project mgr</li>
+                  <li>Weekly reports</li>
+                  <li>2 training sessions/month</li>
+                  <li>Direct WhatsApp line</li>
+                  <li>Quarterly review</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cfg-subtotal">
+            <div>
+              <div style="font-size:12px; color:var(--tgray);">Development + Monthly Recurring</div>
+              <div style="font-size:13px; color:var(--green); margin-top:4px;">One-time: <strong>8,146 KWD</strong> | Monthly: <strong id="monthly-total">635 KWD</strong> (License + Support)</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px; color:var(--tgray);">Development Total</div>
+              <div class="cfg-subtotal-num" id="cfg-bottom-total">8,146 د.ك</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §10 FINANCIAL SUMMARY ═══ -->
+    <section id="financial" class="section">
+      <div class="section-header">
+        <div class="section-num">10</div>
+        <div>
+          <div class="section-title">Financial Summary</div>
+          <div class="section-sub">Complete cost breakdown for the IMKAN Odoo 18 implementation</div>
+        </div>
+      </div>
+
+      <!-- Total before/after discount banner -->
+      <div style="background:var(--bgcard); border:1.5px solid var(--gline); border-radius:var(--radius); padding:22px 28px; margin-bottom:20px; box-shadow:var(--shadow-md); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+        <div>
+          <div style="font-size:11px; font-weight:700; color:var(--tgray); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px;">Modules — Before Discount</div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span style="font-size:32px; font-weight:800; color:var(--tgray); text-decoration:line-through; font-family:'Inter',monospace;">9,051</span>
+            <span style="font-size:14px; color:var(--tgray);">KWD</span>
+          </div>
+          <div style="font-size:11px; color:var(--tgray); margin-top:4px;">Original value — 11 modules</div>
+        </div>
+        <div style="font-size:32px; color:var(--gmid);">→</div>
+        <div>
+          <div style="font-size:11px; font-weight:700; color:var(--gold); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px;">Modules After 10% Discount</div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span style="font-size:32px; font-weight:800; color:var(--green); font-family:'Inter',monospace;">8,146</span>
+            <span style="font-size:14px; color:var(--green);">KWD</span>
+          </div>
+          <div style="font-size:11px; color:var(--gold); margin-top:4px;">Saving: 905 KWD</div>
+        </div>
+        <div style="font-size:32px; color:var(--gmid);">+</div>
+        <div>
+          <div style="font-size:11px; font-weight:700; color:var(--gold); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px;">Odoo Annual (Server + 5 Users)</div>
+          <div style="display:flex; align-items:baseline; gap:8px;">
+            <span style="font-size:32px; font-weight:800; color:var(--gold); font-family:'Inter',monospace;">2,100</span>
+            <span style="font-size:14px; color:var(--gold);">KWD</span>
+          </div>
+          <div style="font-size:11px; color:var(--tgray); margin-top:4px;">175 KWD/month × 12</div>
+        </div>
+        <div style="font-size:32px; color:var(--gmid);">→</div>
+        <div style="background:var(--green); border-radius:10px; padding:18px 28px; text-align:center;">
+          <div style="font-size:11px; font-weight:700; color:rgba(255,255,255,0.7); letter-spacing:0.8px; text-transform:uppercase; margin-bottom:8px;">Grand Total (Year 1)</div>
+          <div style="display:flex; align-items:baseline; gap:8px; justify-content:center;">
+            <span style="font-size:36px; font-weight:800; color:var(--gold2); font-family:'Inter',monospace;">10,200</span>
+            <span style="font-size:16px; color:rgba(255,255,255,0.8);">KWD</span>
+          </div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:4px;">Modules + Odoo full annual</div>
+        </div>
+      </div>
+
+      <div class="fin-grid">
+        <div class="fin-card fin-card-green">
+          <div class="fin-label">Development Value</div>
+          <div class="fin-value">8,146</div>
+          <div class="fin-sub">KWD — One-time payment<br>After 10% discount (was 9,051)</div>
+        </div>
+        <div class="fin-card fin-card-gold">
+          <div class="fin-label">Monthly Recurring</div>
+          <div class="fin-value">635</div>
+          <div class="fin-sub">KWD/month<br>License (185) + Support (450)</div>
+        </div>
+        <div class="fin-card fin-card-white">
+          <div class="fin-label">First Installment (30%)</div>
+          <div class="fin-value">3,060</div>
+          <div class="fin-sub">KWD — Due on contract signing<br>May 1, 2026 · of 10,200 total</div>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cost Item</th>
+              <th>Type</th>
+              <th>Amount (KWD)</th>
+              <th>Frequency</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-green fw-700">Odoo 18 Implementation — 11 Modules</td>
+              <td><span class="badge badge-green">One-Time</span></td>
+              <td class="td-price">8,146</td>
+              <td>Once</td>
+              <td>After 10% group discount</td>
+            </tr>
+            <tr>
+              <td class="td-green fw-700">Odoo.sh License & Hosting</td>
+              <td><span class="badge badge-gold">Recurring</span></td>
+              <td class="td-price">185</td>
+              <td>Monthly</td>
+              <td>⚠ Indicative — confirm with Odoo</td>
+            </tr>
+            <tr>
+              <td class="td-green fw-700">Premium Technical Support</td>
+              <td><span class="badge badge-gold">Recurring</span></td>
+              <td class="td-price">450</td>
+              <td>Monthly (3 months paid)</td>
+              <td>After 3 months free period</td>
+            </tr>
+            <tr>
+              <td class="td-green fw-700">Post-Launch Free Support</td>
+              <td><span class="badge badge-green">Included</span></td>
+              <td class="td-price" style="color:var(--green)">FREE</td>
+              <td>3 months</td>
+              <td>Complimentary go-live support</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══ Full Investment Breakdown ══ -->
+      <div style="margin-top:28px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-md);">
+
+        <!-- Header -->
+        <div style="background:var(--tmid); padding:14px 24px;">
+          <div style="font-size:13px; font-weight:700; color:#fff; letter-spacing:0.3px;">🏆 Full Investment Breakdown — Modules + Odoo Annual Costs</div>
+          <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:2px;">⚠ Odoo license figures are indicative — confirm with official Odoo quote</div>
+        </div>
+
+        <!-- Breakdown Table -->
+        <table style="width:100%; border-collapse:collapse; background:var(--bgcard);">
+          <thead>
+            <tr>
+              <th style="background:var(--bggray); color:var(--tmid); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 18px; border-bottom:1px solid var(--gline); text-align:left;">Cost Item</th>
+              <th style="background:var(--bggray); color:var(--tmid); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 18px; border-bottom:1px solid var(--gline); text-align:center;">Details</th>
+              <th style="background:var(--bggray); color:var(--tmid); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 18px; border-bottom:1px solid var(--gline); text-align:center;">Unit Cost (KWD)</th>
+              <th style="background:var(--bggray); color:var(--tmid); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 18px; border-bottom:1px solid var(--gline); text-align:center;">Monthly</th>
+              <th style="background:var(--bggray); color:var(--tmid); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; padding:10px 18px; border-bottom:1px solid var(--gline); text-align:right;">Annual (KWD)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Modules row -->
+            <tr style="background:var(--green-lt);">
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); font-weight:700; color:var(--green); font-size:13px;">
+                📦 Odoo 18 Modules — Implementation
+              </td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:12px; color:var(--tmid);">
+                11 modules · After 10% discount<br><span style="text-decoration:line-through; color:var(--tgray);">9,051</span> → <strong style="color:var(--green);">8,146 KWD</strong>
+              </td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:13px; font-weight:700; color:var(--green);">8,146</td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:12px; color:var(--tgray);">One-time</td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:right; font-size:15px; font-weight:800; color:var(--green);">8,146</td>
+            </tr>
+            <!-- Server row -->
+            <tr>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); font-weight:700; color:var(--tmid); font-size:13px;">
+                🖥️ Odoo.sh — Cloud Server
+              </td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:12px; color:var(--tmid);">
+                Managed cloud · SSL · Backups · CI/CD
+              </td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:13px; font-weight:700; color:var(--gold);">1,350 <span style="font-size:10px; font-weight:400; color:var(--tgray);">/yr</span></td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:13px; font-weight:700; color:var(--gold);">113</td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:right; font-size:15px; font-weight:800; color:var(--gold);">1,350</td>
+            </tr>
+            <!-- Users row -->
+            <tr style="background:var(--bggray);">
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); font-weight:700; color:var(--tmid); font-size:13px;">
+                👥 Odoo Enterprise — User Licenses
+              </td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:12px; color:var(--tmid);">
+                5 users × 12.5 KWD/user/month
+              </td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:13px; font-weight:700; color:var(--gold);">12.5 <span style="font-size:10px; font-weight:400; color:var(--tgray);">/user/mo</span></td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:center; font-size:13px; font-weight:700; color:var(--gold);">62</td>
+              <td style="padding:14px 18px; border-bottom:1px solid var(--gline); text-align:right; font-size:15px; font-weight:800; color:var(--gold);">750</td>
+            </tr>
+            <!-- Odoo subtotal -->
+            <tr style="background:var(--goldlt);">
+              <td style="padding:12px 18px; border-bottom:2px solid var(--gold); font-weight:700; color:var(--tmid); font-size:12px;" colspan="3">
+                Odoo Annual Subtotal &nbsp;(Server + 5 Users × 12 months)
+              </td>
+              <td style="padding:12px 18px; border-bottom:2px solid var(--gold); text-align:center; font-size:13px; font-weight:800; color:var(--gold);">175</td>
+              <td style="padding:12px 18px; border-bottom:2px solid var(--gold); text-align:right; font-size:16px; font-weight:800; color:var(--gold);">2,100</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <!-- Grand Total -->
+            <tr style="background:var(--green);">
+              <td colspan="4" style="padding:18px 24px; font-size:14px; font-weight:700; color:#fff;">
+                🏆 Grand Total — Modules + Odoo Full Annual Cost
+                <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-top:3px; font-weight:400;">
+                  Modules (8,146) + Server annual (1,350) + 5 Users annual (750) &nbsp;⚠ Odoo figures are indicative
+                </div>
+              </td>
+              <td style="padding:18px 24px; text-align:right; vertical-align:middle;">
+                <div style="font-size:11px; color:rgba(255,255,255,0.55); margin-bottom:4px; letter-spacing:0.5px;">TOTAL KWD</div>
+                <div style="font-size:40px; font-weight:800; color:var(--gold2); font-family:'Inter',monospace; line-height:1;">10,200</div>
+                <div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px;">First year total investment</div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Visual summary pills -->
+        <div style="background:var(--bggray); border-top:1px solid var(--gline); padding:14px 24px; display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:center;">
+          <div style="background:var(--green-lt); border:1px solid var(--green); border-radius:20px; padding:6px 16px; font-size:12px; font-weight:700; color:var(--green);">
+            📦 Modules: 8,146 KWD
+          </div>
+          <div style="color:var(--tgray); font-weight:700;">+</div>
+          <div style="background:var(--goldlt); border:1px solid var(--gold); border-radius:20px; padding:6px 16px; font-size:12px; font-weight:700; color:#8a5f10;">
+            🖥️ Server/yr: 1,350 KWD
+          </div>
+          <div style="color:var(--tgray); font-weight:700;">+</div>
+          <div style="background:var(--goldlt); border:1px solid var(--gold); border-radius:20px; padding:6px 16px; font-size:12px; font-weight:700; color:#8a5f10;">
+            👥 5 Users/yr: 750 KWD
+          </div>
+          <div style="color:var(--tgray); font-weight:700;">=</div>
+          <div style="background:var(--green); border-radius:20px; padding:6px 20px; font-size:13px; font-weight:800; color:var(--gold2);">
+            🏆 Total: 10,200 KWD
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ═══ §12 INSTALLMENTS ═══ -->
+    <section id="installments" class="section">
+      <div class="section-header">
+        <div class="section-num">12</div>
+        <div>
+          <div class="section-title">Payment Schedule</div>
+          <div class="section-sub">3 installments — milestone-based | Total: 10,200 KWD | Start: May 1, 2026</div>
+        </div>
+      </div>
+
+      <!-- Total summary bar -->
+      <div style="background:var(--green-lt); border:1.5px solid var(--green); border-radius:var(--radius); padding:16px 24px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div style="display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
+          <div>
+            <div style="font-size:10px; color:var(--tgray); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Modules (after 10% discount)</div>
+            <div style="font-size:18px; font-weight:800; color:var(--green); font-family:'Inter',monospace;">8,146 KWD</div>
+          </div>
+          <div style="color:var(--gold); font-size:20px;">+</div>
+          <div>
+            <div style="font-size:10px; color:var(--gold); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">Odoo Annual (Server + 5 Users)</div>
+            <div style="font-size:18px; font-weight:800; color:var(--gold); font-family:'Inter',monospace;">2,100 KWD</div>
+          </div>
+          <div style="color:var(--gold); font-size:20px;">→</div>
+          <div>
+            <div style="font-size:10px; color:var(--green); font-weight:700; text-transform:uppercase; letter-spacing:0.5px;">Grand Total</div>
+            <div style="font-size:24px; font-weight:800; color:var(--green); font-family:'Inter',monospace;">10,200 KWD</div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:10px; color:var(--tgray); font-weight:600; margin-bottom:2px;">Split into 3 milestone payments</div>
+          <div style="font-size:12px; color:var(--tmid);">30% + 35% + 35%</div>
+        </div>
+      </div>
+
+      <div class="inst-grid mb-24">
+        <div class="inst-card">
+          <div class="inst-num">INSTALLMENT 1 — 30%</div>
+          <div class="inst-date">📅 May 1, 2026</div>
+          <div class="inst-trigger">Upon contract signing</div>
+          <div style="font-size:11px; color:var(--tgray); margin-bottom:4px;">10,200 × 30%</div>
+          <div class="inst-amount">3,060</div>
+          <div class="inst-currency">KWD د.ك</div>
+        </div>
+        <div class="inst-card">
+          <div class="inst-num">INSTALLMENT 2 — 35%</div>
+          <div class="inst-date">📅 Upon Phase 3 completion</div>
+          <div class="inst-trigger">After Advanced Development sign-off</div>
+          <div style="font-size:11px; color:var(--tgray); margin-bottom:4px;">10,200 × 35%</div>
+          <div class="inst-amount">3,570</div>
+          <div class="inst-currency">KWD د.ك</div>
+        </div>
+        <div class="inst-card">
+          <div class="inst-num">INSTALLMENT 3 — 35%</div>
+          <div class="inst-date">📅 Upon Go-Live</div>
+          <div class="inst-trigger">After official system launch</div>
+          <div style="font-size:11px; color:var(--tgray); margin-bottom:4px;">10,200 × 35%</div>
+          <div class="inst-amount">3,570</div>
+          <div class="inst-currency">KWD د.ك</div>
+        </div>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Payment</th>
+              <th>Due Date</th>
+              <th>Trigger Event</th>
+              <th>%</th>
+              <th>Amount (KWD)</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="fw-700">Installment 1</td>
+              <td>May 1, 2026</td>
+              <td>Contract Signing</td>
+              <td class="fw-700">30%</td>
+              <td class="td-price">3,060</td>
+              <td><span class="badge badge-gold">Pending</span></td>
+            </tr>
+            <tr>
+              <td class="fw-700">Installment 2</td>
+              <td>~August 6, 2026</td>
+              <td>Phase 3 Completion</td>
+              <td class="fw-700">35%</td>
+              <td class="td-price">3,570</td>
+              <td><span class="badge badge-gold">Pending</span></td>
+            </tr>
+            <tr>
+              <td class="fw-700">Installment 3</td>
+              <td>~September 3, 2026</td>
+              <td>Official Go-Live</td>
+              <td class="fw-700">35%</td>
+              <td class="td-price">3,570</td>
+              <td><span class="badge badge-gold">Pending</span></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="tbl-footer">
+              <td colspan="4"><strong>Grand Total Investment (Modules + Odoo Annual)</strong></td>
+              <td class="td-price" style="font-size:15px">10,200</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="info-box mt-16">
+        📌 Grand total of <strong>10,200 KWD</strong> covers: Modules implementation (8,146 KWD) + Odoo annual license — Server + 5 Users (2,100 KWD). Monthly support (450 KWD/mo) begins after 3-month free period.
+      </div>
+    </section>
+
+    <!-- ═══ §13 SUPPORT ═══ -->
+    <section id="support" class="section">
+      <div class="section-header">
+        <div class="section-num">13</div>
+        <div>
+          <div class="section-title">Technical Support Packages</div>
+          <div class="section-sub">3 months free post-go-live · then choose your paid package</div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        🎁 <strong>3 months complimentary support included</strong> after system go-live — covering bug fixes, user queries, and system optimizations at no charge.
+      </div>
+
+      <div class="sup-grid" style="margin-top:20px">
+        <div class="sup-card">
+          <div class="sup-name">No Package</div>
+          <div class="sup-price" style="font-size:18px">0 د.ك</div>
+          <div class="sup-period">/month</div>
+          <div class="sup-hrs" style="color:var(--tgray)">0 Hours</div>
+          <ul class="sup-features" style="text-align:center; margin-top:10px">
+            <li>Free period only</li>
+            <li>Ad-hoc billing</li>
+          </ul>
+        </div>
+        <div class="sup-card">
+          <div class="sup-name">Basic</div>
+          <div class="sup-price">250 د.ك</div>
+          <div class="sup-period">/month</div>
+          <div class="sup-hrs">10 Hours / Month</div>
+          <ul class="sup-features">
+            <li>24-hour response</li>
+            <li>Email & phone support</li>
+            <li>Monthly status report</li>
+            <li>Remote sessions</li>
+          </ul>
+        </div>
+        <div class="sup-card">
+          <div class="sup-name">Advanced</div>
+          <div class="sup-price">350 د.ك</div>
+          <div class="sup-period">/month</div>
+          <div class="sup-hrs">15 Hours / Month</div>
+          <ul class="sup-features">
+            <li>8-hour response</li>
+            <li>Dedicated project manager</li>
+            <li>Bi-weekly reports</li>
+            <li>1 training session/month</li>
+          </ul>
+        </div>
+        <div class="sup-card selected" style="border-color:var(--gold);">
+          <div class="sup-badge-best" style="background:var(--green);">✓ SELECTED FOR IMKAN</div>
+          <div class="sup-name">Premium ⭐</div>
+          <div class="sup-price">450 د.ك</div>
+          <div class="sup-period">/month</div>
+          <div class="sup-hrs">20 Hours / Month</div>
+          <ul class="sup-features">
+            <li>4-hour response time</li>
+            <li>Dedicated project manager</li>
+            <li>Weekly progress reports</li>
+            <li>2 training sessions/month</li>
+            <li>Direct WhatsApp support line</li>
+            <li>Quarterly system review</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §14 TERMS ═══ -->
+    <section id="terms" class="section">
+      <div class="section-header">
+        <div class="section-num">14</div>
+        <div>
+          <div class="section-title">Terms & Conditions</div>
+          <div class="section-sub">Standard Business Gate contractual terms — governing this quotation</div>
+        </div>
+      </div>
+
+      <div class="tc-grid">
+        <div class="tc-group">
+          <div class="tc-group-title">📋 Quotation Validity</div>
+          <ul class="tc-list">
+            <li>This quotation is valid for 30 days from the date of issue (April 2026).</li>
+            <li>Prices and terms are subject to change after the validity period.</li>
+            <li>A signed copy or written approval constitutes formal acceptance.</li>
+          </ul>
+        </div>
+        <div class="tc-group">
+          <div class="tc-group-title">💰 Payment Terms</div>
+          <ul class="tc-list">
+            <li>First installment (30%) is due upon contract signing before project commencement.</li>
+            <li>Subsequent installments are tied to milestone completion and sign-off.</li>
+            <li>Payments are to be made via bank transfer in KWD within 5 business days of invoice.</li>
+            <li>Late payments may result in project suspension.</li>
+          </ul>
+        </div>
+        <div class="tc-group">
+          <div class="tc-group-title">⚙️ Project Scope</div>
+          <ul class="tc-list">
+            <li>This quotation covers the 11 modules explicitly listed in this document.</li>
+            <li>Any additional modules, customizations, or integrations not listed will be quoted separately.</li>
+            <li>The project timeline assumes timely delivery of required client data and approvals.</li>
+            <li>Delays caused by client-side factors will not extend Business Gate's obligations.</li>
+          </ul>
+        </div>
+        <div class="tc-group">
+          <div class="tc-group-title">🛡️ Support & Warranty</div>
+          <ul class="tc-list">
+            <li>3 months of free post-go-live support is included in all implementations.</li>
+            <li>Bugs identified within 3 months of go-live will be resolved at no charge.</li>
+            <li>Support beyond the free period requires a paid support package.</li>
+            <li>Hardware, hosting fees, and third-party licenses are not included unless stated.</li>
+          </ul>
+        </div>
+        <div class="tc-group">
+          <div class="tc-group-title">📦 Deliverables</div>
+          <ul class="tc-list">
+            <li>Business Gate will deliver a fully configured Odoo 18 environment per agreed scope.</li>
+            <li>Training materials, user guides, and test sign-off documents are included.</li>
+            <li>Source code for any custom development remains the property of Business Gate unless agreed otherwise.</li>
+          </ul>
+        </div>
+        <div class="tc-group">
+          <div class="tc-group-title">🔒 Confidentiality</div>
+          <ul class="tc-list">
+            <li>Both parties agree to treat all shared information as strictly confidential.</li>
+            <li>Client business data will not be shared with any third party without written consent.</li>
+            <li>This agreement is governed by the laws of the State of Kuwait.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ §15 SIGNATURE ═══ -->
+    <section id="sign" class="section">
+      <div class="section-header">
+        <div class="section-num">15</div>
+        <div>
+          <div class="section-title">Approval & Signature</div>
+          <div class="section-sub">Quotation BG202604186 — IMKAN | April 2026</div>
+        </div>
+      </div>
+
+      <div class="sign-header-banner">
+        <div style="font-size:32px">✅</div>
+        <div>
+          <div class="sign-header-text">By signing below, both parties agree to the terms and scope outlined in this quotation.</div>
+          <div class="sign-header-sub">This document serves as the formal proposal for Odoo 18 ERP implementation at IMKAN — valid for 30 days from April 2026.</div>
+        </div>
+      </div>
+
+      <div class="sign-grid">
+        <div class="sign-card">
+          <div class="sign-card-header green-bg">Business Gate Technical Consulting</div>
+          <div class="sign-card-body">
+            <div class="sign-field">
+              <div class="sign-field-label">Representative</div>
+              <div class="sign-field-value">Eng. Mahmoud Oun</div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Title</div>
+              <div class="sign-field-value">CEO & Co-Founder</div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Email</div>
+              <div class="sign-field-value">OUN@businessesgates.com</div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Phone</div>
+              <div class="sign-field-value">+965 9999 0412</div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Quote Reference</div>
+              <div class="sign-field-value" style="color:var(--green); font-family: monospace;">BG202604186</div>
+            </div>
+            <div class="sign-line"></div>
+            <div class="sign-line-label">Signature & Date</div>
+            <div style="height: 48px;"></div>
+          </div>
+        </div>
+        <div class="sign-card">
+          <div class="sign-card-header gold-bg">IMKAN — إمكان الدولية</div>
+          <div class="sign-card-body">
+            <div class="sign-field">
+              <div class="sign-field-label">Authorized Representative</div>
+              <div class="sign-field-value" style="color:var(--tgray)">________________________</div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Title / Position</div>
+              <div class="sign-field-value" style="color:var(--tgray)">________________________</div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Company Stamp</div>
+              <div style="height:40px; border: 1.5px dashed var(--gmid); border-radius:6px; margin-top:4px;"></div>
+            </div>
+            <div class="sign-field">
+              <div class="sign-field-label">Date of Approval</div>
+              <div class="sign-field-value" style="color:var(--tgray)">________________________</div>
+            </div>
+            <div class="sign-line"></div>
+            <div class="sign-line-label">Authorized Signature</div>
+            <div style="height: 48px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sign-footer">
+        <div class="sign-footer-contact">
+          <strong>Eng. Mahmoud Oun</strong> — CEO & Co-Founder | Business Gate Technical Consulting
+        </div>
+        <div class="sign-footer-contact">
+          OUN@businessesgates.com &nbsp;|&nbsp; +965 9999 0412 &nbsp;|&nbsp; www.businessesgates.com &nbsp;|&nbsp; State of Kuwait
+        </div>
+        <div class="sign-footer-legal">
+          Quotation Ref: BG202604186 · Valid for 30 days · Prepared: April 2026 · All amounts in KWD د.ك
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+/* ═══════════════════════════════════════
+   CONFIGURATOR LOGIC
+═══════════════════════════════════════ */
+var BASE     = 8146;
+var licCost  = 185;
+var supCost  = 450;
+
+function fmt(n) {
+  return n.toLocaleString('en-KW', {minimumFractionDigits: 0}) + ' د.ك';
+}
+
+function updateTotal() {
+  var total = BASE;
+  document.getElementById('live-total').textContent = fmt(total);
+  document.getElementById('cfg-bottom-total').textContent = fmt(total);
+  document.getElementById('monthly-total').textContent = (licCost + supCost) + ' KWD';
+}
+
+function selectLicense(id, cost) {
+  licCost = cost;
+  ['a','b'].forEach(function(k) {
+    var el = document.getElementById('lic-' + k);
+    if (el) el.classList.remove('selected');
+    var r = el ? el.querySelector('input') : null;
+    if (r) r.checked = false;
+  });
+  var sel = document.getElementById('lic-' + id);
+  if (sel) { sel.classList.add('selected'); sel.querySelector('input').checked = true; }
+  updateTotal();
+}
+
+function selectSupport(id, cost) {
+  supCost = cost;
+  ['none','basic','adv','prem'].forEach(function(k) {
+    var el = document.getElementById('sup-' + k);
+    if (el) el.classList.remove('selected');
+  });
+  var sel = document.getElementById('sup-' + id);
+  if (sel) sel.classList.add('selected');
+  updateTotal();
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR — Mobile Toggle
+═══════════════════════════════════════ */
+function toggleSidebar() {
+  var sb = document.getElementById('sidebar');
+  var ov = document.getElementById('overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════
+   ACTIVE SECTION HIGHLIGHT
+═══════════════════════════════════════ */
+var sections = document.querySelectorAll('section[id]');
+var navLinks  = document.querySelectorAll('#sidebar .sb-nav a');
+
+window.addEventListener('scroll', function() {
+  var scrollPos = window.scrollY + 80;
+  sections.forEach(function(s) {
+    if (s.offsetTop <= scrollPos && (s.offsetTop + s.offsetHeight) > scrollPos) {
+      navLinks.forEach(function(a) {
+        a.classList.remove('active');
+        if (a.getAttribute('href') === '#' + s.id) a.classList.add('active');
+      });
+    }
+  });
+});
+
+/* Init */
+updateTotal();
+</script>
+</body>
+</html>
