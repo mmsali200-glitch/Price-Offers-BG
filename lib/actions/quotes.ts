@@ -48,10 +48,9 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
 }
 
 /**
- * Create a new quote with a full client profile. All fields from the
- * new-quote form are persisted on both `clients` (for reuse across
- * future quotes) and embedded in `quote_sections.payload.client` so
- * the generated HTML has everything it needs.
+ * Create a new quote with a full client profile. Resilient against
+ * the database missing the migration 0003 columns: tries the full
+ * insert first, falls back to minimal columns if Postgres complains.
  */
 export async function createQuote(formData: FormData) {
   const supabase = await createClient();
@@ -67,16 +66,21 @@ export async function createQuote(formData: FormData) {
   const communicationLanguage = (f("communicationLanguage") || "ar") as "ar" | "en";
   const commissionPct = parseFloat(f("commissionPct")) || 0;
 
-  const clientProfile = {
+  // Always-present columns (exist since migration 0001).
+  const baseClient = {
     owner_id: user.id,
     name_ar: nameAr,
     name_en: nameEn || null,
     sector: f("sector") || "other",
     employee_size: f("employeeSize") || null,
-    business_activity: f("businessActivity") || null,
     contact_name: f("contactName") || null,
     contact_phone: f("contactPhone") || null,
     contact_email: f("contactEmail") || null,
+  };
+
+  // Extended columns (exist after migration 0003).
+  const extendedClient = {
+    business_activity: f("businessActivity") || null,
     country: f("country") || "الكويت",
     governorate: f("governorate") || null,
     city: f("city") || null,
@@ -88,30 +92,63 @@ export async function createQuote(formData: FormData) {
     commission_pct: commissionPct,
   };
 
-  const { data: client, error: cErr } = await supabase
+  // Try with the full set first; on failure (column doesn't exist),
+  // retry with just the base columns.
+  let clientId: string | null = null;
+  const { data: full, error: fullErr } = await supabase
     .from("clients")
-    .insert(clientProfile)
+    .insert({ ...baseClient, ...extendedClient })
     .select("id")
     .single();
-  if (cErr) throw new Error(cErr.message);
 
-  const { data: quote, error: qErr } = await supabase
+  if (!fullErr && full) {
+    clientId = full.id;
+  } else {
+    console.warn("[createQuote] full insert failed, retrying base only:", fullErr?.message);
+    const { data: base, error: baseErr } = await supabase
+      .from("clients")
+      .insert(baseClient)
+      .select("id")
+      .single();
+    if (baseErr || !base) {
+      throw new Error(`فشل إنشاء العميل: ${baseErr?.message ?? fullErr?.message}`);
+    }
+    clientId = base.id;
+  }
+
+  // Quote insert (try with quote_language first, fall back without).
+  const baseQuote = {
+    owner_id: user.id,
+    client_id: clientId,
+    ref,
+    title: nameAr,
+    status: "draft" as const,
+    currency,
+  };
+
+  let quoteId: string | null = null;
+  const { data: q1, error: q1Err } = await supabase
     .from("quotes")
-    .insert({
-      owner_id: user.id,
-      client_id: client?.id ?? null,
-      ref,
-      title: nameAr,
-      status: "draft",
-      currency,
-      quote_language: quoteLanguage,
-    })
+    .insert({ ...baseQuote, quote_language: quoteLanguage })
     .select("id")
     .single();
-  if (qErr || !quote) throw new Error(qErr?.message || "Failed to create quote");
 
-  // Seed the sections payload with everything we know so the Builder
-  // opens fully populated and the renderer can use it immediately.
+  if (!q1Err && q1) {
+    quoteId = q1.id;
+  } else {
+    console.warn("[createQuote] quote insert with language failed, retrying:", q1Err?.message);
+    const { data: q2, error: q2Err } = await supabase
+      .from("quotes")
+      .insert(baseQuote)
+      .select("id")
+      .single();
+    if (q2Err || !q2) {
+      throw new Error(`فشل إنشاء العرض: ${q2Err?.message ?? q1Err?.message}`);
+    }
+    quoteId = q2.id;
+  }
+
+  // Seed sections payload — this always works (jsonb).
   const seedPayload = {
     meta: {
       ref,
@@ -123,20 +160,20 @@ export async function createQuote(formData: FormData) {
     client: {
       nameAr,
       nameEn,
-      sector: clientProfile.sector,
-      employeeSize: clientProfile.employee_size || "medium",
+      sector: baseClient.sector,
+      employeeSize: baseClient.employee_size || "medium",
       businessDesc: "",
-      businessActivity: clientProfile.business_activity || "",
-      contactName: clientProfile.contact_name || "",
-      contactPhone: clientProfile.contact_phone || "",
-      contactEmail: clientProfile.contact_email || "",
-      country: clientProfile.country,
-      governorate: clientProfile.governorate || "",
-      city: clientProfile.city || "",
-      address: clientProfile.address || "",
-      website: clientProfile.website || "",
-      taxNumber: clientProfile.tax_number || "",
-      crn: clientProfile.crn || "",
+      businessActivity: extendedClient.business_activity || "",
+      contactName: baseClient.contact_name || "",
+      contactPhone: baseClient.contact_phone || "",
+      contactEmail: baseClient.contact_email || "",
+      country: extendedClient.country,
+      governorate: extendedClient.governorate || "",
+      city: extendedClient.city || "",
+      address: extendedClient.address || "",
+      website: extendedClient.website || "",
+      taxNumber: extendedClient.tax_number || "",
+      crn: extendedClient.crn || "",
       communicationLanguage,
       commissionPct,
     },
@@ -144,19 +181,19 @@ export async function createQuote(formData: FormData) {
 
   await supabase
     .from("quote_sections")
-    .insert({ quote_id: quote.id, payload: seedPayload });
+    .insert({ quote_id: quoteId, payload: seedPayload });
 
   await supabase.from("quote_events").insert({
-    quote_id: quote.id,
+    quote_id: quoteId,
     kind: "created",
     actor_type: "user",
     actor_id: user.id,
-    metadata: { client_id: client?.id, quote_language: quoteLanguage },
+    metadata: { client_id: clientId, quote_language: quoteLanguage },
   });
 
   revalidatePath("/quotes");
   revalidatePath("/clients");
-  redirect(`/quotes/${quote.id}/edit`);
+  redirect(`/quotes/${quoteId}/edit`);
 }
 
 /**

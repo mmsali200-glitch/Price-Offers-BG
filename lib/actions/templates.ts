@@ -58,18 +58,28 @@ export async function createQuoteFromTemplate(formData: FormData) {
   // Support
   state.support.packageId = template.supportPackage;
 
-  // Create client + quote + sections + event atomically
-  const { data: clientRow } = await supabase
+  // Resilient client insert — try with extended columns then fall back.
+  const baseClient = {
+    owner_id: user.id,
+    name_ar: clientName,
+    sector: template.sector,
+  };
+  let clientRow: { id: string } | null = null;
+  const { data: full, error: fullErr } = await supabase
     .from("clients")
-    .insert({
-      owner_id: user.id,
-      name_ar: clientName,
-      sector: template.sector,
-      country: "الكويت",
-      communication_language: "ar",
-    })
+    .insert({ ...baseClient, country: "الكويت", communication_language: "ar" })
     .select("id")
     .single();
+  if (!fullErr && full) {
+    clientRow = full;
+  } else {
+    const { data: base } = await supabase
+      .from("clients")
+      .insert(baseClient)
+      .select("id")
+      .single();
+    clientRow = base ?? null;
+  }
 
   const { data: quote, error } = await supabase
     .from("quotes")
