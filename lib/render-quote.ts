@@ -355,11 +355,22 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
     );
   }
 
-  // ── Language: if English, flip dir/lang ───────────────────
+  // ── Language: flip dir/lang and font stack ───────────────
   if (isEn) {
     html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="en" dir="ltr">`);
+    html = html.replace(
+      /font-family:\s*'Inter',\s*'Noto Sans Arabic',\s*sans-serif/g,
+      `font-family: 'Inter', 'Noto Sans Arabic', sans-serif`
+    );
   } else {
     html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="ar" dir="rtl">`);
+    // Swap font priority: Arabic first for Arabic content
+    html = html.replace(
+      /font-family:\s*'Inter',\s*'Noto Sans Arabic',\s*sans-serif/g,
+      `font-family: 'Noto Sans Arabic', 'Inter', sans-serif`
+    );
+    // Keep Inter for the hero title and brand/ref codes (monospace-like look)
+    // by adding a generic override that keeps numbers tabular
   }
 
   return html;

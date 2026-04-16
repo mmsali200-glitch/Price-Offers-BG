@@ -58,7 +58,6 @@ export async function createQuote(formData: FormData) {
   const name = (formData.get("name") as string) || "عميل جديد";
   const ref = (formData.get("ref") as string) || `BG-${new Date().getFullYear()}-XXX-${String(Date.now()).slice(-3)}`;
 
-  // Ensure a client exists (or create)
   const { data: client } = await supabase
     .from("clients")
     .insert({ owner_id: user.id, name_ar: name })
@@ -97,20 +96,193 @@ export async function createQuote(formData: FormData) {
   redirect(`/quotes/${quote.id}/edit`);
 }
 
+export type QuoteWithOwner = {
+  id: string;
+  ref: string;
+  title: string | null;
+  status: string;
+  currency: string;
+  total_development: number | null;
+  total_monthly: number | null;
+  created_at: string;
+  updated_at: string;
+  owner_id: string;
+  owner_name: string | null;
+  owner_email: string | null;
+};
+
 /**
- * List quotes for the current user (newest first).
+ * List quotes for the current user, joined with the owner profile.
  */
-export async function listQuotes() {
+export async function listQuotes(): Promise<QuoteWithOwner[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
   const { data } = await supabase
     .from("quotes")
-    .select("id, ref, title, status, currency, total_development, total_monthly, created_at, updated_at")
+    .select(`
+      id, ref, title, status, currency, total_development, total_monthly,
+      created_at, updated_at, owner_id,
+      profiles:owner_id ( full_name, email )
+    `)
     .eq("owner_id", user.id)
     .order("updated_at", { ascending: false })
     .limit(100);
 
-  return data ?? [];
+  if (!data) return [];
+
+  return data.map((q) => {
+    const profile = Array.isArray(q.profiles) ? q.profiles[0] : q.profiles;
+    return {
+      id: q.id,
+      ref: q.ref,
+      title: q.title,
+      status: q.status,
+      currency: q.currency,
+      total_development: q.total_development,
+      total_monthly: q.total_monthly,
+      created_at: q.created_at,
+      updated_at: q.updated_at,
+      owner_id: q.owner_id,
+      owner_name: profile?.full_name ?? null,
+      owner_email: profile?.email ?? null,
+    };
+  });
+}
+
+export type DashboardStats = {
+  totalQuotes: number;
+  monthlyQuotes: number;
+  totalValue: number;
+  acceptedValue: number;
+  acceptedCount: number;
+  acceptanceRate: number;
+  avgQuoteValue: number;
+  currency: string;
+  byStatus: Record<string, number>;
+  topModules: Array<{ id: string; name: string; count: number }>;
+  recentActivity: Array<{
+    id: string;
+    ref: string;
+    title: string | null;
+    status: string;
+    owner_name: string | null;
+    updated_at: string;
+    total_development: number | null;
+    currency: string;
+  }>;
+  ownersBreakdown: Array<{ name: string; count: number; value: number }>;
+};
+
+/**
+ * Compute dashboard statistics for the current user.
+ */
+export async function getDashboardStats(): Promise<DashboardStats> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const empty: DashboardStats = {
+    totalQuotes: 0, monthlyQuotes: 0, totalValue: 0,
+    acceptedValue: 0, acceptedCount: 0, acceptanceRate: 0,
+    avgQuoteValue: 0, currency: "KWD",
+    byStatus: {}, topModules: [], recentActivity: [], ownersBreakdown: [],
+  };
+  if (!user) return empty;
+
+  const { data: quotes } = await supabase
+    .from("quotes")
+    .select(`
+      id, ref, title, status, currency, total_development, created_at,
+      updated_at, owner_id, profiles:owner_id ( full_name )
+    `)
+    .eq("owner_id", user.id)
+    .order("updated_at", { ascending: false })
+    .limit(500);
+
+  if (!quotes || quotes.length === 0) return empty;
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const totalQuotes = quotes.length;
+  const monthlyQuotes = quotes.filter(
+    (q) => new Date(q.updated_at) >= monthStart
+  ).length;
+  const totalValue = quotes.reduce(
+    (s, q) => s + (q.total_development || 0),
+    0
+  );
+  const accepted = quotes.filter((q) => q.status === "accepted");
+  const acceptedValue = accepted.reduce(
+    (s, q) => s + (q.total_development || 0),
+    0
+  );
+  const acceptedCount = accepted.length;
+  const nonDraft = quotes.filter((q) => q.status !== "draft").length;
+  const acceptanceRate = nonDraft > 0 ? Math.round((acceptedCount / nonDraft) * 100) : 0;
+  const avgQuoteValue = totalQuotes > 0 ? Math.round(totalValue / totalQuotes) : 0;
+  const currency = quotes[0]?.currency || "KWD";
+
+  const byStatus = quotes.reduce<Record<string, number>>((acc, q) => {
+    acc[q.status] = (acc[q.status] || 0) + 1;
+    return acc;
+  }, {});
+
+  // Top modules across the user's sections
+  const { data: sections } = await supabase
+    .from("quote_sections")
+    .select("payload")
+    .in("quote_id", quotes.map((q) => q.id));
+
+  const moduleCounter = new Map<string, { id: string; name: string; count: number }>();
+  (sections ?? []).forEach((s) => {
+    const modules = (s.payload?.modules ?? {}) as Record<string, { selected?: boolean }>;
+    Object.entries(modules).forEach(([id, st]) => {
+      if (st?.selected) {
+        const cur = moduleCounter.get(id) ?? { id, name: id, count: 0 };
+        cur.count += 1;
+        moduleCounter.set(id, cur);
+      }
+    });
+  });
+  const { ODOO_MODULES } = await import("@/lib/modules-catalog");
+  const nameMap = new Map<string, string>();
+  ODOO_MODULES.forEach((c) => c.modules.forEach((m) => nameMap.set(m.id, m.name)));
+  const topModules = Array.from(moduleCounter.values())
+    .map((m) => ({ ...m, name: nameMap.get(m.id) || m.id }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 8);
+
+  const recentActivity = quotes.slice(0, 10).map((q) => {
+    const profile = Array.isArray(q.profiles) ? q.profiles[0] : q.profiles;
+    return {
+      id: q.id,
+      ref: q.ref,
+      title: q.title,
+      status: q.status,
+      owner_name: profile?.full_name ?? null,
+      updated_at: q.updated_at,
+      total_development: q.total_development,
+      currency: q.currency,
+    };
+  });
+
+  // Owners breakdown (when multi-user later)
+  const ownersMap = new Map<string, { name: string; count: number; value: number }>();
+  quotes.forEach((q) => {
+    const profile = Array.isArray(q.profiles) ? q.profiles[0] : q.profiles;
+    const name = profile?.full_name ?? "—";
+    const cur = ownersMap.get(name) ?? { name, count: 0, value: 0 };
+    cur.count += 1;
+    cur.value += q.total_development || 0;
+    ownersMap.set(name, cur);
+  });
+  const ownersBreakdown = Array.from(ownersMap.values()).sort((a, b) => b.value - a.value);
+
+  return {
+    totalQuotes, monthlyQuotes, totalValue,
+    acceptedValue, acceptedCount, acceptanceRate,
+    avgQuoteValue, currency,
+    byStatus, topModules, recentActivity, ownersBreakdown,
+  };
 }

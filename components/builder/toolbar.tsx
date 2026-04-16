@@ -2,7 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Eye, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Eye, Loader2, Sparkles } from "lucide-react";
+import { QuoteStages } from "@/components/quote-stages";
 
 export function BuilderToolbar({
   quoteId,
@@ -49,9 +50,8 @@ export function BuilderToolbar({
             {ref_}
           </span>
           <span className="text-xs text-bg-text-3 truncate">{title || "بدون عنوان"}</span>
-          <StatusPill status={status} />
         </div>
-
+        <QuoteStages status={status} />
         <div className="flex items-center gap-1.5">
           {generatedAt && (
             <button
@@ -90,23 +90,5 @@ export function BuilderToolbar({
         </div>
       )}
     </div>
-  );
-}
-
-function StatusPill({ status }: { status: string }) {
-  const map: Record<string, { label: string; cls: string; icon?: React.ReactNode }> = {
-    draft: { label: "مسودة", cls: "bg-bg-line text-bg-text-2" },
-    sent: { label: "مُرسل", cls: "bg-bg-info-lt text-bg-info" },
-    opened: { label: "مفتوح", cls: "bg-bg-gold-lt text-[#8a6010]" },
-    accepted: { label: "مقبول", cls: "bg-bg-green-lt text-bg-green", icon: <CheckCircle2 className="size-3" /> },
-    rejected: { label: "مرفوض", cls: "bg-red-50 text-bg-danger" },
-    expired: { label: "منتهٍ", cls: "bg-gray-100 text-gray-500" },
-  };
-  const badge = map[status] ?? map.draft;
-  return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${badge.cls}`}>
-      {badge.icon}
-      {badge.label}
-    </span>
   );
 }

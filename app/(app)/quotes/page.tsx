@@ -4,6 +4,7 @@ import { listQuotes } from "@/lib/actions/quotes";
 import { fmtNum, curSymbol, fmtDateArabic } from "@/lib/utils";
 
 export const metadata = { title: "عروض الأسعار · BG Quotes" };
+export const dynamic = "force-dynamic";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: "مسودة", color: "bg-bg-line text-bg-text-2" },
@@ -53,6 +54,7 @@ export default async function QuotesPage() {
               <tr>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">رقم العرض</th>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">العميل</th>
+                <th className="px-3 py-2.5 text-right text-xs font-bold">المنشئ</th>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">الحالة</th>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">القيمة</th>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">آخر تحديث</th>
@@ -70,6 +72,18 @@ export default async function QuotesPage() {
                       </Link>
                     </td>
                     <td className="px-3 py-2.5 text-bg-text-1">{q.title || "—"}</td>
+                    <td className="px-3 py-2.5">
+                      {q.owner_name ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="size-6 rounded-full bg-bg-green-lt text-bg-green flex items-center justify-center text-[10px] font-black">
+                            {q.owner_name.slice(0, 2)}
+                          </span>
+                          <span className="text-xs text-bg-text-2">{q.owner_name}</span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-bg-text-3">—</span>
+                      )}
+                    </td>
                     <td className="px-3 py-2.5">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badge.color}`}>
                         {badge.label}
