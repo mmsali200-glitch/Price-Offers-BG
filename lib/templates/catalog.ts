@@ -13,6 +13,8 @@ export type QuoteTemplate = {
   icon: string;
   description: string;
   tagline: string;
+  /** 3-4 bullet points objectively summarising what's in the quote. */
+  summary: string[];
   moduleIds: string[];
   bgAppIds: string[];
   supportPackage: QuoteBuilderState["support"]["packageId"];
@@ -31,6 +33,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "شركة توزيع متوسطة الحجم",
     description:
       "CRM + مبيعات + مخازن + مشتريات + محاسبة + فوترة. الباقة الأكثر طلباً لشركات التجارة.",
+    summary: [
+      "دورة مبيعات كاملة من العميل المحتمل حتى التحصيل",
+      "إدارة مخزون بالباتشات + إعادة طلب آلية",
+      "قيود محاسبية تلقائية ومطابقة بنكية",
+      "رواتب وموظفين بملفات كاملة",
+    ],
     moduleIds: [
       "crm", "sales", "inventory", "purchase", "accounting",
       "invoicing", "hr", "payroll",
@@ -50,6 +58,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "شركات التوزيع بفريق مبيعات ميداني",
     description:
       "كل ميزات التجارة + تطبيق One Sales لزيارات المناديب وتتبع GPS + الباركود للمخازن.",
+    summary: [
+      "تطبيق One Sales للمناديب: GPS + Offline + تحصيل",
+      "باركود للمخازن يقلّل الأخطاء 90%",
+      "خرائط توصيل بتتبّع السائقين وتأكيد رقمي",
+      "تكامل WhatsApp لإرسال العروض والفواتير",
+    ],
     moduleIds: [
       "crm", "sales", "inventory", "purchase", "accounting",
       "invoicing", "barcode", "delivery", "hr", "payroll",
@@ -69,6 +83,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "مستشفى متعدد الأقسام أو مجموعة عيادات",
     description:
       "إدارة المستشفيات (HMS) + المختبرات الطبية + محاسبة + موارد بشرية + فوترة تأمين.",
+    summary: [
+      "سجلات مرضى EMR + حجز مواعيد",
+      "مختبر طبي مع ربط أجهزة النتائج",
+      "فوترة تأمين صحي وتصفية مباشرة",
+      "مخزون صيدلاني + صيدلية العيادة",
+    ],
     moduleIds: [
       "hms", "lab", "accounting", "invoicing", "hr",
       "payroll", "inventory", "purchase",
@@ -88,6 +108,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "مصنع متكامل — من المواد الخام إلى الشحن",
     description:
       "MRP + BOM + PLM + جودة + صيانة + مخازن + مشتريات + محاسبة. تكامل كامل لدورة الإنتاج.",
+    summary: [
+      "أوامر إنتاج بمراحل + تخطيط طاقة CRP",
+      "قوائم مواد BOM + PLM لإصدارات المنتج",
+      "نقاط تفتيش جودة + أوامر QC",
+      "صيانة وقائية + تتبع ساعات العمل (One Time)",
+    ],
     moduleIds: [
       "mrp", "plm", "quality", "maintenance", "inventory",
       "purchase", "sales", "accounting", "invoicing", "hr",
@@ -108,6 +134,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "شركات إدارة الوحدات والتأجير",
     description:
       "إدارة الوحدات + عقود الإيجار + التحصيل + المحاسبة + CRM العملاء + الصيانة.",
+    summary: [
+      "إدارة الوحدات العقارية بكامل تفاصيلها",
+      "عقود إيجار + فوترة دورية + تجديد تلقائي",
+      "تحصيل الإيجارات + متابعة المتأخرات",
+      "طلبات صيانة عبر WhatsApp + تتبعها",
+    ],
     moduleIds: [
       "realestate", "eam", "accounting", "invoicing", "crm",
       "maintenance", "hr", "payroll",
@@ -127,6 +159,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "متاجر متعددة الفروع + نقاط بيع",
     description:
       "POS + مبيعات + مخازن + موقع إلكتروني + تجارة إلكترونية + محاسبة + موارد بشرية.",
+    summary: [
+      "نقاط بيع POS بواجهة لمسية لكل فرع",
+      "متجر إلكتروني + موقع مع بوابات دفع",
+      "مخزون موحّد بين الفروع والمتجر",
+      "لوحة تحليلات BG للمقارنة بين الفروع",
+    ],
     moduleIds: [
       "pos", "sales", "inventory", "purchase", "accounting",
       "invoicing", "website", "ecommerce", "hr", "payroll",
@@ -147,6 +185,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "مكاتب محاماة، محاسبة، استشارات",
     description:
       "المشاريع + ساعات العمل + فوترة بالساعة + CRM + المحاسبة + الموارد البشرية.",
+    summary: [
+      "إدارة مشاريع بـ Kanban و Gantt",
+      "تتبع ساعات عمل + فوترة بالساعة (One Time)",
+      "Helpdesk لطلبات العملاء + SLA",
+      "تسوية مصروفات + عهد من الجوال",
+    ],
     moduleIds: [
       "project", "timesheets", "invoicing", "crm", "accounting",
       "hr", "expenses", "helpdesk",
@@ -166,6 +210,12 @@ export const QUOTE_TEMPLATES: QuoteTemplate[] = [
     tagline: "سلاسل المطاعم والمقاهي",
     description:
       "POS + مخازن بالصلاحية + مشتريات + المحاسبة + الموظفين + تكلفة الوجبات.",
+    summary: [
+      "نقاط بيع سريعة للمطعم + الطاولات",
+      "تتبع صلاحية المواد الخام + FIFO",
+      "حضور وانصراف + جدولة مناوبات",
+      "طلبات الزبائن عبر WhatsApp",
+    ],
     moduleIds: [
       "pos", "inventory", "purchase", "accounting", "invoicing",
       "hr", "payroll", "attendance", "leaves",

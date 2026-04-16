@@ -4,6 +4,7 @@ import { QuoteBuilder } from "@/components/builder/quote-builder";
 import { AutosaveInit } from "@/components/builder/autosave-init";
 import { BuilderToolbar } from "@/components/builder/toolbar";
 import type { QuoteBuilderState } from "@/lib/builder/types";
+import { getQuoteStageHistory } from "@/lib/actions/quotes";
 
 export const metadata = { title: "تعديل العرض · BG Quotes" };
 
@@ -33,6 +34,7 @@ export default async function EditQuotePage({
     .single();
 
   const initial = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
+  const stageHistory = await getQuoteStageHistory(id);
 
   return (
     <>
@@ -43,6 +45,7 @@ export default async function EditQuotePage({
         title={quote.title}
         status={quote.status}
         generatedAt={quote.generated_at}
+        stageHistory={stageHistory}
       />
       <QuoteBuilder />
     </>

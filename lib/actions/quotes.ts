@@ -96,6 +96,87 @@ export async function createQuote(formData: FormData) {
   redirect(`/quotes/${quote.id}/edit`);
 }
 
+/**
+ * Change the status of a quote and log a timestamped event so the
+ * stages timeline can render accurate "when did this happen" labels.
+ */
+export async function updateQuoteStatus(
+  quoteId: string,
+  status: "draft" | "sent" | "opened" | "accepted" | "rejected" | "expired"
+) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false as const, error: "auth_required" };
+
+  const { error: uErr } = await supabase
+    .from("quotes")
+    .update({ status })
+    .eq("id", quoteId)
+    .eq("owner_id", user.id);
+  if (uErr) return { ok: false as const, error: uErr.message };
+
+  const kind =
+    status === "sent"
+      ? "sent"
+      : status === "opened"
+      ? "opened"
+      : status === "accepted"
+      ? "accepted"
+      : status === "rejected"
+      ? "rejected"
+      : status === "expired"
+      ? "regenerated" // closest enum variant; metadata carries real status
+      : "updated";
+
+  await supabase.from("quote_events").insert({
+    quote_id: quoteId,
+    kind,
+    actor_type: "user",
+    actor_id: user.id,
+    metadata: { status },
+  });
+
+  revalidatePath(`/quotes/${quoteId}/edit`);
+  revalidatePath("/quotes");
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
+
+export type StageEvent = { status: string; at: string };
+
+/**
+ * Return the first timestamp at which each status was recorded for a
+ * quote. Missing stages return null. Used by the builder toolbar to
+ * show dates beside the stages chip.
+ */
+export async function getQuoteStageHistory(
+  quoteId: string
+): Promise<Record<string, string | null>> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return {};
+
+  const { data } = await supabase
+    .from("quote_events")
+    .select("kind, metadata, created_at")
+    .eq("quote_id", quoteId)
+    .order("created_at", { ascending: true });
+
+  const out: Record<string, string | null> = {
+    draft: null, sent: null, opened: null, accepted: null, rejected: null,
+  };
+
+  (data ?? []).forEach((e) => {
+    if (e.kind === "created" && !out.draft) out.draft = e.created_at;
+    if (e.kind === "sent" && !out.sent) out.sent = e.created_at;
+    if (e.kind === "opened" && !out.opened) out.opened = e.created_at;
+    if (e.kind === "accepted" && !out.accepted) out.accepted = e.created_at;
+    if (e.kind === "rejected" && !out.rejected) out.rejected = e.created_at;
+  });
+
+  return out;
+}
+
 export type QuoteWithOwner = {
   id: string;
   ref: string;
