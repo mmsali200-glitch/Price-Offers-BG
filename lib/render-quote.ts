@@ -20,6 +20,7 @@ import { getReferenceTemplate } from "./reference-template";
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
+import { EN_TO_AR } from "./translations";
 
 /** Module icon map for the scope grid. */
 const MODULE_ICONS: Record<string, string> = {
@@ -355,7 +356,7 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
     );
   }
 
-  // ── Language: flip dir/lang and font stack ───────────────
+  // ── Language: flip dir/lang, font stack, and translate UI ──
   if (isEn) {
     html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="en" dir="ltr">`);
     html = html.replace(
@@ -364,13 +365,30 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
     );
   } else {
     html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="ar" dir="rtl">`);
-    // Swap font priority: Arabic first for Arabic content
+    // Arabic content → Noto Sans Arabic first, Inter as digits fallback
     html = html.replace(
       /font-family:\s*'Inter',\s*'Noto Sans Arabic',\s*sans-serif/g,
       `font-family: 'Noto Sans Arabic', 'Inter', sans-serif`
     );
-    // Keep Inter for the hero title and brand/ref codes (monospace-like look)
-    // by adding a generic override that keeps numbers tabular
+
+    // Flip key layout properties so RTL works correctly with the LTR template:
+    // #sidebar becomes right-fixed, .main margin-left → margin-right, etc.
+    html = html.replace(
+      /(#sidebar\s*\{[^}]*?)(top:\s*0;\s*left:\s*0)/,
+      "$1top: 0; right: 0"
+    );
+    html = html.replace(
+      /(\.main\s*\{[^}]*?)margin-left:\s*var\(--sidebar-w\)/,
+      "$1margin-right: var(--sidebar-w)"
+    );
+
+    // Apply the full English → Arabic translation table. Sort by length
+    // desc so longer strings replace before shorter overlapping ones.
+    const sorted = [...EN_TO_AR].sort((a, b) => b[0].length - a[0].length);
+    sorted.forEach(([en, ar]) => {
+      const escaped = en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      html = html.replace(new RegExp(escaped, "g"), ar);
+    });
   }
 
   return html;
