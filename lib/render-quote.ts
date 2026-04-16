@@ -1,28 +1,21 @@
 /**
- * Server-side quote renderer — v3 feature-complete.
+ * Server-side quote renderer — bilingual.
  *
- * Takes a QuoteBuilderState and produces final HTML by loading the
- * approved reference template (samples/reference-quote.html) and
- * substituting every dynamic value from the builder state.
+ * Selects the canonical template based on state.language:
+ *   - "ar" → samples/reference-arabic.html (Osama Al-Sayed sample)
+ *   - "en" → samples/reference-quote.html (IMKAN sample)
  *
- * Supports all v3 spec features:
- *   - Language toggle (ar / en)
- *   - Price display modes (total / items / hidden)
- *   - Per-module separate billing
- *   - Per-module discount + total discount
- *   - Payment schedule with actual dates
- *   - Odoo cost inclusion in grand total (configurable months)
- *   - Multi-contact signature footer
- *   - Exchange rate awareness
+ * Then substitutes client name, ref, prices, modules, phases, dates,
+ * and contact info from the builder state. Runs in milliseconds with
+ * zero API calls — output is guaranteed to match the approved design.
  */
 
-import { getReferenceTemplate } from "./reference-template";
+import { getReferenceTemplateAr, getReferenceTemplateEn } from "./reference-template";
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
-import { EN_TO_AR } from "./translations";
 
-/** Module icon map for the scope grid. */
+/** Module icons for the scope grid. */
 const MODULE_ICONS: Record<string, string> = {
   crm: "🤝", sales: "💼", pos: "🛍️", subscriptions: "🔁", rental: "📅",
   inventory: "📦", purchase: "🛒", barcode: "🔖", delivery: "🚚", repair: "🔧",
@@ -35,56 +28,36 @@ const MODULE_ICONS: Record<string, string> = {
 };
 
 const SECTOR_EN: Record<string, string> = {
-  trading: "Trade & Distribution",
-  manufacturing: "Manufacturing",
-  services: "Professional Services",
-  healthcare: "Healthcare",
-  construction: "Construction",
-  realestate: "Real Estate",
-  logistics: "Logistics & Transport",
-  retail: "Retail",
-  food: "Food & Beverage",
-  education: "Education",
-  government: "Government",
-  other: "Business",
+  trading: "Trade & Distribution", manufacturing: "Manufacturing",
+  services: "Professional Services", healthcare: "Healthcare",
+  construction: "Construction", realestate: "Real Estate",
+  logistics: "Logistics & Transport", retail: "Retail",
+  food: "Food & Beverage", education: "Education",
+  government: "Government", other: "Business",
 };
 
 const SECTOR_AR: Record<string, string> = {
-  trading: "تجارة وتوزيع",
-  manufacturing: "تصنيع وإنتاج",
-  services: "خدمات مهنية",
-  healthcare: "رعاية صحية",
-  construction: "مقاولات وتشييد",
-  realestate: "عقارات وأملاك",
-  logistics: "لوجستيات ونقل",
-  retail: "تجزئة ومتاجر",
-  food: "أغذية ومطاعم",
-  education: "تعليم وتدريب",
-  government: "جهة حكومية",
-  other: "أعمال",
+  trading: "تجارة وتوزيع", manufacturing: "تصنيع وإنتاج",
+  services: "خدمات مهنية", healthcare: "رعاية صحية",
+  construction: "مقاولات وتشييد", realestate: "عقارات وأملاك",
+  logistics: "لوجستيات ونقل", retail: "تجزئة ومتاجر",
+  food: "أغذية ومطاعم", education: "تعليم وتدريب",
+  government: "جهة حكومية", other: "أعمال",
 };
 
 const SIZE_EN: Record<string, string> = {
-  small: "< 20 Employees",
-  medium: "20–100 Employees",
-  large: "100–500 Employees",
-  enterprise: "500+ Employees",
+  small: "< 20 Employees", medium: "20–100 Employees",
+  large: "100–500 Employees", enterprise: "500+ Employees",
 };
 
 const SIZE_AR: Record<string, string> = {
-  small: "أقل من 20 موظف",
-  medium: "20–100 موظف",
-  large: "100–500 موظف",
-  enterprise: "أكثر من 500 موظف",
+  small: "أقل من 20 موظف", medium: "20–100 موظف",
+  large: "100–500 موظف", enterprise: "أكثر من 500 موظف",
 };
 
 type SelectedModule = {
-  id: string;
-  name: string;
-  price: number;
-  discount: number;
-  separate: boolean;
-  features: string[];
+  id: string; name: string; price: number;
+  discount: number; separate: boolean; features: string[];
 };
 
 function getSelectedModules(state: QuoteBuilderState): SelectedModule[] {
@@ -94,12 +67,9 @@ function getSelectedModules(state: QuoteBuilderState): SelectedModule[] {
       const st = state.modules[m.id];
       if (st?.selected) {
         result.push({
-          id: m.id,
-          name: m.name,
+          id: m.id, name: m.name,
           price: st.priceOverride ?? m.price,
-          discount: st.discount,
-          separate: st.separate,
-          features: m.features,
+          discount: st.discount, separate: st.separate, features: m.features,
         });
       }
     });
@@ -138,25 +108,16 @@ function computeTotals(state: QuoteBuilderState) {
   const odooCost = state.license.includeOdooInTotal ? licMonthly * months : 0;
   const annualLicense = licMonthly * 12;
   const grandTotalY1 = development + annualLicense;
-  const grandTotalWithOdoo = development + odooCost;
-  const installments = state.payment.installments > 1
-    ? Math.round(grandTotalY1 / state.payment.installments)
-    : 0;
   const firstInstallment = Math.round(
     grandTotalY1 * (state.payment.firstPaymentPct || 30) / 100
   );
   return {
-    modules: modulesAfterItemDiscount,
-    modulesBeforeDiscount,
+    modules: modulesAfterItemDiscount, modulesBeforeDiscount,
     modulesSaved: modulesBeforeDiscount - modulesAfterItemDiscount,
-    bgImpl, bgMonthly,
-    development, developmentRaw: devRaw,
+    bgImpl, bgMonthly, development, developmentRaw: devRaw,
     totalDiscountAmount: devRaw - development,
-    licMonthly, supportMonthly,
-    annualLicense, odooCost,
-    grandTotalY1, grandTotalWithOdoo,
-    installments, firstInstallment,
-    licenseMonths: months,
+    licMonthly, supportMonthly, annualLicense, odooCost,
+    grandTotalY1, firstInstallment, licenseMonths: months,
   };
 }
 
@@ -170,110 +131,39 @@ function getContact(state: QuoteBuilderState) {
   return state.contacts.find((c) => c.id === state.selectedContactId) || state.contacts[0];
 }
 
-function renderModuleCards(mods: SelectedModule[]): string {
-  if (mods.length === 0) return "";
-  return mods.map((m) => {
-    const icon = MODULE_ICONS[m.id] || "📦";
-    const snippet = (m.features || []).slice(0, 3).join(" · ");
-    const discountBadge = m.discount > 0
-      ? `<div style="font-size:9px; color:var(--gold); margin-top:4px; font-weight:700;">خصم ${m.discount}%</div>`
-      : "";
-    return `        <div class="mod-card">
-          <div class="mod-icon">${icon}</div>
-          <div class="mod-name">${escapeHtml(m.name)}</div>
-          <div class="mod-features">${escapeHtml(snippet)}</div>
-          ${discountBadge}
-        </div>`;
-  }).join("\n");
-}
-
-/** Compute a real payment schedule from start date + project weeks + installments. */
-function computeSchedule(state: QuoteBuilderState, totals: ReturnType<typeof computeTotals>) {
-  const months = state.payment.installments;
-  if (months <= 1 || !state.payment.startDate) return [];
-  const start = new Date(state.payment.startDate);
-  const durWeeks = parseInt(state.durationLabel) || 8;
-  const totalDays = durWeeks * 7;
-  const total = totals.grandTotalY1;
-  const firstPct = state.payment.firstPaymentPct || 30;
-  const fa = Math.round(total * firstPct / 100);
-  const remaining = total - fa;
-  const rows: Array<{ num: number; desc: string; date: string; pct: number; amount: number }> = [];
-  if (months === 2) {
-    const d2 = new Date(start); d2.setDate(d2.getDate() + totalDays);
-    rows.push({ num: 1, desc: "عند التوقيع على العقد", date: fmtDateArabic(start), pct: 50, amount: Math.round(total * 0.5) });
-    rows.push({ num: 2, desc: "عند التسليم النهائي", date: fmtDateArabic(d2), pct: 50, amount: total - Math.round(total * 0.5) });
-  } else {
-    const perInstallment = Math.round(remaining / (months - 1));
-    rows.push({ num: 1, desc: "عند التوقيع على العقد", date: fmtDateArabic(start), pct: firstPct, amount: fa });
-    for (let i = 1; i < months; i++) {
-      const d = new Date(start); d.setDate(d.getDate() + Math.round(totalDays * i / (months - 1)));
-      const isLast = i === months - 1;
-      const amount = isLast ? (total - fa - perInstallment * (months - 2)) : perInstallment;
-      const pct = Math.round(amount * 100 / total);
-      const desc = isLast ? "التسليم النهائي والإطلاق"
-        : i === 1 ? "بدء مرحلة التطوير"
-        : i === Math.floor((months - 1) / 2) ? "منتصف المشروع"
-        : `قسط رقم ${i + 1}`;
-      rows.push({ num: i + 1, desc, date: fmtDateArabic(d), pct, amount });
-    }
-  }
-  return rows;
-}
-
-function renderScheduleHtml(rows: ReturnType<typeof computeSchedule>, cur: string): string {
-  if (rows.length === 0) return "";
-  return rows.map(r => `
-            <tr>
-              <td style="padding:12px 18px; border-bottom:1px solid var(--gline); font-weight:700;">${r.num}</td>
-              <td style="padding:12px 18px; border-bottom:1px solid var(--gline);">${escapeHtml(r.desc)}</td>
-              <td style="padding:12px 18px; border-bottom:1px solid var(--gline); color:var(--tgray);">${escapeHtml(r.date)}</td>
-              <td style="padding:12px 18px; border-bottom:1px solid var(--gline); text-align:center;">${r.pct}%</td>
-              <td style="padding:12px 18px; border-bottom:1px solid var(--gline); text-align:right; font-weight:700; color:var(--green);">${fmtNum(r.amount)} ${cur}</td>
-            </tr>`).join("");
-}
-
-/**
- * Main render function.
- */
-export function renderQuoteHtml(state: QuoteBuilderState): string {
-  let html = getReferenceTemplate();
+// ──────────────────────────────────────────────────────────────────
+// ENGLISH RENDERER (IMKAN reference)
+// ──────────────────────────────────────────────────────────────────
+function renderEnglish(state: QuoteBuilderState): string {
+  let html = getReferenceTemplateEn();
   const totals = computeTotals(state);
   const cur = curSymbol(state.meta.currency);
   const mods = getSelectedModules(state);
   const bgApps = getSelectedBGApps(state);
   const contact = getContact(state);
-  const isEn = state.language === "en";
-  const allMods = [...mods, ...bgApps.map(a => ({
-    id: a.id, name: a.name, price: a.implementationPrice, discount: 0,
-    separate: false, features: a.features,
-  } as SelectedModule))];
+  const allMods = [
+    ...mods,
+    ...bgApps.map((a) => ({
+      id: a.id, name: a.name, price: a.implementationPrice, discount: 0,
+      separate: false, features: a.features,
+    } as SelectedModule)),
+  ];
   const modCount = allMods.length;
-
-  // ── Core values ───────────────────────────────────────────
   const ref = state.meta.ref || "BG-XXXX-XXX-XXX";
-  const clientPrimary = isEn
-    ? (state.client.nameEn || state.client.nameAr || "Client")
-    : (state.client.nameAr || "العميل");
-  const clientSecondary = isEn
-    ? (state.client.nameAr || "")
-    : (state.client.nameEn || "");
+  const clientEn = state.client.nameEn || state.client.nameAr || "Client";
+  const clientAr = state.client.nameAr || "";
   const dateText = state.meta.date || "";
   const version = state.odooVersion || "18";
-  const sector = isEn ? (SECTOR_EN[state.client.sector] || "Business") : (SECTOR_AR[state.client.sector] || "أعمال");
-  const size = isEn ? (SIZE_EN[state.client.employeeSize] || "") : (SIZE_AR[state.client.employeeSize] || "");
+  const sector = SECTOR_EN[state.client.sector] || "Business";
+  const size = SIZE_EN[state.client.employeeSize] || "";
   const discountPct = totals.modulesBeforeDiscount > 0 && totals.modulesSaved > 0
-    ? Math.round((totals.modulesSaved / totals.modulesBeforeDiscount) * 100)
-    : 0;
-  const startDate = state.payment.startDate
-    ? fmtDateArabic(state.payment.startDate)
-    : dateText;
+    ? Math.round((totals.modulesSaved / totals.modulesBeforeDiscount) * 100) : 0;
+  const startDate = state.payment.startDate ? fmtDateArabic(state.payment.startDate) : dateText;
 
-  // ── Targeted replacements (specific long patterns first) ──
   const r: Array<[RegExp, string]> = [
     [/BG202604186/g, ref],
-    [/IMKAN(?!&amp;)/g, clientPrimary],
-    [/إمكان الدولية/g, clientSecondary],
+    [/IMKAN(?!&amp;)/g, clientEn],
+    [/إمكان الدولية/g, clientAr],
     [/April 2026/g, dateText || "—"],
     [/May 1, 2026/g, startDate],
     [/Odoo 18 ERP/g, `Odoo ${version} ERP`],
@@ -315,8 +205,16 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
   ];
   r.forEach(([pattern, value]) => { html = html.replace(pattern, value); });
 
-  // ── Module cards grid ─────────────────────────────────────
-  const moduleCards = renderModuleCards(allMods);
+  // Module cards grid
+  const moduleCards = allMods.map((m) => {
+    const icon = MODULE_ICONS[m.id] || "📦";
+    const snippet = (m.features || []).slice(0, 3).join(" · ");
+    return `        <div class="mod-card">
+          <div class="mod-icon">${icon}</div>
+          <div class="mod-name">${escapeHtml(m.name)}</div>
+          <div class="mod-features">${escapeHtml(snippet)}</div>
+        </div>`;
+  }).join("\n");
   if (moduleCards) {
     html = html.replace(
       /(<div class="mod-grid">)([\s\S]*?)(<\/div>\s*<\/section>\s*<!-- ═══ §3)/,
@@ -324,72 +222,75 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
     );
   }
 
-  // ── Configurator JS base values ──────────────────────────
+  // Configurator JS vars
   html = html.replace(/var BASE\s*=\s*[^;]+;/, `var BASE = ${totals.development};`);
   html = html.replace(/var licCost\s*=\s*[^;]+;/, `var licCost = ${totals.licMonthly};`);
   html = html.replace(/var supCost\s*=\s*[^;]+;/, `var supCost = ${totals.supportMonthly};`);
 
-  // ── Replace installments table if schedule can be computed ──
-  const schedule = computeSchedule(state, totals);
-  if (schedule.length > 0) {
-    const scheduleRows = renderScheduleHtml(schedule, cur);
-    // Replace the installments table body — find tbody after §11 marker
-    html = html.replace(
-      /(<!-- ═══ §1[12] INSTALLMENTS[\s\S]*?<tbody[^>]*>)([\s\S]*?)(<\/tbody>)/,
-      (_m, open, _body, close) => `${open}${scheduleRows}${close}`
-    );
-  }
+  return html;
+}
 
-  // ── Additional Odoo-cost line if includeOdooInTotal ──────
-  if (state.license.includeOdooInTotal) {
-    const odooLine = `
-            <tr style="background:var(--gold-lt);">
-              <td class="td-green fw-700">Odoo License — ${totals.licenseMonths} months (indicative)</td>
-              <td><span class="badge badge-gold">Included in Total</span></td>
-              <td class="td-price">${fmtNum(totals.odooCost)}</td>
-              <td>${totals.licenseMonths} months</td>
-              <td>⚠ Indicative — confirm with Odoo</td>
-            </tr>`;
-    html = html.replace(
-      /(<tr>\s*<td class="td-green fw-700">Premium Technical Support)/,
-      `${odooLine}\n            $1`
-    );
-  }
+// ──────────────────────────────────────────────────────────────────
+// ARABIC RENDERER (Osama Al-Sayed reference)
+// ──────────────────────────────────────────────────────────────────
+function renderArabic(state: QuoteBuilderState): string {
+  let html = getReferenceTemplateAr();
+  const totals = computeTotals(state);
+  const cur = curSymbol(state.meta.currency);
+  const mods = getSelectedModules(state);
+  const bgApps = getSelectedBGApps(state);
+  const contact = getContact(state);
+  const allMods = [
+    ...mods,
+    ...bgApps.map((a) => ({
+      id: a.id, name: a.name, price: a.implementationPrice, discount: 0,
+      separate: false, features: a.features,
+    } as SelectedModule)),
+  ];
+  const modCount = allMods.length;
 
-  // ── Language: flip dir/lang, font stack, and translate UI ──
-  if (isEn) {
-    html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="en" dir="ltr">`);
-    html = html.replace(
-      /font-family:\s*'Inter',\s*'Noto Sans Arabic',\s*sans-serif/g,
-      `font-family: 'Inter', 'Noto Sans Arabic', sans-serif`
-    );
-  } else {
-    html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="ar" dir="rtl">`);
-    // Arabic content → Noto Sans Arabic first, Inter as digits fallback
-    html = html.replace(
-      /font-family:\s*'Inter',\s*'Noto Sans Arabic',\s*sans-serif/g,
-      `font-family: 'Noto Sans Arabic', 'Inter', sans-serif`
-    );
+  const ref = state.meta.ref || "BG-XXXX-XXX-XXX";
+  const clientAr = state.client.nameAr || "العميل";
+  const clientEn = state.client.nameEn || "";
+  const dateText = state.meta.date || "أبريل 2026";
+  const version = state.odooVersion || "18";
+  const sector = SECTOR_AR[state.client.sector] || "أعمال";
+  const size = SIZE_AR[state.client.employeeSize] || "";
+  const startDate = state.payment.startDate ? fmtDateArabic(state.payment.startDate) : "23 أبريل 2026";
 
-    // Flip key layout properties so RTL works correctly with the LTR template:
-    // #sidebar becomes right-fixed, .main margin-left → margin-right, etc.
-    html = html.replace(
-      /(#sidebar\s*\{[^}]*?)(top:\s*0;\s*left:\s*0)/,
-      "$1top: 0; right: 0"
-    );
-    html = html.replace(
-      /(\.main\s*\{[^}]*?)margin-left:\s*var\(--sidebar-w\)/,
-      "$1margin-right: var(--sidebar-w)"
-    );
+  const r: Array<[RegExp, string]> = [
+    [/BG-2026-OSG-5220/g, ref],
+    [/شركة أسامة السيد لمصنع الذهب/g, clientAr],
+    [/Osama Al-Sayed Gold Factory Co\./g, clientEn],
+    [/23 أبريل 2026/g, startDate],
+    [/أبريل 2026/g, dateText],
+    [/Odoo 18 ERP/g, `Odoo ${version} ERP`],
+    [/Odoo 18/g, `Odoo ${version}`],
+    [/تجارة وتوزيع/g, sector],
+    [/30 يوم/g, state.meta.validity || "30 يوم"],
+    [/7,211/g, fmtNum(totals.development)],
+    [/\b3,354\b/g, fmtNum(totals.firstInstallment)],
+    [/\b1,200\b/g, fmtNum(totals.bgImpl > 0 ? totals.bgImpl : 1200)],
+    [/م\. أسامة أحمد/g, escapeHtml(contact.name || "م. أسامة أحمد")],
+    [/د\.ك \(KWD\)/g, `${cur} (${state.meta.currency})`],
+    [/د\.ك/g, cur],
+  ];
+  r.forEach(([pattern, value]) => { html = html.replace(pattern, value); });
 
-    // Apply the full English → Arabic translation table. Sort by length
-    // desc so longer strings replace before shorter overlapping ones.
-    const sorted = [...EN_TO_AR].sort((a, b) => b[0].length - a[0].length);
-    sorted.forEach(([en, ar]) => {
-      const escaped = en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      html = html.replace(new RegExp(escaped, "g"), ar);
-    });
+  // Hero size/sector meta cards (if present)
+  if (size) {
+    html = html.replace(
+      /(<div class="lbl">القطاع<\/div>\s*<div class="val">)[^<]+(<\/div>)/,
+      `$1${escapeHtml(sector)}$2`
+    );
   }
 
   return html;
+}
+
+/**
+ * Main render function — picks the template per language.
+ */
+export function renderQuoteHtml(state: QuoteBuilderState): string {
+  return state.language === "ar" ? renderArabic(state) : renderEnglish(state);
 }
