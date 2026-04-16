@@ -8,19 +8,25 @@
 -- ── Extensions ─────────────────────────────────────────────
 create extension if not exists "pgcrypto";
 
--- ── Enums ──────────────────────────────────────────────────
-create type quote_status as enum (
-  'draft', 'sent', 'opened', 'accepted', 'rejected', 'expired'
-);
+-- ── Enums (idempotent — safe to re-run) ────────────────────
+do $$ begin
+  create type quote_status as enum (
+    'draft', 'sent', 'opened', 'accepted', 'rejected', 'expired'
+  );
+exception when duplicate_object then null;
+end $$;
 
-create type quote_event_kind as enum (
-  'created', 'updated', 'sent', 'opened', 'downloaded',
-  'accepted', 'rejected', 'signed', 'regenerated'
-);
+do $$ begin
+  create type quote_event_kind as enum (
+    'created', 'updated', 'sent', 'opened', 'downloaded',
+    'accepted', 'rejected', 'signed', 'regenerated'
+  );
+exception when duplicate_object then null;
+end $$;
 
 -- ── profiles ───────────────────────────────────────────────
 -- One row per Business Gate team member, linked to auth.users
-create table public.profiles (
+create table if not exists public.profiles (
   id          uuid primary key references auth.users(id) on delete cascade,
   full_name   text not null,
   role        text not null default 'sales',  -- sales | manager | admin
@@ -40,7 +46,7 @@ create policy "profiles_self_update"
   using (auth.uid() = id);
 
 -- ── clients ────────────────────────────────────────────────
-create table public.clients (
+create table if not exists public.clients (
   id            uuid primary key default gen_random_uuid(),
   owner_id      uuid not null references public.profiles(id) on delete restrict,
   name_ar       text not null,
@@ -56,7 +62,7 @@ create table public.clients (
   updated_at    timestamptz not null default now()
 );
 
-create index idx_clients_owner on public.clients(owner_id);
+create index if not exists idx_clients_owner on public.clients(owner_id);
 
 alter table public.clients enable row level security;
 
@@ -66,7 +72,7 @@ create policy "clients_owner_full"
   with check (owner_id = auth.uid());
 
 -- ── quotes ─────────────────────────────────────────────────
-create table public.quotes (
+create table if not exists public.quotes (
   id                uuid primary key default gen_random_uuid(),
   owner_id          uuid not null references public.profiles(id) on delete restrict,
   client_id         uuid references public.clients(id) on delete set null,
@@ -89,9 +95,9 @@ create table public.quotes (
   updated_at        timestamptz not null default now()
 );
 
-create index idx_quotes_owner on public.quotes(owner_id);
-create index idx_quotes_client on public.quotes(client_id);
-create index idx_quotes_status on public.quotes(status);
+create index if not exists idx_quotes_owner on public.quotes(owner_id);
+create index if not exists idx_quotes_client on public.quotes(client_id);
+create index if not exists idx_quotes_status on public.quotes(status);
 
 alter table public.quotes enable row level security;
 
@@ -106,7 +112,7 @@ create policy "quotes_owner_full"
 --   phases: [...], schedule: [...], license: {...},
 --   support: {...}, contacts: [...], meeting_notes: [...],
 --   project_desc: '', workflows: '', extra_notes: '' }
-create table public.quote_sections (
+create table if not exists public.quote_sections (
   quote_id   uuid primary key references public.quotes(id) on delete cascade,
   payload    jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
@@ -127,7 +133,7 @@ create policy "quote_sections_via_quote"
 
 -- ── quote_versions ─────────────────────────────────────────
 -- Snapshots of quote+sections at key moments (sent, regenerated, etc.)
-create table public.quote_versions (
+create table if not exists public.quote_versions (
   id         uuid primary key default gen_random_uuid(),
   quote_id   uuid not null references public.quotes(id) on delete cascade,
   version    int not null,
@@ -147,7 +153,7 @@ create policy "quote_versions_via_quote"
   ));
 
 -- ── quote_events ───────────────────────────────────────────
-create table public.quote_events (
+create table if not exists public.quote_events (
   id          uuid primary key default gen_random_uuid(),
   quote_id    uuid not null references public.quotes(id) on delete cascade,
   kind        quote_event_kind not null,
@@ -159,7 +165,7 @@ create table public.quote_events (
   created_at  timestamptz not null default now()
 );
 
-create index idx_events_quote on public.quote_events(quote_id, created_at desc);
+create index if not exists idx_events_quote on public.quote_events(quote_id, created_at desc);
 
 alter table public.quote_events enable row level security;
 
@@ -171,7 +177,7 @@ create policy "events_owner_read"
   ));
 
 -- ── signatures ─────────────────────────────────────────────
-create table public.signatures (
+create table if not exists public.signatures (
   id            uuid primary key default gen_random_uuid(),
   quote_id      uuid not null references public.quotes(id) on delete cascade,
   signer_name   text not null,
@@ -195,7 +201,7 @@ create policy "signatures_owner_read"
 
 -- ── magic_links ────────────────────────────────────────────
 -- Tokenized links for client portal access (no auth required)
-create table public.magic_links (
+create table if not exists public.magic_links (
   token      text primary key,               -- 32-char random
   quote_id   uuid not null references public.quotes(id) on delete cascade,
   expires_at timestamptz not null,
@@ -203,14 +209,14 @@ create table public.magic_links (
   created_at timestamptz not null default now()
 );
 
-create index idx_magic_quote on public.magic_links(quote_id);
+create index if not exists idx_magic_quote on public.magic_links(quote_id);
 
 -- Magic links are read/written only via service_role (admin client)
 alter table public.magic_links enable row level security;
 
 -- ── templates ──────────────────────────────────────────────
 -- Sector-specific starter templates
-create table public.templates (
+create table if not exists public.templates (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,
   sector      text not null,
@@ -241,15 +247,15 @@ begin
 end;
 $$ language plpgsql;
 
-create trigger tg_clients_updated
+create or replace trigger tg_clients_updated
   before update on public.clients
   for each row execute function public.set_updated_at();
 
-create trigger tg_quotes_updated
+create or replace trigger tg_quotes_updated
   before update on public.quotes
   for each row execute function public.set_updated_at();
 
-create trigger tg_sections_updated
+create or replace trigger tg_sections_updated
   before update on public.quote_sections
   for each row execute function public.set_updated_at();
 
@@ -268,6 +274,6 @@ begin
 end;
 $$ language plpgsql security definer;
 
-create trigger tg_on_auth_user_created
+create or replace trigger tg_on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
