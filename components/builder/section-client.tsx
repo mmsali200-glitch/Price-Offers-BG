@@ -87,7 +87,111 @@ export function SectionClient() {
           </select>
         </Field>
       </div>
-      <Field label="وصف نشاط الشركة (يُستخدم في التوليد التلقائي)">
+      <Field label="نشاط العميل (وصف مختصر)">
+        <input
+          className="input"
+          value={client.businessActivity}
+          onChange={(e) => setClient("businessActivity", e.target.value)}
+          placeholder="مثال: توزيع مواد غذائية على المحلات التجارية"
+        />
+      </Field>
+
+      <div className="h-px bg-bg-line my-4" />
+
+      <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-2">
+        📞 جهة الاتصال
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        <Field label="الاسم">
+          <input className="input" value={client.contactName}
+            onChange={(e) => setClient("contactName", e.target.value)}
+            placeholder="أحمد الخالد" />
+        </Field>
+        <Field label="الهاتف">
+          <input className="input tabular" dir="ltr" value={client.contactPhone}
+            onChange={(e) => setClient("contactPhone", e.target.value)}
+            placeholder="+965 9999 0000" />
+        </Field>
+        <Field label="البريد الإلكتروني">
+          <input className="input" dir="ltr" value={client.contactEmail}
+            onChange={(e) => setClient("contactEmail", e.target.value)}
+            placeholder="name@example.com" />
+        </Field>
+      </div>
+
+      <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-2">
+        📍 الموقع
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+        <Field label="الدولة">
+          <select className="input" value={client.country}
+            onChange={(e) => setClient("country", e.target.value)}>
+            <option value="الكويت">🇰🇼 الكويت</option>
+            <option value="السعودية">🇸🇦 السعودية</option>
+            <option value="الإمارات">🇦🇪 الإمارات</option>
+            <option value="قطر">🇶🇦 قطر</option>
+            <option value="البحرين">🇧🇭 البحرين</option>
+            <option value="عمان">🇴🇲 عمان</option>
+            <option value="مصر">🇪🇬 مصر</option>
+            <option value="الأردن">🇯🇴 الأردن</option>
+            <option value="أخرى">🌍 أخرى</option>
+          </select>
+        </Field>
+        <Field label="المحافظة">
+          <input className="input" value={client.governorate}
+            onChange={(e) => setClient("governorate", e.target.value)}
+            placeholder="حولي" />
+        </Field>
+        <Field label="المدينة">
+          <input className="input" value={client.city}
+            onChange={(e) => setClient("city", e.target.value)}
+            placeholder="السالمية" />
+        </Field>
+        <Field label="العنوان">
+          <input className="input" value={client.address}
+            onChange={(e) => setClient("address", e.target.value)}
+            placeholder="شارع، مبنى..." />
+        </Field>
+      </div>
+
+      <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-2">
+        🧾 الوثائق
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+        <Field label="الرقم التجاري (CRN)">
+          <input className="input tabular" dir="ltr" value={client.crn}
+            onChange={(e) => setClient("crn", e.target.value)} placeholder="12345" />
+        </Field>
+        <Field label="الرقم الضريبي">
+          <input className="input tabular" dir="ltr" value={client.taxNumber}
+            onChange={(e) => setClient("taxNumber", e.target.value)} placeholder="VAT" />
+        </Field>
+        <Field label="الموقع الإلكتروني">
+          <input className="input" dir="ltr" value={client.website}
+            onChange={(e) => setClient("website", e.target.value)}
+            placeholder="https://example.com" />
+        </Field>
+      </div>
+
+      <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-2">
+        💼 الشروط التجارية
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <Field label="لغة التواصل">
+          <select className="input" value={client.communicationLanguage}
+            onChange={(e) => setClient("communicationLanguage", e.target.value as "ar" | "en")}>
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </Field>
+        <Field label="عمولة (%)">
+          <input type="number" min={0} max={100} step={0.5} className="input tabular" dir="ltr"
+            value={client.commissionPct}
+            onChange={(e) => setClient("commissionPct", parseFloat(e.target.value) || 0)} />
+        </Field>
+      </div>
+
+      <Field label="وصف نشاط الشركة (للتوليد التلقائي)">
         <textarea
           className="input min-h-[70px] resize-y"
           value={client.businessDesc}

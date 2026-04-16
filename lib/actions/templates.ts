@@ -61,7 +61,13 @@ export async function createQuoteFromTemplate(formData: FormData) {
   // Create client + quote + sections + event atomically
   const { data: clientRow } = await supabase
     .from("clients")
-    .insert({ owner_id: user.id, name_ar: clientName, sector: template.sector })
+    .insert({
+      owner_id: user.id,
+      name_ar: clientName,
+      sector: template.sector,
+      country: "الكويت",
+      communication_language: "ar",
+    })
     .select("id")
     .single();
 

@@ -15,9 +15,19 @@ export type ClientInfo = {
   sector: string;
   employeeSize: string;
   businessDesc: string;
+  businessActivity: string;
   contactName: string;
   contactPhone: string;
   contactEmail: string;
+  country: string;
+  governorate: string;
+  city: string;
+  address: string;
+  website: string;
+  taxNumber: string;
+  crn: string;
+  communicationLanguage: QuoteLanguage;
+  commissionPct: number;
 };
 
 export type QuoteMeta = {

@@ -48,51 +48,114 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
 }
 
 /**
- * Create a new empty quote and redirect to its edit page.
+ * Create a new quote with a full client profile. All fields from the
+ * new-quote form are persisted on both `clients` (for reuse across
+ * future quotes) and embedded in `quote_sections.payload.client` so
+ * the generated HTML has everything it needs.
  */
 export async function createQuote(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/quotes/new");
 
-  const name = (formData.get("name") as string) || "عميل جديد";
-  const ref = (formData.get("ref") as string) || `BG-${new Date().getFullYear()}-XXX-${String(Date.now()).slice(-3)}`;
+  const f = (k: string) => (formData.get(k) as string | null) ?? "";
+  const nameAr = f("nameAr") || f("name") || "عميل جديد";
+  const nameEn = f("nameEn");
+  const ref = f("ref") || `BG-${new Date().getFullYear()}-XXX-${String(Date.now()).slice(-3)}`;
+  const currency = f("currency") || "KWD";
+  const quoteLanguage = (f("quoteLanguage") || "ar") as "ar" | "en";
+  const communicationLanguage = (f("communicationLanguage") || "ar") as "ar" | "en";
+  const commissionPct = parseFloat(f("commissionPct")) || 0;
 
-  const { data: client } = await supabase
+  const clientProfile = {
+    owner_id: user.id,
+    name_ar: nameAr,
+    name_en: nameEn || null,
+    sector: f("sector") || "other",
+    employee_size: f("employeeSize") || null,
+    business_activity: f("businessActivity") || null,
+    contact_name: f("contactName") || null,
+    contact_phone: f("contactPhone") || null,
+    contact_email: f("contactEmail") || null,
+    country: f("country") || "الكويت",
+    governorate: f("governorate") || null,
+    city: f("city") || null,
+    address: f("address") || null,
+    website: f("website") || null,
+    tax_number: f("taxNumber") || null,
+    crn: f("crn") || null,
+    communication_language: communicationLanguage,
+    commission_pct: commissionPct,
+  };
+
+  const { data: client, error: cErr } = await supabase
     .from("clients")
-    .insert({ owner_id: user.id, name_ar: name })
+    .insert(clientProfile)
     .select("id")
     .single();
+  if (cErr) throw new Error(cErr.message);
 
-  const { data: quote, error } = await supabase
+  const { data: quote, error: qErr } = await supabase
     .from("quotes")
     .insert({
       owner_id: user.id,
       client_id: client?.id ?? null,
       ref,
-      title: name,
+      title: nameAr,
       status: "draft",
-      currency: "KWD",
+      currency,
+      quote_language: quoteLanguage,
     })
     .select("id")
     .single();
+  if (qErr || !quote) throw new Error(qErr?.message || "Failed to create quote");
 
-  if (error || !quote) {
-    throw new Error(error?.message || "Failed to create quote");
-  }
+  // Seed the sections payload with everything we know so the Builder
+  // opens fully populated and the renderer can use it immediately.
+  const seedPayload = {
+    meta: {
+      ref,
+      date: f("date") || "",
+      currency,
+      validity: f("validity") || "30 يوم",
+    },
+    language: quoteLanguage,
+    client: {
+      nameAr,
+      nameEn,
+      sector: clientProfile.sector,
+      employeeSize: clientProfile.employee_size || "medium",
+      businessDesc: "",
+      businessActivity: clientProfile.business_activity || "",
+      contactName: clientProfile.contact_name || "",
+      contactPhone: clientProfile.contact_phone || "",
+      contactEmail: clientProfile.contact_email || "",
+      country: clientProfile.country,
+      governorate: clientProfile.governorate || "",
+      city: clientProfile.city || "",
+      address: clientProfile.address || "",
+      website: clientProfile.website || "",
+      taxNumber: clientProfile.tax_number || "",
+      crn: clientProfile.crn || "",
+      communicationLanguage,
+      commissionPct,
+    },
+  };
 
   await supabase
     .from("quote_sections")
-    .insert({ quote_id: quote.id, payload: {} });
+    .insert({ quote_id: quote.id, payload: seedPayload });
 
   await supabase.from("quote_events").insert({
     quote_id: quote.id,
     kind: "created",
     actor_type: "user",
     actor_id: user.id,
+    metadata: { client_id: client?.id, quote_language: quoteLanguage },
   });
 
   revalidatePath("/quotes");
+  revalidatePath("/clients");
   redirect(`/quotes/${quote.id}/edit`);
 }
 

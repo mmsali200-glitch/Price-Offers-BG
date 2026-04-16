@@ -286,6 +286,12 @@ function renderArabic(state: QuoteBuilderState): string {
   const size = SIZE_AR[state.client.employeeSize] || "";
   const startDate = state.payment.startDate ? fmtDateArabic(state.payment.startDate) : "23 أبريل 2026";
 
+  const country = state.client.country || "الكويت";
+  const governorate = state.client.governorate || "";
+  const city = state.client.city || "";
+  const address = state.client.address || "";
+  const website = state.client.website || "www.businessesgates.com";
+
   // ── Ordered string replacements ───────────────────────────
   const r: Array<[RegExp, string]> = [
     // Ref (multiple places)
@@ -293,6 +299,10 @@ function renderArabic(state: QuoteBuilderState): string {
     // Client names
     [/شركة أسامة السيد لمصنع الذهب/g, escapeHtml(clientAr)],
     [/Osama Al-Sayed Gold Factory Co\./g, escapeHtml(clientEn)],
+    // Location (only replace when the user picked a non-Kuwait country)
+    ...(country !== "الكويت"
+      ? [[/دولة الكويت/g, escapeHtml(`دولة ${country}`)] as [RegExp, string]]
+      : []),
     // Dates
     [/23 أبريل 2026/g, startDate],
     [/أبريل 2026/g, dateText],
