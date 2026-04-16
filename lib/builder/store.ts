@@ -75,7 +75,25 @@ export const useBuilderStore = create<QuoteBuilderState & Actions>()(
   ...makeInitialState(),
 
   reset: () => set(makeInitialState()),
-  hydrate: (patch) => set((s) => ({ ...s, ...patch })),
+  hydrate: (patch) => set((s) => {
+    // Deep merge so saved payloads from before new fields were added
+    // don't wipe out the nested defaults — important after schema changes.
+    const defaults = makeInitialState();
+    return {
+      ...s,
+      ...patch,
+      meta: { ...defaults.meta, ...s.meta, ...(patch.meta ?? {}) },
+      client: { ...defaults.client, ...s.client, ...(patch.client ?? {}) },
+      modules: { ...defaults.modules, ...s.modules, ...(patch.modules ?? {}) },
+      bgApps: { ...defaults.bgApps, ...s.bgApps, ...(patch.bgApps ?? {}) },
+      license: { ...defaults.license, ...s.license, ...(patch.license ?? {}) },
+      support: {
+        ...defaults.support, ...s.support, ...(patch.support ?? {}),
+        prices: { ...defaults.support.prices, ...s.support.prices, ...(patch.support?.prices ?? {}) },
+      },
+      payment: { ...defaults.payment, ...s.payment, ...(patch.payment ?? {}) },
+    };
+  }),
 
   setMeta: (key, value) => set((s) => ({ meta: { ...s.meta, [key]: value } })),
   setClient: (key, value) => set((s) => ({ client: { ...s.client, [key]: value } })),

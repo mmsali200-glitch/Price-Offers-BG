@@ -37,10 +37,10 @@ export function SectionClient() {
     <SectionCard icon="🏢" title="بيانات الشركة والمشروع" subtitle="معلومات العميل وقطاع النشاط">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <Field label="اسم العميل (عربي)" required>
-          <input className="input" value={client.nameAr} onChange={(e) => setClient("nameAr", e.target.value)} placeholder="شركة النور للتجارة" />
+          <input className="input" value={client.nameAr ?? ""} onChange={(e) => setClient("nameAr", e.target.value)} placeholder="شركة النور للتجارة" />
         </Field>
         <Field label="اسم العميل (إنجليزي)">
-          <input className="input" value={client.nameEn} onChange={(e) => setClient("nameEn", e.target.value)} placeholder="Al-Noor Trading Co." />
+          <input className="input" value={client.nameEn ?? ""} onChange={(e) => setClient("nameEn", e.target.value)} placeholder="Al-Noor Trading Co." />
         </Field>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
@@ -65,14 +65,14 @@ export function SectionClient() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <Field label="قطاع النشاط">
-          <select className="input" value={client.sector} onChange={(e) => setClient("sector", e.target.value)}>
+          <select className="input" value={client.sector ?? ""} onChange={(e) => setClient("sector", e.target.value)}>
             {SECTORS.map(([id, label]) => (
               <option key={id} value={id}>{label}</option>
             ))}
           </select>
         </Field>
         <Field label="حجم الشركة">
-          <select className="input" value={client.employeeSize} onChange={(e) => setClient("employeeSize", e.target.value)}>
+          <select className="input" value={client.employeeSize ?? ""} onChange={(e) => setClient("employeeSize", e.target.value)}>
             {SIZES.map(([id, label]) => (
               <option key={id} value={id}>{label}</option>
             ))}
@@ -90,7 +90,7 @@ export function SectionClient() {
       <Field label="نشاط العميل (وصف مختصر)">
         <input
           className="input"
-          value={client.businessActivity}
+          value={client.businessActivity ?? ""}
           onChange={(e) => setClient("businessActivity", e.target.value)}
           placeholder="مثال: توزيع مواد غذائية على المحلات التجارية"
         />
@@ -103,17 +103,17 @@ export function SectionClient() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <Field label="الاسم">
-          <input className="input" value={client.contactName}
+          <input className="input" value={client.contactName ?? ""}
             onChange={(e) => setClient("contactName", e.target.value)}
             placeholder="أحمد الخالد" />
         </Field>
         <Field label="الهاتف">
-          <input className="input tabular" dir="ltr" value={client.contactPhone}
+          <input className="input tabular" dir="ltr" value={client.contactPhone ?? ""}
             onChange={(e) => setClient("contactPhone", e.target.value)}
             placeholder="+965 9999 0000" />
         </Field>
         <Field label="البريد الإلكتروني">
-          <input className="input" dir="ltr" value={client.contactEmail}
+          <input className="input" dir="ltr" value={client.contactEmail ?? ""}
             onChange={(e) => setClient("contactEmail", e.target.value)}
             placeholder="name@example.com" />
         </Field>
@@ -124,7 +124,7 @@ export function SectionClient() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
         <Field label="الدولة">
-          <select className="input" value={client.country}
+          <select className="input" value={client.country ?? ""}
             onChange={(e) => setClient("country", e.target.value)}>
             <option value="الكويت">🇰🇼 الكويت</option>
             <option value="السعودية">🇸🇦 السعودية</option>
@@ -138,17 +138,17 @@ export function SectionClient() {
           </select>
         </Field>
         <Field label="المحافظة">
-          <input className="input" value={client.governorate}
+          <input className="input" value={client.governorate ?? ""}
             onChange={(e) => setClient("governorate", e.target.value)}
             placeholder="حولي" />
         </Field>
         <Field label="المدينة">
-          <input className="input" value={client.city}
+          <input className="input" value={client.city ?? ""}
             onChange={(e) => setClient("city", e.target.value)}
             placeholder="السالمية" />
         </Field>
         <Field label="العنوان">
-          <input className="input" value={client.address}
+          <input className="input" value={client.address ?? ""}
             onChange={(e) => setClient("address", e.target.value)}
             placeholder="شارع، مبنى..." />
         </Field>
@@ -159,15 +159,15 @@ export function SectionClient() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         <Field label="الرقم التجاري (CRN)">
-          <input className="input tabular" dir="ltr" value={client.crn}
+          <input className="input tabular" dir="ltr" value={client.crn ?? ""}
             onChange={(e) => setClient("crn", e.target.value)} placeholder="12345" />
         </Field>
         <Field label="الرقم الضريبي">
-          <input className="input tabular" dir="ltr" value={client.taxNumber}
+          <input className="input tabular" dir="ltr" value={client.taxNumber ?? ""}
             onChange={(e) => setClient("taxNumber", e.target.value)} placeholder="VAT" />
         </Field>
         <Field label="الموقع الإلكتروني">
-          <input className="input" dir="ltr" value={client.website}
+          <input className="input" dir="ltr" value={client.website ?? ""}
             onChange={(e) => setClient("website", e.target.value)}
             placeholder="https://example.com" />
         </Field>
@@ -178,7 +178,7 @@ export function SectionClient() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <Field label="لغة التواصل">
-          <select className="input" value={client.communicationLanguage}
+          <select className="input" value={client.communicationLanguage ?? ""}
             onChange={(e) => setClient("communicationLanguage", e.target.value as "ar" | "en")}>
             <option value="ar">العربية</option>
             <option value="en">English</option>
@@ -186,7 +186,7 @@ export function SectionClient() {
         </Field>
         <Field label="عمولة (%)">
           <input type="number" min={0} max={100} step={0.5} className="input tabular" dir="ltr"
-            value={client.commissionPct}
+            value={client.commissionPct ?? 0}
             onChange={(e) => setClient("commissionPct", parseFloat(e.target.value) || 0)} />
         </Field>
       </div>
@@ -194,7 +194,7 @@ export function SectionClient() {
       <Field label="وصف نشاط الشركة (للتوليد التلقائي)">
         <textarea
           className="input min-h-[70px] resize-y"
-          value={client.businessDesc}
+          value={client.businessDesc ?? ""}
           onChange={(e) => setClient("businessDesc", e.target.value)}
           placeholder="مثال: شركة متخصصة في توزيع المواد الغذائية على المحلات التجارية في الكويت..."
         />
