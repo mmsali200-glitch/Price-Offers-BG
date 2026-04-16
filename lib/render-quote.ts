@@ -227,12 +227,47 @@ function renderEnglish(state: QuoteBuilderState): string {
   html = html.replace(/var licCost\s*=\s*[^;]+;/, `var licCost = ${totals.licMonthly};`);
   html = html.replace(/var supCost\s*=\s*[^;]+;/, `var supCost = ${totals.supportMonthly};`);
 
+  // Enforce LTR + English at the <html> level
+  html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="en" dir="ltr">`);
+
   return html;
 }
 
 // ──────────────────────────────────────────────────────────────────
 // ARABIC RENDERER (Osama Al-Sayed reference)
 // ──────────────────────────────────────────────────────────────────
+function renderArabicModuleCards(
+  mods: SelectedModule[],
+  bgApps: Array<{ id: string; name: string; implementationPrice: number; description: string }>,
+  cur: string
+): string {
+  const regular = mods.map((m) => {
+    const icon = MODULE_ICONS[m.id] || "📦";
+    const snippet = (m.features || []).slice(0, 1).join("، ") ||
+      `ميزات ${m.name}`;
+    return `        <div class="mod-card">
+          <div class="mod-icon">${icon}</div>
+          <h4>${escapeHtml(m.name)}</h4>
+          <p>${escapeHtml(snippet)}</p>
+          <div class="price">${fmtNum(m.price)} ${cur}</div>
+        </div>`;
+  }).join("\n");
+
+  const bg = bgApps.map((a) => {
+    const icon = MODULE_ICONS[a.id] || "⭐";
+    const shortDesc = a.description.length > 80 ? a.description.slice(0, 77) + "..." : a.description;
+    return `        <div class="mod-card gold">
+          <div class="tag">حصري</div>
+          <div class="mod-icon">${icon}</div>
+          <h4>${escapeHtml(a.name.split(" — ")[0] || a.name)}</h4>
+          <p>${escapeHtml(shortDesc)}</p>
+          <div class="price">${fmtNum(a.implementationPrice)} ${cur}</div>
+        </div>`;
+  }).join("\n");
+
+  return [regular, bg].filter(Boolean).join("\n");
+}
+
 function renderArabic(state: QuoteBuilderState): string {
   let html = getReferenceTemplateAr();
   const totals = computeTotals(state);
@@ -240,50 +275,74 @@ function renderArabic(state: QuoteBuilderState): string {
   const mods = getSelectedModules(state);
   const bgApps = getSelectedBGApps(state);
   const contact = getContact(state);
-  const allMods = [
-    ...mods,
-    ...bgApps.map((a) => ({
-      id: a.id, name: a.name, price: a.implementationPrice, discount: 0,
-      separate: false, features: a.features,
-    } as SelectedModule)),
-  ];
-  const modCount = allMods.length;
+  const modCount = mods.length + bgApps.length;
 
   const ref = state.meta.ref || "BG-XXXX-XXX-XXX";
   const clientAr = state.client.nameAr || "العميل";
-  const clientEn = state.client.nameEn || "";
+  const clientEn = state.client.nameEn || clientAr;
   const dateText = state.meta.date || "أبريل 2026";
   const version = state.odooVersion || "18";
   const sector = SECTOR_AR[state.client.sector] || "أعمال";
   const size = SIZE_AR[state.client.employeeSize] || "";
   const startDate = state.payment.startDate ? fmtDateArabic(state.payment.startDate) : "23 أبريل 2026";
 
+  // ── Ordered string replacements ───────────────────────────
   const r: Array<[RegExp, string]> = [
+    // Ref (multiple places)
     [/BG-2026-OSG-5220/g, ref],
-    [/شركة أسامة السيد لمصنع الذهب/g, clientAr],
-    [/Osama Al-Sayed Gold Factory Co\./g, clientEn],
+    // Client names
+    [/شركة أسامة السيد لمصنع الذهب/g, escapeHtml(clientAr)],
+    [/Osama Al-Sayed Gold Factory Co\./g, escapeHtml(clientEn)],
+    // Dates
     [/23 أبريل 2026/g, startDate],
     [/أبريل 2026/g, dateText],
+    // Odoo version
     [/Odoo 18 ERP/g, `Odoo ${version} ERP`],
     [/Odoo 18/g, `Odoo ${version}`],
-    [/تجارة وتوزيع/g, sector],
+    // Sector + validity
+    [/تجارة وتوزيع/g, escapeHtml(sector)],
     [/30 يوم/g, state.meta.validity || "30 يوم"],
-    [/7,211/g, fmtNum(totals.development)],
+    // Financial values (from the sample totals)
+    [/7,211 د\.ك/g, `${fmtNum(totals.development)} ${cur}`],
+    [/6,461 د\.ك/g, `${fmtNum(totals.modules)} ${cur}`],
+    [/\b7,211\b/g, fmtNum(totals.development)],
+    [/\b6,461\b/g, fmtNum(totals.modules)],
     [/\b3,354\b/g, fmtNum(totals.firstInstallment)],
-    [/\b1,200\b/g, fmtNum(totals.bgImpl > 0 ? totals.bgImpl : 1200)],
+    [/\b2,203\b/g, fmtNum(Math.round(totals.grandTotalY1 / 3))],
+    // Contact details
     [/م\. أسامة أحمد/g, escapeHtml(contact.name || "م. أسامة أحمد")],
+    [/osama@businessesgates\.com/g, contact.email || "osama@businessesgates.com"],
+    [/\+965 6996 8508/g, contact.phone || "+965 6996 8508"],
+    [/\+965 9999 0412/g, contact.phone || "+965 9999 0412"],
+    // Currency
     [/د\.ك \(KWD\)/g, `${cur} (${state.meta.currency})`],
     [/د\.ك/g, cur],
   ];
   r.forEach(([pattern, value]) => { html = html.replace(pattern, value); });
 
-  // Hero size/sector meta cards (if present)
-  if (size) {
+  // ── Rebuild the module cards grid from the user's selections ──
+  const moduleCards = renderArabicModuleCards(mods, bgApps, cur);
+  if (moduleCards) {
+    // Target the <div class="mod-grid"> block inside the modules section
     html = html.replace(
-      /(<div class="lbl">القطاع<\/div>\s*<div class="val">)[^<]+(<\/div>)/,
-      `$1${escapeHtml(sector)}$2`
+      /(<h3[^>]*>الموديولات المشمولة<\/h3>\s*<div class="mod-grid">)([\s\S]*?)(<\/div>\s*<\/section>)/,
+      (_m, open, _body, close) => `${open}\n${moduleCards}\n      ${close}`
     );
   }
+
+  // ── Patch Configurator JS vars ────────────────────────────
+  html = html.replace(/var BASE\s*=\s*[^;]+;/, `var BASE = ${totals.development};`);
+  html = html.replace(/var licCost\s*=\s*[^;]+;/, `var licCost = ${totals.licMonthly};`);
+  html = html.replace(/var supCost\s*=\s*[^;]+;/, `var supCost = ${totals.supportMonthly};`);
+
+  // ── Patch mod count and user count if such placeholders exist ──
+  html = html.replace(/(<div class="lbl">عدد المستخدمين<\/div>\s*<div class="val">)[^<]+(<\/div>)/g,
+    `$1${state.license.users} مستخدم$2`);
+  html = html.replace(/(<div class="lbl">عدد الموديولات<\/div>\s*<div class="val">)[^<]+(<\/div>)/g,
+    `$1${modCount}$2`);
+
+  // Ensure correct document direction + language
+  html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="ar" dir="rtl">`);
 
   return html;
 }

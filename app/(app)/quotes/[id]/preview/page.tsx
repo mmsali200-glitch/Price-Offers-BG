@@ -23,13 +23,23 @@ export default async function PreviewPage({
 
   if (!quote) notFound();
 
+  // Derive the generated language from the HTML itself — the renderer
+  // always forces <html lang="..." dir="..."> based on state.language.
+  const html = quote.generated_html;
+  const language: "ar" | "en" | null = html
+    ? /dir="rtl"/.test(html)
+      ? "ar"
+      : "en"
+    : null;
+
   return (
     <PreviewShell
       quoteId={quote.id}
       ref_={quote.ref}
       title={quote.title}
-      html={quote.generated_html}
+      html={html}
       generatedAt={quote.generated_at}
+      language={language}
     />
   );
 }

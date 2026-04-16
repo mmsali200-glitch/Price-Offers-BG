@@ -11,12 +11,14 @@ export function PreviewShell({
   title,
   html,
   generatedAt,
+  language,
 }: {
   quoteId: string;
   ref_: string;
   title: string | null;
   html: string | null;
   generatedAt: string | null;
+  language: "ar" | "en" | null;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -75,6 +77,16 @@ export function PreviewShell({
           <span className="text-[11px] font-black bg-bg-green-lt text-bg-green px-2 py-0.5 rounded-full tabular">
             {ref_}
           </span>
+          {language === "ar" && (
+            <span className="text-[10px] font-bold bg-bg-green text-white px-2 py-0.5 rounded-full">
+              🇰🇼 العربية — RTL
+            </span>
+          )}
+          {language === "en" && (
+            <span className="text-[10px] font-bold bg-bg-info text-white px-2 py-0.5 rounded-full">
+              🇬🇧 English — LTR
+            </span>
+          )}
           <span className="text-xs text-bg-text-3 truncate">{title || "بدون عنوان"}</span>
           {generatedAt && (
             <span className="text-[10px] text-bg-text-3">
