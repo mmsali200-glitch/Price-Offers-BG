@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES, LICENSE_PRICING } from "@/lib/modules-catalog";
 import { makeInitialState } from "./defaults";
 import type {
@@ -68,7 +69,8 @@ type Actions = {
 let nextId = 100;
 const genId = () => ++nextId;
 
-export const useBuilderStore = create<QuoteBuilderState & Actions>((set, get) => ({
+export const useBuilderStore = create<QuoteBuilderState & Actions>()(
+  subscribeWithSelector((set, get) => ({
   ...makeInitialState(),
 
   reset: () => set(makeInitialState()),
@@ -206,7 +208,7 @@ export const useBuilderStore = create<QuoteBuilderState & Actions>((set, get) =>
     })),
   removeModuleChange: (id) =>
     set((s) => ({ moduleChanges: s.moduleChanges.filter((c) => c.id !== id) })),
-}));
+})));
 
 /** Selectors (derived values). Exported as plain functions that take state. */
 export function selectedModules(state: QuoteBuilderState) {
