@@ -1,32 +1,50 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Mail, Loader2, ArrowRight } from "lucide-react";
+import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
+
+type Mode = "signin" | "signup";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "sent" | "error">("idle");
-  const [message, setMessage] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [okMessage, setOkMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
-    setState("loading");
+    if (!email.trim() || password.length < 6) return;
+    setLoading(true);
+    setError(null);
+    setOkMessage(null);
+
+    const supabase = createClient();
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-        },
-      });
-      if (error) throw error;
-      setState("sent");
-      setMessage("أرسلنا لك رابط دخول — تحقق من بريدك الإلكتروني.");
+      if (mode === "signup") {
+        const { error: err } = await supabase.auth.signUp({ email, password });
+        if (err) throw err;
+        setOkMessage(
+          "تم إنشاء حسابك. جرّب تسجيل الدخول الآن."
+        );
+        setMode("signin");
+      } else {
+        const { error: err } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (err) throw err;
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
-      setState("error");
-      setMessage(err instanceof Error ? err.message : "حدث خطأ");
+      setError(err instanceof Error ? err.message : "حدث خطأ");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -37,80 +55,116 @@ export default function LoginPage() {
           <div className="inline-flex size-14 rounded-2xl bg-bg-green text-bg-gold items-center justify-center text-2xl font-black mx-auto">
             BG
           </div>
-          <h1 className="text-xl font-black text-bg-green">تسجيل الدخول</h1>
+          <h1 className="text-xl font-black text-bg-green">
+            {mode === "signin" ? "تسجيل الدخول" : "إنشاء حساب مسؤول"}
+          </h1>
           <p className="text-xs text-bg-text-3">
             Business Gate Technical Consulting
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="card p-5 space-y-4">
-          {state !== "sent" && (
-            <>
-              <div className="space-y-1">
-                <label className="label block">البريد الإلكتروني</label>
-                <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-bg-text-3" />
-                  <input
-                    type="email"
-                    required
-                    disabled={state === "loading"}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input pr-10"
-                    placeholder="name@bg-tc.com"
-                    dir="ltr"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={state === "loading" || !email}
-                className="btn-primary w-full inline-flex items-center justify-center gap-2"
-              >
-                {state === "loading" ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    جاري الإرسال...
-                  </>
-                ) : (
-                  <>
-                    أرسل رابط الدخول
-                    <ArrowRight className="size-4" />
-                  </>
-                )}
-              </button>
-            </>
-          )}
-
-          {state === "sent" && (
-            <div className="text-center space-y-2 py-2">
-              <div className="text-3xl">📬</div>
-              <div className="text-sm font-bold text-bg-green">تحقق من بريدك</div>
-              <div className="text-xs text-bg-text-3">{message}</div>
-              <button
-                type="button"
-                onClick={() => {
-                  setState("idle");
-                  setMessage("");
-                }}
-                className="text-xs text-bg-info hover:underline"
-              >
-                إرسال مرة أخرى
-              </button>
+          <div className="space-y-1">
+            <label className="label block">البريد الإلكتروني</label>
+            <div className="relative">
+              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-bg-text-3" />
+              <input
+                type="email"
+                required
+                autoFocus
+                disabled={loading}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input pr-10"
+                placeholder="name@bg-tc.com"
+                dir="ltr"
+              />
             </div>
-          )}
+          </div>
 
-          {state === "error" && (
+          <div className="space-y-1">
+            <label className="label block">كلمة المرور</label>
+            <div className="relative">
+              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-bg-text-3" />
+              <input
+                type="password"
+                required
+                minLength={6}
+                disabled={loading}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input pr-10"
+                placeholder="••••••••"
+                dir="ltr"
+              />
+            </div>
+            {mode === "signup" && (
+              <span className="text-[10px] text-bg-text-3">
+                6 أحرف على الأقل
+              </span>
+            )}
+          </div>
+
+          {error && (
             <div className="text-xs text-bg-danger bg-red-50 border border-red-200 rounded-sm2 px-3 py-2">
-              {message}
+              {error}
             </div>
           )}
+
+          {okMessage && (
+            <div className="text-xs text-bg-green bg-bg-green-lt border border-bg-green/20 rounded-sm2 px-3 py-2">
+              {okMessage}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading || !email || password.length < 6}
+            className="btn-primary w-full inline-flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                {mode === "signin" ? "جاري الدخول..." : "جاري الإنشاء..."}
+              </>
+            ) : (
+              <>
+                {mode === "signin" ? "دخول" : "إنشاء حساب"}
+                <ArrowRight className="size-4" />
+              </>
+            )}
+          </button>
         </form>
 
-        <p className="text-center text-[11px] text-bg-text-3">
-          لا يوجد لديك حساب؟ تواصل مع المدير التنفيذي.
-        </p>
+        <div className="text-center text-xs">
+          {mode === "signin" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signup");
+                setError(null);
+                setOkMessage(null);
+              }}
+              className="text-bg-text-3 hover:text-bg-green"
+            >
+              لا يوجد لديك حساب؟{" "}
+              <span className="text-bg-green font-bold">إنشاء حساب مسؤول</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("signin");
+                setError(null);
+                setOkMessage(null);
+              }}
+              className="text-bg-text-3 hover:text-bg-green"
+            >
+              عندك حساب؟{" "}
+              <span className="text-bg-green font-bold">تسجيل الدخول</span>
+            </button>
+          )}
+        </div>
       </div>
     </main>
   );
