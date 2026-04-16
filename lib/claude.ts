@@ -1,10 +1,11 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { BG_QUOTE_SKILL } from "./bg-skill";
+import { getReferenceTemplate } from "./reference-template";
 
 /**
  * Anthropic client — used server-side only.
- * Uses prompt caching on the Skill system prompt so every quote generation
- * reuses the cached tokens (~75% cost reduction on cache hits).
+ * Uses prompt caching on the Skill + reference template so every quote
+ * generation reuses the cached tokens (~75% cost reduction on cache hits).
  */
 let _client: Anthropic | null = null;
 
@@ -21,14 +22,29 @@ export function getModel() {
 }
 
 /**
- * Build the system prompt block with cache_control so the Skill is cached
- * between requests. Returns the typed system array expected by Messages API.
+ * Build the system prompt blocks:
+ *   1. BG Skill (instructions) — cached.
+ *   2. Reference HTML template — cached.
+ * Claude consumes both as the authoritative style + structure guide.
  */
 export function buildSystemWithCachedSkill() {
+  const template = getReferenceTemplate();
   return [
     {
       type: "text" as const,
       text: BG_QUOTE_SKILL,
+      cache_control: { type: "ephemeral" as const },
+    },
+    {
+      type: "text" as const,
+      text:
+        "═══ REFERENCE TEMPLATE — MATCH THIS EXACTLY ═══\n\n" +
+        "The following is the canonical HTML template you must reproduce. " +
+        "Copy its structure, classes, IDs, SVG logo, CSS, JS, and styling " +
+        "verbatim. Substitute ONLY the dynamic content (client name, ref, " +
+        "date, modules list, prices, phases, signature) with the data the " +
+        "user supplies.\n\n" +
+        template,
       cache_control: { type: "ephemeral" as const },
     },
   ];
