@@ -7,6 +7,8 @@ export type QuoteCurrency = "KWD" | "SAR" | "AED" | "USD";
 
 export type PriceMode = "total" | "items" | "hidden";
 
+export type QuoteLanguage = "ar" | "en";
+
 export type ClientInfo = {
   nameAr: string;
   nameEn: string;
@@ -110,6 +112,7 @@ export type QuoteBuilderState = {
   meta: QuoteMeta;
   client: ClientInfo;
   odooVersion: "16" | "17" | "18" | "19";
+  language: QuoteLanguage;
   priceMode: PriceMode;
   totalDiscount: number;
   modules: Record<string, ModuleState>;

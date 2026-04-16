@@ -136,3 +136,35 @@ export function SectionVersion() {
     </SectionCard>
   );
 }
+
+export function SectionLanguage() {
+  const language = useBuilderStore((s) => s.language);
+  const setLanguage = useBuilderStore((s) => s.setLanguage);
+  return (
+    <SectionCard icon="🌐" title="لغة العرض" subtitle="يظهر محتوى العرض بالعربية أو بالإنجليزية" tone="info">
+      <div className="flex gap-2">
+        {[
+          { v: "ar" as const, label: "العربية", sub: "RTL + Noto Sans Arabic" },
+          { v: "en" as const, label: "English", sub: "LTR + Inter font" },
+        ].map((opt) => (
+          <button
+            key={opt.v}
+            type="button"
+            onClick={() => setLanguage(opt.v)}
+            className={cn(
+              "flex-1 rounded-sm2 border-2 px-4 py-3 text-center transition-colors",
+              language === opt.v
+                ? "border-bg-green bg-bg-green-lt text-bg-green"
+                : "border-bg-line text-bg-text-2 hover:border-bg-green-2"
+            )}
+          >
+            <div className="text-sm font-black">{opt.label}</div>
+            <div className={cn("text-[10px] mt-0.5", language === opt.v ? "text-bg-green-2" : "text-bg-text-3")}>
+              {opt.sub}
+            </div>
+          </button>
+        ))}
+      </div>
+    </SectionCard>
+  );
+}

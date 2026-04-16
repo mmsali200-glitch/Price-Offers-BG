@@ -48,6 +48,7 @@ export function makeInitialState(): QuoteBuilderState {
       contactEmail: "",
     },
     odooVersion: "18",
+    language: "ar",
     priceMode: "total",
     totalDiscount: 0,
     modules,

@@ -1,6 +1,6 @@
 "use client";
 
-import { SectionClient, SectionVersion } from "./section-client";
+import { SectionClient, SectionVersion, SectionLanguage } from "./section-client";
 import { SectionModules, SectionBGApps } from "./section-modules";
 import { SectionOptions } from "./section-options";
 import { SectionPhases } from "./section-phases";
@@ -28,6 +28,7 @@ export function QuoteBuilder() {
       </header>
 
       <SectionClient />
+      <SectionLanguage />
       <SectionVersion />
       <SectionModules />
       <SectionBGApps />

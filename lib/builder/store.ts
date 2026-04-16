@@ -22,6 +22,7 @@ type Actions = {
   setMeta: <K extends keyof QuoteBuilderState["meta"]>(key: K, value: QuoteBuilderState["meta"][K]) => void;
   setClient: <K extends keyof QuoteBuilderState["client"]>(key: K, value: QuoteBuilderState["client"][K]) => void;
   setOdooVersion: (v: QuoteBuilderState["odooVersion"]) => void;
+  setLanguage: (lang: QuoteBuilderState["language"]) => void;
 
   toggleModule: (id: string) => void;
   setModule: (id: string, patch: Partial<ModuleState>) => void;
@@ -79,6 +80,7 @@ export const useBuilderStore = create<QuoteBuilderState & Actions>()(
   setMeta: (key, value) => set((s) => ({ meta: { ...s.meta, [key]: value } })),
   setClient: (key, value) => set((s) => ({ client: { ...s.client, [key]: value } })),
   setOdooVersion: (v) => set({ odooVersion: v }),
+  setLanguage: (lang) => set({ language: lang }),
 
   toggleModule: (id) =>
     set((s) => {

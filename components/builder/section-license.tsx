@@ -183,6 +183,42 @@ export function SectionLicense() {
           ⚠ الأسعار إرشادية من Odoo — تخضع لسعر الصرف وتُؤكَّد بعرض رسمي
         </div>
       </div>
+
+      <div className="mt-3 rounded-sm2 border-[1.5px] border-bg-gold bg-bg-gold-lt p-3">
+        <label className="flex items-start gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            className="mt-0.5"
+            checked={lic.includeOdooInTotal}
+            onChange={(e) => setLic("includeOdooInTotal", e.target.checked)}
+          />
+          <div className="flex-1">
+            <div className="text-xs font-bold text-[#8a6010]">
+              إضافة تكلفة Odoo للإجمالي الكلي في العرض
+            </div>
+            <div className="text-[10px] text-bg-text-3 mt-0.5">
+              عند التفعيل يظهر في الملخص المالي: تطوير + تكلفة Odoo × N شهر
+            </div>
+          </div>
+        </label>
+        {lic.includeOdooInTotal && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="text-[11px] text-bg-text-2">عدد الأشهر:</span>
+            <select
+              className="input py-1 text-xs w-auto"
+              value={lic.licenseMonths}
+              onChange={(e) => setLic("licenseMonths", parseInt(e.target.value) || 12)}
+            >
+              {[3, 6, 12, 24, 36].map((m) => (
+                <option key={m} value={m}>{m} شهر</option>
+              ))}
+            </select>
+            <span className="text-[11px] text-bg-text-3">
+              = {fmtNum(licMonthly * lic.licenseMonths)} {cur}
+            </span>
+          </div>
+        )}
+      </div>
     </SectionCard>
   );
 }
