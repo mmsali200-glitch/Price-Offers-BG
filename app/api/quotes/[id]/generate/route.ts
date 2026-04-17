@@ -114,7 +114,7 @@ export async function POST(
       kind: "regenerated",
       actor_type: "user",
       actor_id: user.id,
-    });
+    }).then(null, () => {});
 
     return NextResponse.json({ ok: true });
   } catch (err) {

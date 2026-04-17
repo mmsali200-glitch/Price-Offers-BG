@@ -102,7 +102,8 @@ export async function createQuoteFromTemplate(formData: FormData) {
 
   await supabase
     .from("quote_sections")
-    .insert({ quote_id: quote.id, payload: state });
+    .insert({ quote_id: quote.id, payload: state })
+    .then(null, (e: unknown) => console.warn("[template] sections:", e));
 
   await supabase.from("quote_events").insert({
     quote_id: quote.id,
@@ -110,7 +111,7 @@ export async function createQuoteFromTemplate(formData: FormData) {
     actor_type: "user",
     actor_id: user.id,
     metadata: { template: template.id, templateName: template.name },
-  });
+  }).then(null, (e: unknown) => console.warn("[template] event:", e));
 
   revalidatePath("/quotes");
   revalidatePath("/dashboard");

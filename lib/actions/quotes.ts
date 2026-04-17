@@ -181,15 +181,17 @@ export async function createQuote(formData: FormData) {
 
   await supabase
     .from("quote_sections")
-    .insert({ quote_id: quoteId, payload: seedPayload });
+    .insert({ quote_id: quoteId, payload: seedPayload })
+    .then(null, (e: unknown) => console.warn("[createQuote] sections insert:", e));
 
+  // Event insert may fail if RLS INSERT policy is missing (pre-migration).
   await supabase.from("quote_events").insert({
     quote_id: quoteId,
     kind: "created",
     actor_type: "user",
     actor_id: user.id,
     metadata: { client_id: clientId, quote_language: quoteLanguage },
-  });
+  }).then(null, (e: unknown) => console.warn("[createQuote] event insert:", e));
 
   revalidatePath("/quotes");
   revalidatePath("/clients");
@@ -234,7 +236,7 @@ export async function updateQuoteStatus(
     actor_type: "user",
     actor_id: user.id,
     metadata: { status },
-  });
+  }).then(null, (e: unknown) => console.warn("[updateStatus] event:", e));
 
   revalidatePath(`/quotes/${quoteId}/edit`);
   revalidatePath("/quotes");
