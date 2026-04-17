@@ -39,7 +39,7 @@ export default async function DashboardPage() {
   const hasData = s.totalQuotes > 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="page-padding space-y-4 sm:space-y-6">
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-black text-bg-green">لوحة التحكم</h1>

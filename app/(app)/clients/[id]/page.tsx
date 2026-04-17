@@ -36,7 +36,7 @@ export default async function ClientDetailPage({
   const isAdmin = role === "admin";
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl">
+    <div className="page-padding space-y-4 sm:space-y-6 max-w-5xl">
       {/* Back + header */}
       <div className="flex items-center gap-3">
         <Link href="/clients" className="btn-outline inline-flex items-center gap-1.5 h-8 text-xs">

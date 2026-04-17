@@ -30,7 +30,7 @@ export default function TemplatesPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="page-padding space-y-4 sm:space-y-6">
       {/* Hero summary */}
       <header className="card p-6 bg-gradient-to-br from-bg-green to-bg-green-2 text-white">
         <div className="flex items-start justify-between flex-wrap gap-4">

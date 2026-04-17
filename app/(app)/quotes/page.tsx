@@ -28,7 +28,7 @@ export default async function QuotesPage() {
   const isAdmin = role === "admin";
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="page-padding space-y-4 sm:space-y-6">
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-bg-green">عروض الأسعار</h1>
@@ -57,7 +57,7 @@ export default async function QuotesPage() {
           </div>
         </div>
       ) : (
-        <div className="card overflow-hidden">
+        <div className="card overflow-hidden table-mobile">
           <table className="w-full text-sm">
             <thead className="bg-bg-green text-white">
               <tr>

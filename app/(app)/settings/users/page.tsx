@@ -16,7 +16,7 @@ export default async function UsersPage() {
   const users = await listUsers();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="page-padding space-y-4 sm:space-y-6">
       <header>
         <h1 className="text-2xl font-black text-bg-green inline-flex items-center gap-2">
           <UsersIcon className="size-6" />

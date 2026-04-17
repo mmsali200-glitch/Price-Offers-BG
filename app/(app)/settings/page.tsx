@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   const isAdmin = role === "admin";
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
+    <div className="page-padding space-y-4 sm:space-y-6 max-w-4xl">
       <header>
         <h1 className="text-2xl font-black text-bg-green inline-flex items-center gap-2">
           <SettingsIcon className="size-6" />
