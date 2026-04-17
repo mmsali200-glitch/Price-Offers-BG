@@ -5,7 +5,9 @@ import {
   FileText, Plus, Hash,
 } from "lucide-react";
 import { getClientWithQuotes } from "@/lib/actions/clients";
+import { getCurrentRole } from "@/lib/actions/users";
 import { fmtNum, curSymbol, fmtDateArabic } from "@/lib/utils";
+import { EditClientButton, DeleteClientButton, DeleteQuoteButton } from "./admin-actions";
 
 export const metadata = { title: "بيانات العميل · BG Quotes" };
 export const dynamic = "force-dynamic";
@@ -30,6 +32,8 @@ export default async function ClientDetailPage({
 
   const { client: c, quotes } = result;
   const totalValue = quotes.reduce((s, q) => s + (q.total_development || 0), 0);
+  const role = await getCurrentRole();
+  const isAdmin = role === "admin";
 
   return (
     <div className="p-6 space-y-6 max-w-5xl">
@@ -94,6 +98,23 @@ export default async function ClientDetailPage({
         </div>
       </div>
 
+      {/* Admin actions */}
+      {isAdmin && (
+        <div className="flex flex-wrap gap-2">
+          <EditClientButton
+            clientId={c.id}
+            current={{
+              name_ar: c.name_ar, name_en: c.name_en,
+              sector: c.sector, country: c.country,
+              city: c.city, contact_name: c.contact_name,
+              contact_phone: c.contact_phone, contact_email: c.contact_email,
+              business_activity: c.business_activity, website: c.website,
+            }}
+          />
+          <DeleteClientButton clientId={c.id} clientName={c.name_ar} />
+        </div>
+      )}
+
       {/* Quotes list */}
       <div className="card overflow-hidden">
         <div className="px-5 py-3 border-b border-bg-line flex items-center justify-between">
@@ -113,6 +134,7 @@ export default async function ClientDetailPage({
                 <th className="px-3 py-2 text-right text-xs font-bold text-bg-text-3">القيمة</th>
                 <th className="px-3 py-2 text-right text-xs font-bold text-bg-text-3">تاريخ الإنشاء</th>
                 <th className="px-3 py-2 text-right text-xs font-bold text-bg-text-3">آخر تحديث</th>
+                {isAdmin && <th className="px-3 py-2 w-10"></th>}
               </tr>
             </thead>
             <tbody>
@@ -145,6 +167,11 @@ export default async function ClientDetailPage({
                     <td className="px-3 py-2.5 text-xs text-bg-text-3">
                       {fmtDateArabic(q.updated_at)}
                     </td>
+                    {isAdmin && (
+                      <td className="px-2 py-2.5">
+                        <DeleteQuoteButton quoteId={q.id} quoteRef={q.ref} />
+                      </td>
+                    )}
                   </tr>
                 );
               })}

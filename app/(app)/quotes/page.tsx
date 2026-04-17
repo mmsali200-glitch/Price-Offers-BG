@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Plus, FileText } from "lucide-react";
 import { listQuotes } from "@/lib/actions/quotes";
+import { getCurrentRole } from "@/lib/actions/users";
 import { fmtNum, curSymbol, fmtDateArabic } from "@/lib/utils";
+import { DeleteQuoteButton } from "@/app/(app)/clients/[id]/admin-actions";
 
 export const metadata = { title: "عروض الأسعار · BG Quotes" };
 export const dynamic = "force-dynamic";
@@ -22,6 +24,8 @@ export default async function QuotesPage() {
   } catch (err) {
     console.error("[quotes]", err);
   }
+  const role = await getCurrentRole();
+  const isAdmin = role === "admin";
 
   return (
     <div className="p-6 space-y-6">
@@ -63,6 +67,7 @@ export default async function QuotesPage() {
                 <th className="px-3 py-2.5 text-right text-xs font-bold">الحالة</th>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">القيمة</th>
                 <th className="px-3 py-2.5 text-right text-xs font-bold">آخر تحديث</th>
+                {isAdmin && <th className="px-3 py-2.5 w-10"></th>}
               </tr>
             </thead>
             <tbody>
@@ -100,6 +105,11 @@ export default async function QuotesPage() {
                     <td className="px-3 py-2.5 text-xs text-bg-text-3">
                       {q.updated_at ? fmtDateArabic(q.updated_at) : "—"}
                     </td>
+                    {isAdmin && (
+                      <td className="px-2 py-2.5">
+                        <DeleteQuoteButton quoteId={q.id} quoteRef={q.ref} />
+                      </td>
+                    )}
                   </tr>
                 );
               })}
