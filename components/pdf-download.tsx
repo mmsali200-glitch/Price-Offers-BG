@@ -90,14 +90,19 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
       const imgH = canvas.height;
       const pxPerMm = imgW / cW;
       const pagePx = Math.floor(cH * pxPerMm);
-      const pages = Math.max(1, Math.ceil(imgH / pagePx));
 
-      for (let p = 0; p < pages; p++) {
+      // ── Smart page breaks: find white-space gaps near cut points ──
+      // Instead of cutting at fixed intervals (which slices through
+      // text/cards), scan for the nearest "mostly white" horizontal
+      // row within ±80px of the ideal cut point and break there.
+      const breakPoints = findSmartBreaks(canvas, pagePx, 80);
+
+      for (let p = 0; p < breakPoints.length; p++) {
         if (p > 0) pdf.addPage();
         drawHeader(pdf, pageW, isAr);
 
-        const srcY = p * pagePx;
-        const srcH = Math.min(pagePx, imgH - srcY);
+        const srcY = breakPoints[p].start;
+        const srcH = breakPoints[p].end - srcY;
         if (srcH <= 0) continue;
 
         const slice = document.createElement("canvas");
@@ -111,7 +116,7 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
         const sliceH = srcH / pxPerMm;
         pdf.addImage(slice.toDataURL("image/jpeg", 0.94), "JPEG", padX, hdrH, cW, sliceH);
 
-        drawFooter(pdf, pageW, pageH, p + 1, pages, isAr);
+        drawFooter(pdf, pageW, pageH, p + 1, breakPoints.length, isAr);
       }
 
       const safeName = fileName.replace(/[^\p{L}\p{N}_-]+/gu, "_");
@@ -148,6 +153,71 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
       )}
     </button>
   );
+}
+
+/**
+ * Find smart page break points by scanning for "mostly white" rows
+ * near each ideal cut position. This prevents cutting through text,
+ * cards, or tables — content gets pushed to the next page instead.
+ */
+function findSmartBreaks(
+  canvas: HTMLCanvasElement,
+  idealPagePx: number,
+  searchRange: number
+): Array<{ start: number; end: number }> {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    // Fallback: fixed breaks
+    const pages = Math.max(1, Math.ceil(canvas.height / idealPagePx));
+    return Array.from({ length: pages }, (_, i) => ({
+      start: i * idealPagePx,
+      end: Math.min((i + 1) * idealPagePx, canvas.height),
+    }));
+  }
+
+  const w = canvas.width;
+  const h = canvas.height;
+  const breaks: Array<{ start: number; end: number }> = [];
+  let cursor = 0;
+
+  while (cursor < h) {
+    const idealEnd = cursor + idealPagePx;
+
+    if (idealEnd >= h) {
+      // Last page — take everything remaining
+      breaks.push({ start: cursor, end: h });
+      break;
+    }
+
+    // Scan rows around the ideal cut point for the "whitest" row
+    const scanStart = Math.max(cursor + idealPagePx - searchRange * 4, cursor + 100);
+    const scanEnd = Math.min(idealEnd + searchRange, h);
+
+    let bestRow = idealEnd;
+    let bestScore = -1;
+
+    for (let row = scanStart; row < scanEnd; row += 2) {
+      // Sample pixels across the row (every 8th pixel for speed)
+      const rowData = ctx.getImageData(0, row, w, 1).data;
+      let whiteCount = 0;
+      for (let x = 0; x < w * 4; x += 32) { // every 8th pixel × 4 channels
+        const r = rowData[x];
+        const g = rowData[x + 1];
+        const b = rowData[x + 2];
+        // "White-ish" = all channels > 240
+        if (r > 240 && g > 240 && b > 240) whiteCount++;
+      }
+      if (whiteCount > bestScore) {
+        bestScore = whiteCount;
+        bestRow = row;
+      }
+    }
+
+    breaks.push({ start: cursor, end: bestRow });
+    cursor = bestRow;
+  }
+
+  return breaks;
 }
 
 function drawHeader(pdf: InstanceType<typeof import("jspdf").jsPDF>, pageW: number, isAr: boolean) {
