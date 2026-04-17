@@ -14,7 +14,12 @@ const SECTOR_AR: Record<string, string> = {
 };
 
 export default async function ClientsPage() {
-  const clients = await listClients();
+  let clients: Awaited<ReturnType<typeof listClients>> = [];
+  try {
+    clients = await listClients();
+  } catch (err) {
+    console.error("[clients]", err);
+  }
 
   return (
     <div className="p-6 space-y-6">

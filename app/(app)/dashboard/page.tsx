@@ -23,7 +23,18 @@ const PIPELINE_ORDER: Array<keyof typeof STATUS_META> = [
 ];
 
 export default async function DashboardPage() {
-  const s = await getDashboardStats();
+  let s: Awaited<ReturnType<typeof getDashboardStats>>;
+  try {
+    s = await getDashboardStats();
+  } catch (err) {
+    console.error("[dashboard]", err);
+    s = {
+      totalQuotes: 0, monthlyQuotes: 0, totalValue: 0,
+      acceptedValue: 0, acceptedCount: 0, acceptanceRate: 0,
+      avgQuoteValue: 0, currency: "KWD",
+      byStatus: {}, topModules: [], recentActivity: [], ownersBreakdown: [],
+    };
+  }
   const cur = curSymbol(s.currency);
   const hasData = s.totalQuotes > 0;
 

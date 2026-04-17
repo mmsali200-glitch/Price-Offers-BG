@@ -26,18 +26,34 @@ export default function LoginPage() {
     const supabase = createClient();
     try {
       if (mode === "signup") {
-        const { error: err } = await supabase.auth.signUp({ email, password });
+        const { data: signUpData, error: err } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: email.split("@")[0] } },
+        });
         if (err) throw err;
-        setOkMessage(
-          "تم إنشاء حسابك. جرّب تسجيل الدخول الآن."
-        );
+        // If email confirmation is required, signUpData.user exists but session is null.
+        if (signUpData?.user && !signUpData.session) {
+          setOkMessage(
+            "تم إنشاء الحساب. إذا لم يتطلب تأكيد البريد، سجّل دخول الآن."
+          );
+        } else {
+          setOkMessage("تم إنشاء حسابك بنجاح! سجّل دخول الآن.");
+        }
         setMode("signin");
       } else {
         const { error: err } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (err) throw err;
+        if (err) {
+          // Translate common Supabase errors to Arabic
+          const msg = err.message;
+          if (msg.includes("Invalid login")) throw new Error("بريد أو كلمة مرور غير صحيحة");
+          if (msg.includes("Email not confirmed")) throw new Error("البريد غير مُؤكَّد — تحقق من صندوق الوارد أو اطلب من المسؤول تعطيل تأكيد البريد");
+          if (msg.includes("disabled")) throw new Error("تسجيل الدخول بالبريد معطّل — فعّله من إعدادات Supabase");
+          throw err;
+        }
         router.push("/dashboard");
         router.refresh();
       }

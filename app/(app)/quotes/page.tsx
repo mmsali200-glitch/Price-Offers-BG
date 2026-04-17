@@ -16,7 +16,12 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default async function QuotesPage() {
-  const quotes = await listQuotes();
+  let quotes: Awaited<ReturnType<typeof listQuotes>> = [];
+  try {
+    quotes = await listQuotes();
+  } catch (err) {
+    console.error("[quotes]", err);
+  }
 
   return (
     <div className="p-6 space-y-6">
