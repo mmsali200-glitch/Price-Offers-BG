@@ -458,10 +458,95 @@ function renderArabic(state: QuoteBuilderState): string {
 }
 
 /**
- * Main render function — picks the template per language, then injects
- * the shared professional A4 print stylesheet.
+ * Main render function — builds 100% dynamic HTML.
+ * Uses the reference template ONLY for its CSS/fonts, then replaces
+ * ALL body content with dynamically generated sections.
  */
 export function renderQuoteHtml(state: QuoteBuilderState): string {
-  const html = state.language === "ar" ? renderArabic(state) : renderEnglish(state);
-  return injectPrintStyles(html);
+  const isAr = state.language === "ar";
+  const template = isAr ? getReferenceTemplateAr() : getReferenceTemplateEn();
+
+  // Extract <head> content (CSS + fonts) from the template.
+  const headMatch = template.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+  const headContent = headMatch?.[1] ?? "";
+
+  // Build ALL sections dynamically from the Builder state.
+  const sections = [
+    renderHeroHtml(state, isAr),
+    renderScopeHtml(state, isAr),
+    renderExecHtml(state, isAr),
+    renderFeaturesHtml(state, isAr),
+    renderModuleDetailsHtml(state, isAr),
+    renderWorkflowsHtml(state, isAr),
+    renderPhasesHtml(state, isAr),
+    renderRequirementsHtml(state, isAr),
+    renderPricingHtml(state, isAr),
+    renderInstallmentsHtml(state, isAr),
+    renderSupportHtml(state, isAr),
+    renderDescriptionHtml(state, isAr),
+    renderMeetingNotesHtml(state, isAr),
+    renderTermsHtml(state, isAr),
+    renderSignatureHtml(state, isAr),
+  ].filter(Boolean).join("\n");
+
+  const dir = isAr ? "rtl" : "ltr";
+  const lang = isAr ? "ar" : "en";
+  const font = isAr
+    ? "'Noto Sans Arabic', 'Inter', sans-serif"
+    : "'Inter', 'Noto Sans Arabic', sans-serif";
+
+  const html = `<!DOCTYPE html>
+<html lang="${lang}" dir="${dir}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${state.meta.ref || "BG Quote"} — ${state.client.nameAr || "Quote"}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a5c37; --green2: #247a4a; --green3: #2d9052;
+    --gold: #c9a84c; --gold2: #e0bc5a; --goldlt: #fdf5e0;
+    --bg: #f5f6f4; --bgcard: #ffffff; --bggray: #f0f2ef;
+    --gline: #e2e8e3; --gmid: #c4d0c8;
+    --tdark: #141f18; --tmid: #3e5446; --tgray: #7a8e80;
+    --green-lt: #eaf3ed; --gold-lt: #fdf5e0;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    font-family: ${font};
+    background: var(--bg); color: var(--tdark);
+    font-size: 14px; line-height: 1.7; direction: ${dir};
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; }
+  .content { max-width: 900px; margin: 0 auto; background: #fff; min-height: 100vh; box-shadow: 0 0 30px rgba(0,0,0,0.08); }
+  @media print {
+    @page { size: A4 portrait; margin: 10mm 12mm; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-shadow: none !important; }
+    body { background: #fff !important; }
+    .content { max-width: 100%; box-shadow: none; }
+    section { page-break-inside: avoid !important; }
+    h1, h2, h3, h4 { page-break-after: avoid !important; }
+    table { font-size: 10px !important; }
+    thead { display: table-header-group !important; }
+    tr { page-break-inside: avoid !important; }
+    p { orphans: 3; widows: 3; }
+  }
+  @media (max-width: 600px) {
+    .content { margin: 0; }
+    section { padding: 16px 12px !important; }
+    div[style*="grid-template-columns: repeat(3"] { grid-template-columns: 1fr !important; }
+    div[style*="grid-template-columns: repeat(4"] { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+</style>
+${PRINT_CSS}
+</head>
+<body>
+<div class="content">
+${sections}
+</div>
+</body>
+</html>`;
+
+  return html;
 }
