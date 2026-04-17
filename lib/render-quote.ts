@@ -20,6 +20,13 @@ import {
   renderMeetingNotesHtml,
   renderDescriptionHtml,
 } from "./render-dynamic-sections";
+import {
+  renderModuleDetailsHtml,
+  renderWorkflowsHtml,
+  renderPhasesHtml,
+  renderPricingHtml,
+  renderInstallmentsHtml,
+} from "./render-dynamic-sections-2";
 
 /** Inject the shared professional print stylesheet just before </head>. */
 function injectPrintStyles(html: string): string {
@@ -36,17 +43,22 @@ function injectPrintStyles(html: string): string {
 function injectDynamicSections(html: string, state: QuoteBuilderState, isAr: boolean): string {
   let h = html;
 
-  // Remove the static responsibilities/requirements section from the
-  // template — it's replaced by the dynamic renderRequirementsHtml().
-  // Matches sections with id="resp", id="responsibilities", or
-  // containing "مسؤوليات العميل" / "Client Responsibilities".
-  h = h.replace(
-    /<section[^>]*id="resp(?:onsibilities)?"[^>]*>[\s\S]*?<\/section>/gi,
-    "<!-- responsibilities section replaced by dynamic requirements -->"
-  );
+  // Remove static sections that are replaced by dynamic versions.
+  const staticIds = ["resp", "responsibilities", "mods", "modules", "flows", "workflows", "phases", "plan", "pricing", "configurator", "financial", "fin", "items", "inst", "installments", "schedule"];
+  staticIds.forEach((id) => {
+    h = h.replace(
+      new RegExp(`<section[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/section>`, "gi"),
+      `<!-- ${id} replaced by dynamic -->`
+    );
+  });
 
   const sections = [
+    renderModuleDetailsHtml(state, isAr),
+    renderWorkflowsHtml(state, isAr),
+    renderPhasesHtml(state, isAr),
     renderRequirementsHtml(state, isAr),
+    renderPricingHtml(state, isAr),
+    renderInstallmentsHtml(state, isAr),
     renderDescriptionHtml(state, isAr),
     renderMeetingNotesHtml(state, isAr),
   ].filter(Boolean).join("\n");
