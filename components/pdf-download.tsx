@@ -9,251 +9,243 @@ type Props = {
   language: "ar" | "en" | null;
 };
 
+/**
+ * Opens the quote HTML in a new browser window with print-optimized
+ * layout (no sidebar/topbar, embedded header/footer via CSS) and
+ * triggers window.print() — the browser's native engine handles
+ * RTL Arabic perfectly, page breaks intelligently, and produces
+ * a high-quality PDF when the user selects "Save as PDF".
+ */
 export function PdfDownloadButton({ html, fileName, language }: Props) {
-  const [state, setState] = useState<"idle" | "rendering" | "done" | "error">("idle");
+  const [state, setState] = useState<"idle" | "rendering" | "done">("idle");
 
-  const handleDownload = useCallback(async () => {
+  const handlePrint = useCallback(() => {
     if (!html) return;
     setState("rendering");
 
-    try {
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import("jspdf"),
-        import("html2canvas"),
-      ]);
+    const isAr = language === "ar";
+    const printHtml = buildPrintPage(html, fileName, isAr);
 
-      // ── 1. Inject CSS to hide chrome (safer than regex HTML removal) ──
-      const pdfHtml = html.replace(/<\/head>/i, `
-        <style>
-          #sidebar, .sidebar, aside, #topbar, .topbar,
-          .sidebar-overlay, .mobile-toggle, #hamburger,
-          #overlay { display:none !important; }
-          .main, main, main.main { margin:0 !important; width:100% !important; }
-          .wrap, .shell { display:block !important; }
-          * { box-shadow:none !important; text-shadow:none !important; }
-          body { background:#fff !important; }
-          .section:nth-child(even), .section:nth-child(odd) { background:#fff !important; }
-        </style>
-        </head>`);
-
-      // ── 2. Render in an iframe (most reliable for html2canvas) ──
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText = "position:fixed;top:0;left:0;width:794px;height:900px;border:none;z-index:-1;";
-      document.body.appendChild(iframe);
-
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (!iframeDoc) throw new Error("Cannot access iframe document");
-
-      iframeDoc.open();
-      iframeDoc.write(pdfHtml);
-      iframeDoc.close();
-
-      // Wait for fonts + images + layout
-      await new Promise((r) => setTimeout(r, 2000));
-
-      // Resize iframe to full content height
-      const body = iframeDoc.body;
-      const fullH = Math.max(body.scrollHeight, body.offsetHeight, iframeDoc.documentElement.scrollHeight);
-      iframe.style.height = fullH + "px";
-
-      await new Promise((r) => setTimeout(r, 500));
-
-      // ── 3. Capture ───────────────────────────────────────────
-      const canvas = await html2canvas(body, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        width: 794,
-        windowWidth: 794,
-        logging: false,
-      });
-
-      document.body.removeChild(iframe);
-
-      if (canvas.height < 100) {
-        throw new Error("Canvas is too small — content not rendered");
-      }
-
-      // ── 4. Build PDF pages ───────────────────────────────────
-      const isAr = language === "ar";
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pageW = 210;
-      const pageH = 297;
-      const hdrH = 13;
-      const ftrH = 35;   // 3cm+ clear space before footer
-      const padX = 5;
-      const cW = pageW - padX * 2;
-      const cH = pageH - hdrH - ftrH;
-
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      const pxPerMm = imgW / cW;
-      const pagePx = Math.floor(cH * pxPerMm);
-
-      // ── Smart page breaks: find white-space gaps near cut points ──
-      // Instead of cutting at fixed intervals (which slices through
-      // text/cards), scan for the nearest "mostly white" horizontal
-      // row within ±80px of the ideal cut point and break there.
-      const breakPoints = findSmartBreaks(canvas, pagePx, 80);
-
-      for (let p = 0; p < breakPoints.length; p++) {
-        if (p > 0) pdf.addPage();
-        drawHeader(pdf, pageW, isAr);
-
-        const srcY = breakPoints[p].start;
-        const srcH = breakPoints[p].end - srcY;
-        if (srcH <= 0) continue;
-
-        const slice = document.createElement("canvas");
-        slice.width = imgW;
-        slice.height = srcH;
-        const ctx = slice.getContext("2d")!;
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, imgW, srcH);
-        ctx.drawImage(canvas, 0, srcY, imgW, srcH, 0, 0, imgW, srcH);
-
-        const sliceH = srcH / pxPerMm;
-        pdf.addImage(slice.toDataURL("image/jpeg", 0.94), "JPEG", padX, hdrH, cW, sliceH);
-
-        drawFooter(pdf, pageW, pageH, p + 1, breakPoints.length, isAr);
-      }
-
-      const safeName = fileName.replace(/[^\p{L}\p{N}_-]+/gu, "_");
-      pdf.save(`${safeName}.pdf`);
-      setState("done");
-      setTimeout(() => setState("idle"), 3000);
-    } catch (err) {
-      console.error("[PDF]", err);
-      setState("error");
-      setTimeout(() => setState("idle"), 4000);
+    // Open in a new window so the user's current page is untouched.
+    const win = window.open("", "_blank", "width=900,height=700");
+    if (!win) {
+      alert("يرجى السماح بالنوافذ المنبثقة (pop-ups) لتحميل PDF.");
+      setState("idle");
+      return;
     }
-  }, [html, fileName, language]);
+
+    win.document.open();
+    win.document.write(printHtml);
+    win.document.close();
+
+    // Wait for fonts + images, then auto-trigger print.
+    win.onload = () => {
+      setTimeout(() => {
+        win.print();
+        setState("done");
+        setTimeout(() => setState("idle"), 2000);
+      }, 800);
+    };
+
+    // Fallback if onload doesn't fire (some browsers).
+    setTimeout(() => {
+      if (state === "rendering") {
+        win.print();
+        setState("done");
+        setTimeout(() => setState("idle"), 2000);
+      }
+    }, 3000);
+  }, [html, fileName, language, state]);
 
   return (
     <button
-      onClick={handleDownload}
+      onClick={handlePrint}
       disabled={state === "rendering" || !html}
       className={`inline-flex items-center gap-1.5 h-8 text-xs font-bold rounded-sm2 px-3 transition-colors ${
         state === "done"
           ? "bg-bg-green text-white"
-          : state === "error"
-          ? "bg-bg-danger text-white"
           : "bg-bg-gold text-bg-green hover:bg-bg-gold-2"
       }`}
     >
       {state === "rendering" ? (
-        <><Loader2 className="size-3.5 animate-spin" /> جاري إنشاء PDF...</>
+        <><Loader2 className="size-3.5 animate-spin" /> جاري التحضير...</>
       ) : state === "done" ? (
-        <><CheckCircle2 className="size-3.5" /> تم التحميل ✓</>
-      ) : state === "error" ? (
-        <>خطأ — حاول مرة أخرى</>
+        <><CheckCircle2 className="size-3.5" /> تم ✓</>
       ) : (
-        <><Download className="size-3.5" /> تحميل PDF</>
+        <><Download className="size-3.5" /> حفظ PDF</>
       )}
     </button>
   );
 }
 
 /**
- * Find smart page break points by scanning for "mostly white" rows
- * near each ideal cut position. This prevents cutting through text,
- * cards, or tables — content gets pushed to the next page instead.
+ * Build a complete, self-contained HTML page optimized for printing:
+ * - No sidebar / topbar / overlay
+ * - Embedded header + footer via CSS position:fixed (repeats every page)
+ * - @page rules for A4 with 10mm margins
+ * - Page breaks avoid splitting sections
+ * - Full RTL support for Arabic
  */
-function findSmartBreaks(
-  canvas: HTMLCanvasElement,
-  idealPagePx: number,
-  searchRange: number
-): Array<{ start: number; end: number }> {
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    // Fallback: fixed breaks
-    const pages = Math.max(1, Math.ceil(canvas.height / idealPagePx));
-    return Array.from({ length: pages }, (_, i) => ({
-      start: i * idealPagePx,
-      end: Math.min((i + 1) * idealPagePx, canvas.height),
-    }));
+function buildPrintPage(html: string, title: string, isAr: boolean): string {
+  // Start with the original HTML and inject our print overrides.
+  let h = html;
+
+  // Inject comprehensive print CSS + embedded header/footer HTML before </head>
+  const printBlock = `
+<style id="bg-pdf-print">
+  /* ─── Page setup ─── */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
   }
 
-  const w = canvas.width;
-  const h = canvas.height;
-  const breaks: Array<{ start: number; end: number }> = [];
-  let cursor = 0;
+  /* ─── Hide screen chrome ─── */
+  @media print {
+    #sidebar, .sidebar, aside,
+    #topbar, .topbar,
+    .sidebar-overlay, .mobile-toggle,
+    #hamburger, #overlay,
+    .tb-actions, .topbar-left button,
+    script { display: none !important; }
 
-  while (cursor < h) {
-    const idealEnd = cursor + idealPagePx;
+    /* Main content full width */
+    .main, main, main.main {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+    }
+    .wrap, .shell { display: block !important; width: 100% !important; }
 
-    if (idealEnd >= h) {
-      // Last page — take everything remaining
-      breaks.push({ start: cursor, end: h });
-      break;
+    /* Colors */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      box-shadow: none !important;
+      text-shadow: none !important;
+    }
+    body { background: #fff !important; }
+
+    /* Sections */
+    .section, section.section, section {
+      padding: 20px 16px !important;
+      border-bottom: 0.5px solid #e2e8e3 !important;
+      background: #fff !important;
+      max-width: 100% !important;
+      page-break-inside: avoid !important;
+    }
+    .section:nth-child(even), .section:nth-child(odd) {
+      background: #fff !important;
     }
 
-    // Scan rows around the ideal cut point for the "whitest" row
-    const scanStart = Math.max(cursor + idealPagePx - searchRange * 4, cursor + 100);
-    const scanEnd = Math.min(idealEnd + searchRange, h);
-
-    let bestRow = idealEnd;
-    let bestScore = -1;
-
-    for (let row = scanStart; row < scanEnd; row += 2) {
-      // Sample pixels across the row (every 8th pixel for speed)
-      const rowData = ctx.getImageData(0, row, w, 1).data;
-      let whiteCount = 0;
-      for (let x = 0; x < w * 4; x += 32) { // every 8th pixel × 4 channels
-        const r = rowData[x];
-        const g = rowData[x + 1];
-        const b = rowData[x + 2];
-        // "White-ish" = all channels > 240
-        if (r > 240 && g > 240 && b > 240) whiteCount++;
-      }
-      if (whiteCount > bestScore) {
-        bestScore = whiteCount;
-        bestRow = row;
-      }
+    /* Hero */
+    .hero, #hero, section#hero, section.hero {
+      padding: 24px 16px !important;
+      border-radius: 0 !important;
     }
 
-    breaks.push({ start: cursor, end: bestRow });
-    cursor = bestRow;
+    /* Avoid orphaned headings */
+    h1, h2, h3, h4, .section-header, .section-title {
+      page-break-after: avoid !important;
+    }
+
+    /* Grids for A4 */
+    .mod-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+    .kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+    .feat-grid, .exec-grid, .fin-grid, .phases-grid, .sup-grid, .plans-grid {
+      grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important;
+    }
+    .resp-grid, .sign-grid, .terms-grid, .lic-grid {
+      grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important;
+    }
+
+    /* Cards compact */
+    .mod-card, .feat-card, .exec-card, .phase-card,
+    .fin-card, .kpi-card, .card, .sup-card, .lic-card {
+      padding: 8px !important;
+      border-radius: 5px !important;
+      page-break-inside: avoid !important;
+    }
+
+    /* Tables */
+    table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
+    thead { display: table-header-group !important; }
+    tr { page-break-inside: avoid !important; }
+    th { background: #eaf3ed !important; color: #1a5c37 !important; padding: 6px 8px !important; }
+    td { padding: 5px 8px !important; border-bottom: 0.5px solid #e2e8e3 !important; }
+
+    /* Typography */
+    body { font-size: 12px !important; line-height: 1.5 !important; }
+    .section-title, h2.section-title { font-size: 16px !important; }
+    .hero-title { font-size: 24px !important; }
+    .hero-client, .hero-client-name { font-size: 18px !important; }
+
+    p { orphans: 3; widows: 3; }
+
+    /* ─── Fixed header + footer (repeats on every page) ─── */
+    .print-header {
+      display: block !important;
+      position: fixed;
+      top: 0; ${isAr ? "right" : "left"}: 0;
+      width: 100%;
+      height: 11mm;
+      z-index: 9999;
+    }
+    .print-footer {
+      display: block !important;
+      position: fixed;
+      bottom: 0; ${isAr ? "right" : "left"}: 0;
+      width: 100%;
+      height: 8mm;
+      z-index: 9999;
+    }
+    /* Push content below header and above footer */
+    .print-spacer-top { height: 12mm; display: block !important; }
+    .print-spacer-bottom { height: 9mm; display: block !important; }
   }
 
-  return breaks;
-}
+  /* Hide print elements on screen */
+  @media screen {
+    .print-header, .print-footer,
+    .print-spacer-top, .print-spacer-bottom { display: none !important; }
+  }
+</style>`;
 
-function drawHeader(pdf: InstanceType<typeof import("jspdf").jsPDF>, pageW: number, isAr: boolean) {
-  pdf.setFillColor(26, 92, 55);
-  pdf.rect(0, 0, pageW, 10.5, "F");
-  pdf.setFillColor(201, 168, 76);
-  pdf.rect(0, 10.5, pageW, 1, "F");
+  h = h.replace(/<\/head>/i, printBlock + "\n</head>");
 
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(9);
-  pdf.setTextColor(255, 255, 255);
-  const x = isAr ? pageW - 10 : 10;
-  const align = isAr ? "right" as const : "left" as const;
-  pdf.text("BUSINESS GATE", x, 5.5, { align });
-  pdf.setFontSize(6.5);
-  pdf.setTextColor(201, 168, 76);
-  pdf.text("Technical Consulting", x, 8.5, { align });
+  // Inject header + footer HTML + spacers right after <body...>
+  const headerHtml = `
+<div class="print-header">
+  <div style="background:#1a5c37;height:10mm;display:flex;align-items:center;justify-content:space-between;padding:0 14mm;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="background:#c9a84c;color:#1a5c37;font-weight:800;font-size:9pt;padding:2px 6px;border-radius:4px;font-family:Inter,sans-serif;">BG</div>
+      <div>
+        <div style="color:#fff;font-weight:700;font-size:9pt;font-family:Inter,sans-serif;letter-spacing:0.3px;">BUSINESS GATE</div>
+        <div style="color:#c9a84c;font-size:6pt;font-family:Inter,sans-serif;">Technical Consulting</div>
+      </div>
+    </div>
+    <div style="color:rgba(255,255,255,0.6);font-size:7pt;font-family:Inter,sans-serif;">${title}</div>
+  </div>
+  <div style="background:#c9a84c;height:1mm;"></div>
+</div>
 
-  pdf.setFillColor(201, 168, 76);
-  const bx = isAr ? 10 : pageW - 20;
-  pdf.roundedRect(bx, 2.5, 12, 6, 1.5, 1.5, "F");
-  pdf.setFontSize(8);
-  pdf.setTextColor(26, 92, 55);
-  pdf.text("BG", bx + 6, 6.5, { align: "center" });
-}
+<div class="print-footer">
+  <div style="border-top:0.5px solid #1a5c37;padding:2mm 14mm 0;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:6pt;color:#7a8e80;font-family:Inter,sans-serif;">www.businessesgates.com · OUN@businessesgates.com · +965 9999 0412 · Kuwait</span>
+    <span style="font-size:7pt;color:#1a5c37;font-weight:700;font-family:Inter,sans-serif;"></span>
+  </div>
+</div>
 
-function drawFooter(pdf: InstanceType<typeof import("jspdf").jsPDF>, pageW: number, pageH: number, cur: number, total: number, isAr: boolean) {
-  const y = pageH - 5.5;
-  pdf.setDrawColor(26, 92, 55);
-  pdf.setLineWidth(0.3);
-  pdf.line(10, y - 2, pageW - 10, y - 2);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(6.5);
-  pdf.setTextColor(122, 142, 128);
-  pdf.text("www.businessesgates.com  ·  OUN@businessesgates.com  ·  +965 9999 0412  ·  Kuwait", 10, y);
-  pdf.setFontSize(7);
-  pdf.setTextColor(26, 92, 55);
-  pdf.text(isAr ? `${cur} / ${total}` : `Page ${cur} of ${total}`, pageW - 10, y, { align: "right" });
+<div class="print-spacer-top"></div>`;
+
+  const footerSpacer = `<div class="print-spacer-bottom"></div>`;
+
+  // Insert after <body...>
+  h = h.replace(/(<body[^>]*>)/i, `$1\n${headerHtml}`);
+  // Insert before </body>
+  h = h.replace(/<\/body>/i, `${footerSpacer}\n</body>`);
+
+  // Set the page title for the print dialog
+  h = h.replace(/<title>[^<]*<\/title>/i, `<title>${title}</title>`);
+
+  return h;
 }
