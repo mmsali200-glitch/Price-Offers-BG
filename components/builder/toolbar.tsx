@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Eye, Loader2, Sparkles, ChevronDown } from "lucide-react";
+import { Eye, Loader2, ChevronDown } from "lucide-react";
 import { QuoteStagesWithDates } from "@/components/quote-stages-with-dates";
 import { updateQuoteStatus } from "@/lib/actions/quotes";
+import { GenerateButton } from "./generate-button";
 
 type StatusKey = "draft" | "sent" | "opened" | "accepted" | "rejected" | "expired";
 
@@ -33,35 +34,12 @@ export function BuilderToolbar({
   stageHistory: Record<string, string | null>;
 }) {
   const router = useRouter();
-  const [isGenerating, setIsGenerating] = useState(false);
   const [, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [statusOpen, setStatusOpen] = useState(false);
   const [isChangingStatus, setIsChangingStatus] = useState(false);
 
   const currentStatus = STATUS_OPTIONS.find((s) => s.v === status) ?? STATUS_OPTIONS[0];
-
-  async function handleGenerate() {
-    setIsGenerating(true);
-    setError(null);
-    try {
-      // Force-save via a lightweight API call that triggers autosave flush.
-      await fetch(`/api/quotes/${quoteId}/save`, { method: "POST" }).catch(() => {});
-      // Small delay to ensure save completes.
-      await new Promise((r) => setTimeout(r, 500));
-
-      const res = await fetch(`/api/quotes/${quoteId}/generate`, { method: "POST" });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Generation failed (${res.status})`);
-      }
-      startTransition(() => router.push(`/quotes/${quoteId}/preview`));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "حدث خطأ أثناء التوليد");
-    } finally {
-      setIsGenerating(false);
-    }
-  }
 
   async function handleStatusChange(newStatus: StatusKey) {
     setStatusOpen(false);
@@ -131,24 +109,7 @@ export function BuilderToolbar({
               المعاينة
             </button>
           )}
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating}
-            className="btn-primary inline-flex items-center gap-1.5 h-8 text-xs"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin" />
-                جاري التوليد...
-              </>
-            ) : (
-              <>
-                <Sparkles className="size-3.5" />
-                {generatedAt ? "إعادة التوليد" : "توليد العرض"}
-                <ArrowRight className="size-3.5" />
-              </>
-            )}
-          </button>
+          <GenerateButton quoteId={quoteId} />
         </div>
       </div>
 
