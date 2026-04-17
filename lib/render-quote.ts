@@ -15,11 +15,48 @@ import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
 import { PRINT_CSS } from "./print-css";
+import {
+  renderRequirementsHtml,
+  renderMeetingNotesHtml,
+  renderDescriptionHtml,
+} from "./render-dynamic-sections";
 
 /** Inject the shared professional print stylesheet just before </head>. */
 function injectPrintStyles(html: string): string {
   if (html.includes('id="bg-print-styles"')) return html;
   return html.replace(/<\/head>/i, `${PRINT_CSS}\n</head>`);
+}
+
+/**
+ * Inject all dynamic sections (requirements, description, workflows,
+ * meeting notes) before the signature/terms section or before </body>.
+ */
+function injectDynamicSections(html: string, state: QuoteBuilderState, isAr: boolean): string {
+  const sections = [
+    renderRequirementsHtml(state, isAr),
+    renderDescriptionHtml(state, isAr),
+    renderMeetingNotesHtml(state, isAr),
+  ].filter(Boolean).join("\n");
+
+  if (!sections) return html;
+
+  // Try to insert before the signature section
+  const signPatterns = [
+    /(<section[^>]*id="sign")/i,
+    /(<section[^>]*id="terms")/i,
+    /(<!-- ═+\s*§?\s*1[45]\s)/i,
+    /(<!-- ={3,}\s*SIGN)/i,
+    /(<!-- ={3,}\s*1[45])/i,
+  ];
+
+  for (const pat of signPatterns) {
+    if (pat.test(html)) {
+      return html.replace(pat, `${sections}\n$1`);
+    }
+  }
+
+  // Fallback: insert before </body>
+  return html.replace(/<\/body>/i, `${sections}\n</body>`);
 }
 
 /** Module icons for the scope grid. */
@@ -237,6 +274,9 @@ function renderEnglish(state: QuoteBuilderState): string {
   // Enforce LTR + English at the <html> level
   html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="en" dir="ltr">`);
 
+  // ── Inject dynamic sections before the signature/closing ──
+  html = injectDynamicSections(html, state, false);
+
   return html;
 }
 
@@ -360,6 +400,9 @@ function renderArabic(state: QuoteBuilderState): string {
 
   // Ensure correct document direction + language
   html = html.replace(/<html lang="[^"]*" dir="[^"]*">/, `<html lang="ar" dir="rtl">`);
+
+  // ── Inject dynamic sections ──
+  html = injectDynamicSections(html, state, true);
 
   return html;
 }
