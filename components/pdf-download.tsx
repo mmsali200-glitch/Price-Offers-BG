@@ -10,11 +10,9 @@ type Props = {
 };
 
 /**
- * Opens the quote HTML in a new browser window with print-optimized
- * layout (no sidebar/topbar, embedded header/footer via CSS) and
- * triggers window.print() — the browser's native engine handles
- * RTL Arabic perfectly, page breaks intelligently, and produces
- * a high-quality PDF when the user selects "Save as PDF".
+ * Opens quote HTML in a new window with a TABLE-based header/footer
+ * (the only 100% reliable cross-browser method for repeating
+ * headers/footers on every printed page) and triggers print.
  */
 export function PdfDownloadButton({ html, fileName, language }: Props) {
   const [state, setState] = useState<"idle" | "rendering" | "done">("idle");
@@ -24,10 +22,9 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
     setState("rendering");
 
     const isAr = language === "ar";
-    const printHtml = buildPrintPage(html, fileName, isAr);
+    const printDoc = buildPrintDoc(html, fileName, isAr);
 
-    // Open in a new window so the user's current page is untouched.
-    const win = window.open("", "_blank", "width=900,height=700");
+    const win = window.open("", "_blank");
     if (!win) {
       alert("يرجى السماح بالنوافذ المنبثقة (pop-ups) لتحميل PDF.");
       setState("idle");
@@ -35,26 +32,18 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
     }
 
     win.document.open();
-    win.document.write(printHtml);
+    win.document.write(printDoc);
     win.document.close();
 
-    // Wait for fonts + images, then auto-trigger print.
-    win.onload = () => {
-      setTimeout(() => {
-        win.print();
-        setState("done");
-        setTimeout(() => setState("idle"), 2000);
-      }, 800);
+    // Auto-print after fonts load.
+    const triggerPrint = () => {
+      win.focus();
+      win.print();
+      setState("done");
+      setTimeout(() => setState("idle"), 2000);
     };
-
-    // Fallback if onload doesn't fire (some browsers).
-    setTimeout(() => {
-      if (state === "rendering") {
-        win.print();
-        setState("done");
-        setTimeout(() => setState("idle"), 2000);
-      }
-    }, 3000);
+    win.onload = () => setTimeout(triggerPrint, 600);
+    setTimeout(() => { if (state === "rendering") triggerPrint(); }, 3500);
   }, [html, fileName, language, state]);
 
   return (
@@ -79,173 +68,175 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
 }
 
 /**
- * Build a complete, self-contained HTML page optimized for printing:
- * - No sidebar / topbar / overlay
- * - Embedded header + footer via CSS position:fixed (repeats every page)
- * - @page rules for A4 with 10mm margins
- * - Page breaks avoid splitting sections
- * - Full RTL support for Arabic
+ * Extract everything between <body> and </body> from the quote HTML,
+ * then wrap it in a TABLE structure:
+ *   <thead> = BG header (repeats on every printed page)
+ *   <tfoot> = contact footer (repeats on every printed page)
+ *   <tbody> = quote content
+ *
+ * This is the only reliable cross-browser method. CSS position:fixed
+ * fails in many print contexts. display:table-header-group is what
+ * browsers have supported for 20+ years.
  */
-function buildPrintPage(html: string, title: string, isAr: boolean): string {
-  // Start with the original HTML and inject our print overrides.
-  let h = html;
+function buildPrintDoc(html: string, title: string, isAr: boolean): string {
+  // Extract <head> content (for CSS + fonts)
+  const headMatch = html.match(/<head[^>]*>([\s\S]*?)<\/head>/i);
+  const headContent = headMatch?.[1] ?? "";
 
-  // Inject comprehensive print CSS + embedded header/footer HTML before </head>
-  const printBlock = `
-<style id="bg-pdf-print">
-  /* ─── Page setup ─── */
-  @page {
-    size: A4 portrait;
-    margin: 10mm 12mm 10mm 12mm;
-  }
+  // Extract <body> content
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  let bodyContent = bodyMatch?.[1] ?? html;
 
-  /* ─── Hide screen chrome ─── */
+  // Remove sidebar, topbar, overlay from body content
+  bodyContent = bodyContent
+    .replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, "")
+    .replace(/<div[^>]*id="sidebar"[^>]*>[\s\S]*?<\/div>\s*(?=<!--)/gi, "")
+    .replace(/<div[^>]*id="topbar"[^>]*>[\s\S]*?<\/div>/gi, "")
+    .replace(/<div[^>]*class="topbar"[^>]*>[\s\S]*?<\/div>\s*(?=<)/gi, "")
+    .replace(/<div[^>]*class="sidebar-overlay"[^>]*>[^<]*<\/div>/gi, "")
+    .replace(/<div[^>]*id="overlay"[^>]*>[^<]*<\/div>/gi, "");
+
+  const dir = isAr ? "rtl" : "ltr";
+  const align = isAr ? "right" : "left";
+
+  return `<!DOCTYPE html>
+<html lang="${isAr ? "ar" : "en"}" dir="${dir}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title}</title>
+${headContent}
+<style>
+  /* ─── Print table trick ─── */
+  .print-table { width: 100%; border-collapse: collapse; }
+  .print-table td { padding: 0; vertical-align: top; }
+
   @media print {
-    #sidebar, .sidebar, aside,
-    #topbar, .topbar,
-    .sidebar-overlay, .mobile-toggle,
-    #hamburger, #overlay,
-    .tb-actions, .topbar-left button,
-    script { display: none !important; }
+    @page { size: A4 portrait; margin: 4mm 10mm 4mm 10mm; }
 
-    /* Main content full width */
-    .main, main, main.main {
-      margin: 0 !important;
-      padding: 0 !important;
-      width: 100% !important;
-    }
-    .wrap, .shell { display: block !important; width: 100% !important; }
-
-    /* Colors */
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       box-shadow: none !important;
-      text-shadow: none !important;
     }
-    body { background: #fff !important; }
+
+    body {
+      margin: 0 !important; padding: 0 !important;
+      background: #fff !important;
+      font-size: 11px !important;
+      line-height: 1.5 !important;
+    }
+
+    /* Hide non-print elements */
+    #sidebar, .sidebar, aside,
+    #topbar, .topbar,
+    .sidebar-overlay, .mobile-toggle,
+    #hamburger, #overlay { display: none !important; }
+
+    .main, main, .wrap, .shell, .content {
+      margin: 0 !important; padding: 0 !important;
+      width: 100% !important; display: block !important;
+    }
 
     /* Sections */
-    .section, section.section, section {
-      padding: 20px 16px !important;
-      border-bottom: 0.5px solid #e2e8e3 !important;
-      background: #fff !important;
-      max-width: 100% !important;
+    .section, section { padding: 14px 8px !important; background: #fff !important; max-width: 100% !important; }
+    .section:nth-child(even), .section:nth-child(odd) { background: #fff !important; }
+
+    /* Page breaks */
+    .section, section, .card, .mod-card, .exec-card, .feat-card,
+    .phase-card, .fin-card, .sign-card, .kpi-card, tr {
       page-break-inside: avoid !important;
     }
-    .section:nth-child(even), .section:nth-child(odd) {
-      background: #fff !important;
-    }
-
-    /* Hero */
-    .hero, #hero, section#hero, section.hero {
-      padding: 24px 16px !important;
-      border-radius: 0 !important;
-    }
-
-    /* Avoid orphaned headings */
     h1, h2, h3, h4, .section-header, .section-title {
       page-break-after: avoid !important;
     }
 
-    /* Grids for A4 */
-    .mod-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
-    .kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
+    /* Hero */
+    .hero, #hero { padding: 20px 12px !important; border-radius: 0 !important; }
+    .hero-title { font-size: 22px !important; }
+    .hero-client, .hero-client-name { font-size: 17px !important; }
+
+    /* Grids */
+    .mod-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+    .kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
     .feat-grid, .exec-grid, .fin-grid, .phases-grid, .sup-grid, .plans-grid {
-      grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important;
+      grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important;
     }
     .resp-grid, .sign-grid, .terms-grid, .lic-grid {
-      grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important;
+      grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important;
     }
 
-    /* Cards compact */
-    .mod-card, .feat-card, .exec-card, .phase-card,
-    .fin-card, .kpi-card, .card, .sup-card, .lic-card {
-      padding: 8px !important;
-      border-radius: 5px !important;
-      page-break-inside: avoid !important;
+    /* Cards */
+    .mod-card, .card, .feat-card, .exec-card, .kpi-card, .sup-card {
+      padding: 6px !important; border-radius: 4px !important;
     }
 
     /* Tables */
-    table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
+    table:not(.print-table) { width: 100% !important; font-size: 9px !important; }
     thead { display: table-header-group !important; }
-    tr { page-break-inside: avoid !important; }
-    th { background: #eaf3ed !important; color: #1a5c37 !important; padding: 6px 8px !important; }
-    td { padding: 5px 8px !important; border-bottom: 0.5px solid #e2e8e3 !important; }
 
-    /* Typography */
-    body { font-size: 12px !important; line-height: 1.5 !important; }
-    .section-title, h2.section-title { font-size: 16px !important; }
-    .hero-title { font-size: 24px !important; }
-    .hero-client, .hero-client-name { font-size: 18px !important; }
+    /* Section titles */
+    .section-title { font-size: 15px !important; }
+    .section-num { width: 22px !important; height: 22px !important; font-size: 10px !important; }
 
     p { orphans: 3; widows: 3; }
-
-    /* ─── Fixed header + footer (repeats on every page) ─── */
-    .print-header {
-      display: block !important;
-      position: fixed;
-      top: 0; ${isAr ? "right" : "left"}: 0;
-      width: 100%;
-      height: 11mm;
-      z-index: 9999;
-    }
-    .print-footer {
-      display: block !important;
-      position: fixed;
-      bottom: 0; ${isAr ? "right" : "left"}: 0;
-      width: 100%;
-      height: 8mm;
-      z-index: 9999;
-    }
-    /* Push content below header and above footer */
-    .print-spacer-top { height: 12mm; display: block !important; }
-    .print-spacer-bottom { height: 9mm; display: block !important; }
   }
 
-  /* Hide print elements on screen */
+  /* Screen: hide print elements */
   @media screen {
-    .print-header, .print-footer,
-    .print-spacer-top, .print-spacer-bottom { display: none !important; }
+    body { background: #f5f6f4; padding: 20px; }
+    .print-table { max-width: 794px; margin: 0 auto; background: #fff; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
   }
-</style>`;
+</style>
+</head>
+<body>
 
-  h = h.replace(/<\/head>/i, printBlock + "\n</head>");
+<table class="print-table">
+  <!-- HEADER: repeats on every printed page -->
+  <thead>
+    <tr>
+      <td>
+        <div style="background:#1a5c37;padding:6px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="background:#c9a84c;color:#1a5c37;font-weight:800;font-size:10px;padding:3px 8px;border-radius:4px;font-family:Inter,Arial,sans-serif;">BG</div>
+            <div>
+              <div style="color:#fff;font-weight:700;font-size:10px;font-family:Inter,Arial,sans-serif;">BUSINESS GATE</div>
+              <div style="color:#c9a84c;font-size:7px;font-family:Inter,Arial,sans-serif;">Technical Consulting</div>
+            </div>
+          </div>
+          <div style="color:rgba(255,255,255,0.7);font-size:8px;font-family:Inter,Arial,sans-serif;">${title}</div>
+        </div>
+        <div style="background:#c9a84c;height:2px;"></div>
+      </td>
+    </tr>
+  </thead>
 
-  // Inject header + footer HTML + spacers right after <body...>
-  const headerHtml = `
-<div class="print-header">
-  <div style="background:#1a5c37;height:10mm;display:flex;align-items:center;justify-content:space-between;padding:0 14mm;">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div style="background:#c9a84c;color:#1a5c37;font-weight:800;font-size:9pt;padding:2px 6px;border-radius:4px;font-family:Inter,sans-serif;">BG</div>
-      <div>
-        <div style="color:#fff;font-weight:700;font-size:9pt;font-family:Inter,sans-serif;letter-spacing:0.3px;">BUSINESS GATE</div>
-        <div style="color:#c9a84c;font-size:6pt;font-family:Inter,sans-serif;">Technical Consulting</div>
-      </div>
-    </div>
-    <div style="color:rgba(255,255,255,0.6);font-size:7pt;font-family:Inter,sans-serif;">${title}</div>
-  </div>
-  <div style="background:#c9a84c;height:1mm;"></div>
-</div>
+  <!-- FOOTER: repeats on every printed page -->
+  <tfoot>
+    <tr>
+      <td>
+        <div style="border-top:1px solid #1a5c37;padding:4px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+          <span style="font-size:7px;color:#7a8e80;font-family:Inter,Arial,sans-serif;">
+            www.businessesgates.com &nbsp;·&nbsp; OUN@businessesgates.com &nbsp;·&nbsp; +965 9999 0412 &nbsp;·&nbsp; Kuwait
+          </span>
+          <span style="font-size:7px;color:#1a5c37;font-weight:700;font-family:Inter,Arial,sans-serif;">
+            Business Gate Technical Consulting
+          </span>
+        </div>
+      </td>
+    </tr>
+  </tfoot>
 
-<div class="print-footer">
-  <div style="border-top:0.5px solid #1a5c37;padding:2mm 14mm 0;display:flex;justify-content:space-between;align-items:center;">
-    <span style="font-size:6pt;color:#7a8e80;font-family:Inter,sans-serif;">www.businessesgates.com · OUN@businessesgates.com · +965 9999 0412 · Kuwait</span>
-    <span style="font-size:7pt;color:#1a5c37;font-weight:700;font-family:Inter,sans-serif;"></span>
-  </div>
-</div>
+  <!-- BODY: the quote content -->
+  <tbody>
+    <tr>
+      <td>
+        ${bodyContent}
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-<div class="print-spacer-top"></div>`;
-
-  const footerSpacer = `<div class="print-spacer-bottom"></div>`;
-
-  // Insert after <body...>
-  h = h.replace(/(<body[^>]*>)/i, `$1\n${headerHtml}`);
-  // Insert before </body>
-  h = h.replace(/<\/body>/i, `${footerSpacer}\n</body>`);
-
-  // Set the page title for the print dialog
-  h = h.replace(/<title>[^<]*<\/title>/i, `<title>${title}</title>`);
-
-  return h;
+</body>
+</html>`;
 }
