@@ -50,10 +50,30 @@ export async function POST(
       .eq("quote_id", id)
       .single();
 
-    // Merge the saved payload with defaults so missing fields never break
-    // the renderer. Also inject the quote's ref (source of truth on the quotes row).
+    // The toolbar force-saves the current Builder state before calling
+    // this route, so the payload should be complete. We still merge with
+    // defaults as a safety net for any missing fields.
     const saved = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
     const defaults = makeInitialState();
+
+    // Use saved data as primary — defaults only fill truly missing keys.
+    // For modules/bgApps: if saved has the key, use saved (even if selected=false).
+    const savedModules = saved.modules ?? {};
+    const mergedModules = { ...defaults.modules };
+    Object.keys(mergedModules).forEach((k) => {
+      if (savedModules[k] !== undefined) {
+        mergedModules[k] = { ...mergedModules[k], ...savedModules[k] };
+      }
+    });
+
+    const savedBG = saved.bgApps ?? {};
+    const mergedBG = { ...defaults.bgApps };
+    Object.keys(mergedBG).forEach((k) => {
+      if (savedBG[k] !== undefined) {
+        mergedBG[k] = { ...mergedBG[k], ...savedBG[k] };
+      }
+    });
+
     const payload: QuoteBuilderState = {
       ...defaults,
       ...saved,
@@ -67,8 +87,8 @@ export async function POST(
         ...(saved.client ?? {}),
         nameAr: saved.client?.nameAr || quote.title || defaults.client.nameAr,
       },
-      modules: { ...defaults.modules, ...(saved.modules ?? {}) },
-      bgApps: { ...defaults.bgApps, ...(saved.bgApps ?? {}) },
+      modules: mergedModules,
+      bgApps: mergedBG,
       license: { ...defaults.license, ...(saved.license ?? {}) },
       support: {
         ...defaults.support,

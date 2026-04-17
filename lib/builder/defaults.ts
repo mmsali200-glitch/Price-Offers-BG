@@ -15,10 +15,6 @@ export function makeInitialState(): QuoteBuilderState {
       };
     });
   });
-  // Defaults that mirror the original v3 builder state.
-  modules["sales"].selected = true;
-  modules["inventory"].selected = true;
-  modules["purchase"].selected = true;
 
   const bgApps: QuoteBuilderState["bgApps"] = {};
   BG_APPS.forEach((a) => {
