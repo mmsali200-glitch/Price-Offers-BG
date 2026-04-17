@@ -30,17 +30,29 @@ function injectPrintStyles(html: string): string {
 /**
  * Inject all dynamic sections (requirements, description, workflows,
  * meeting notes) before the signature/terms section or before </body>.
+ * Also REMOVES the static "responsibilities" section from the template
+ * to avoid duplication with the dynamic requirements.
  */
 function injectDynamicSections(html: string, state: QuoteBuilderState, isAr: boolean): string {
+  let h = html;
+
+  // Remove the static responsibilities/requirements section from the
+  // template — it's replaced by the dynamic renderRequirementsHtml().
+  // Matches sections with id="resp", id="responsibilities", or
+  // containing "مسؤوليات العميل" / "Client Responsibilities".
+  h = h.replace(
+    /<section[^>]*id="resp(?:onsibilities)?"[^>]*>[\s\S]*?<\/section>/gi,
+    "<!-- responsibilities section replaced by dynamic requirements -->"
+  );
+
   const sections = [
     renderRequirementsHtml(state, isAr),
     renderDescriptionHtml(state, isAr),
     renderMeetingNotesHtml(state, isAr),
   ].filter(Boolean).join("\n");
 
-  if (!sections) return html;
+  if (!sections) return h;
 
-  // Try to insert before the signature section
   const signPatterns = [
     /(<section[^>]*id="sign")/i,
     /(<section[^>]*id="terms")/i,
@@ -50,13 +62,12 @@ function injectDynamicSections(html: string, state: QuoteBuilderState, isAr: boo
   ];
 
   for (const pat of signPatterns) {
-    if (pat.test(html)) {
-      return html.replace(pat, `${sections}\n$1`);
+    if (pat.test(h)) {
+      return h.replace(pat, `${sections}\n$1`);
     }
   }
 
-  // Fallback: insert before </body>
-  return html.replace(/<\/body>/i, `${sections}\n</body>`);
+  return h.replace(/<\/body>/i, `${sections}\n</body>`);
 }
 
 /** Module icons for the scope grid. */
