@@ -81,7 +81,7 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
       const pageW = 210;
       const pageH = 297;
       const hdrH = 13;
-      const ftrH = 9;
+      const ftrH = 35;   // 3cm+ clear space before footer
       const padX = 5;
       const cW = pageW - padX * 2;
       const cH = pageH - hdrH - ftrH;
