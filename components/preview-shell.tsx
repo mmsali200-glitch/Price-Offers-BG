@@ -4,6 +4,7 @@ import { ArrowRight, Download, Printer, Edit3 } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 import { fmtDateArabic } from "@/lib/utils";
+import { PdfDownloadButton } from "./pdf-download";
 
 export function PreviewShell({
   quoteId,
@@ -102,12 +103,17 @@ export function PreviewShell({
             <Printer className="size-3.5" />
             طباعة
           </button>
+          <PdfDownloadButton
+            html={html}
+            fileName={`عرض_سعر_${(title || "quote").replace(/[^\p{L}\p{N}_-]+/gu, "_")}_${ref_}`}
+            language={language}
+          />
           <button
             onClick={handleDownload}
-            className="btn-primary inline-flex items-center gap-1.5 h-8 text-xs"
+            className="btn-outline inline-flex items-center gap-1.5 h-8 text-xs"
           >
             <Download className="size-3.5" />
-            تحميل HTML
+            HTML
           </button>
         </div>
       </div>
