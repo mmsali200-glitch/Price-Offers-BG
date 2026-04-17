@@ -10,6 +10,7 @@ import { SectionSupport } from "./section-support";
 import { SectionDescription } from "./section-description";
 import { SectionContacts } from "./section-contacts";
 import { SectionMeetingNotes, SectionExtraReqs, SectionDiscount } from "./section-notes";
+import { SectionRequirements } from "./section-requirements";
 import { SummaryBar } from "./summary-bar";
 import { Sparkles } from "lucide-react";
 
@@ -37,6 +38,7 @@ export function QuoteBuilder() {
       <SectionPayment />
       <SectionLicense />
       <SectionSupport />
+      <SectionRequirements />
       <SectionDescription />
       <SectionContacts />
       <SectionExtraReqs />
