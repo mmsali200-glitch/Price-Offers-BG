@@ -59,6 +59,7 @@ export async function createQuote(formData: FormData) {
   if (!user) redirect("/login?next=/quotes/new");
 
   const f = (k: string) => (formData.get(k) as string | null) ?? "";
+  const existingClientId = f("clientId"); // If set, reuse this client
   const nameAr = f("nameAr") || f("name") || "عميل جديد";
   const nameEn = f("nameEn");
   const ref = f("ref") || await generateQuoteRef();
@@ -93,28 +94,30 @@ export async function createQuote(formData: FormData) {
     commission_pct: commissionPct,
   };
 
-  // Try with the full set first; on failure (column doesn't exist),
-  // retry with just the base columns.
-  let clientId: string | null = null;
-  const { data: full, error: fullErr } = await supabase
-    .from("clients")
-    .insert({ ...baseClient, ...extendedClient })
-    .select("id")
-    .single();
+  // Reuse existing client or create a new one.
+  let clientId: string | null = existingClientId || null;
 
-  if (!fullErr && full) {
-    clientId = full.id;
-  } else {
-    console.warn("[createQuote] full insert failed, retrying base only:", fullErr?.message);
-    const { data: base, error: baseErr } = await supabase
+  if (!clientId) {
+    const { data: full, error: fullErr } = await supabase
       .from("clients")
-      .insert(baseClient)
+      .insert({ ...baseClient, ...extendedClient })
       .select("id")
       .single();
-    if (baseErr || !base) {
-      throw new Error(`فشل إنشاء العميل: ${baseErr?.message ?? fullErr?.message}`);
+
+    if (!fullErr && full) {
+      clientId = full.id;
+    } else {
+      console.warn("[createQuote] full insert failed, retrying base:", fullErr?.message);
+      const { data: base, error: baseErr } = await supabase
+        .from("clients")
+        .insert(baseClient)
+        .select("id")
+        .single();
+      if (baseErr || !base) {
+        throw new Error(`فشل إنشاء العميل: ${baseErr?.message ?? fullErr?.message}`);
+      }
+      clientId = base.id;
     }
-    clientId = base.id;
   }
 
   // Quote insert (try with quote_language first, fall back without).
