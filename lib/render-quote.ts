@@ -27,6 +27,17 @@ import {
   renderPricingHtml,
   renderInstallmentsHtml,
 } from "./render-dynamic-sections-2";
+import {
+  renderHeroHtml,
+  renderScopeHtml,
+  renderExecHtml,
+  renderFeaturesHtml,
+} from "./render-sections-hero";
+import {
+  renderSupportHtml,
+  renderTermsHtml,
+  renderSignatureHtml,
+} from "./render-sections-footer";
 
 /** Inject the shared professional print stylesheet just before </head>. */
 function injectPrintStyles(html: string): string {
@@ -43,24 +54,40 @@ function injectPrintStyles(html: string): string {
 function injectDynamicSections(html: string, state: QuoteBuilderState, isAr: boolean): string {
   let h = html;
 
-  // Remove static sections that are replaced by dynamic versions.
-  const staticIds = ["resp", "responsibilities", "mods", "modules", "flows", "workflows", "phases", "plan", "pricing", "configurator", "financial", "fin", "items", "inst", "installments", "schedule"];
-  staticIds.forEach((id) => {
+  // Remove ALL static sections — everything is now dynamic.
+  const allIds = [
+    "hero", "scope", "overview", "exec", "executive", "feat", "features",
+    "mods", "modules", "flows", "workflows", "phases", "plan",
+    "resp", "responsibilities", "reqs",
+    "pricing", "configurator",
+    "financial", "fin", "items",
+    "inst", "installments", "schedule",
+    "support", "terms", "sign",
+  ];
+  allIds.forEach((id) => {
     h = h.replace(
-      new RegExp(`<section[^>]*id="${id}"[^>]*>[\\s\\S]*?<\\/section>`, "gi"),
-      `<!-- ${id} replaced by dynamic -->`
+      new RegExp(`<section[^>]*(?:id="${id}"|class="[^"]*(?:hero|section)[^"]*"\\s+id="${id}")[^>]*>[\\s\\S]*?<\\/section>`, "gi"),
+      ""
     );
   });
 
+  // Build ALL sections dynamically in order.
   const sections = [
+    renderHeroHtml(state, isAr),
+    renderScopeHtml(state, isAr),
+    renderExecHtml(state, isAr),
+    renderFeaturesHtml(state, isAr),
     renderModuleDetailsHtml(state, isAr),
     renderWorkflowsHtml(state, isAr),
     renderPhasesHtml(state, isAr),
     renderRequirementsHtml(state, isAr),
     renderPricingHtml(state, isAr),
     renderInstallmentsHtml(state, isAr),
+    renderSupportHtml(state, isAr),
     renderDescriptionHtml(state, isAr),
     renderMeetingNotesHtml(state, isAr),
+    renderTermsHtml(state, isAr),
+    renderSignatureHtml(state, isAr),
   ].filter(Boolean).join("\n");
 
   if (!sections) return h;
