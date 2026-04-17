@@ -14,6 +14,13 @@ import { getReferenceTemplateAr, getReferenceTemplateEn } from "./reference-temp
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
+import { PRINT_CSS } from "./print-css";
+
+/** Inject the shared professional print stylesheet just before </head>. */
+function injectPrintStyles(html: string): string {
+  if (html.includes('id="bg-print-styles"')) return html;
+  return html.replace(/<\/head>/i, `${PRINT_CSS}\n</head>`);
+}
 
 /** Module icons for the scope grid. */
 const MODULE_ICONS: Record<string, string> = {
@@ -358,8 +365,10 @@ function renderArabic(state: QuoteBuilderState): string {
 }
 
 /**
- * Main render function — picks the template per language.
+ * Main render function — picks the template per language, then injects
+ * the shared professional A4 print stylesheet.
  */
 export function renderQuoteHtml(state: QuoteBuilderState): string {
-  return state.language === "ar" ? renderArabic(state) : renderEnglish(state);
+  const html = state.language === "ar" ? renderArabic(state) : renderEnglish(state);
+  return injectPrintStyles(html);
 }
