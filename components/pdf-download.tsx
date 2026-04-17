@@ -9,14 +9,6 @@ type Props = {
   language: "ar" | "en" | null;
 };
 
-/**
- * Professional PDF generator. Takes the generated quote HTML,
- * applies print-specific modifications (removes sidebar/topbar,
- * expands content to full A4 width, adds BG header/footer),
- * captures with html2canvas at 2× resolution, then assembles
- * multi-page A4 PDF with jsPDF — including branded headers
- * and page numbers on every page.
- */
 export function PdfDownloadButton({ html, fileName, language }: Props) {
   const [state, setState] = useState<"idle" | "rendering" | "done" | "error">("idle");
 
@@ -25,85 +17,107 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
     setState("rendering");
 
     try {
-      const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
-        import("jspdf"),
-        import("html2canvas"),
-      ]);
+      const { default: jsPDF } = await import("jspdf");
 
-      // ── 1. Prepare print-optimized HTML ──────────────────────
-      const printHtml = preparePrintHtml(html);
+      // ── 1. Build a print-ready HTML document ─────────────────
+      const printHtml = buildPrintDocument(html, language);
 
-      // ── 2. Render in a hidden container ──────────────────────
+      // ── 2. Create hidden container at A4 width ───────────────
       const container = document.createElement("div");
-      container.style.cssText =
-        "position:fixed; top:0; left:-9999px; width:794px; background:#fff; z-index:-1; overflow:visible;";
+      container.style.cssText = `
+        position: fixed; top: 0; left: -9999px;
+        width: 794px; background: #fff; z-index: -1;
+      `;
       document.body.appendChild(container);
       container.innerHTML = printHtml;
 
-      // Wait for fonts + images + layout
-      await new Promise((r) => setTimeout(r, 1200));
+      // Wait for fonts + images
+      await new Promise((r) => setTimeout(r, 1500));
 
-      // ── 3. Capture at 2× for crisp output ────────────────────
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: "#ffffff",
-        width: 794,
-        windowWidth: 794,
-        logging: false,
+      // ── 3. Use jsPDF.html() for proper multi-page rendering ──
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        pdf.html(container, {
+          callback: () => resolve(),
+          margin: [16, 8, 14, 8],
+          autoPaging: "text",
+          width: 194,
+          windowWidth: 794,
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#ffffff",
+            logging: false,
+          },
+          x: 0,
+          y: 0,
+        }).catch(reject);
       });
 
       document.body.removeChild(container);
 
-      // ── 4. Build multi-page A4 PDF ───────────────────────────
-      const pageW = 210; // mm
-      const pageH = 297;
-      const headerH = 12; // mm — space for BG header
-      const footerH = 10; // mm — space for page number
-      const marginX = 5;  // mm — side margins
-      const contentW = pageW - marginX * 2;
-      const contentH = pageH - headerH - footerH;
-
-      const imgW = canvas.width;
-      const imgH = canvas.height;
-      const pxPerPage = imgW * (contentH / contentW);
-      const totalPages = Math.ceil(imgH / pxPerPage);
-
+      // ── 4. Add branded header + footer on every page ─────────
+      const totalPages = pdf.getNumberOfPages();
       const isAr = language === "ar";
+      const pageW = 210;
+      const pageH = 297;
 
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
 
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) pdf.addPage();
+        // ── Header: green bar + gold line + BG text ────────────
+        pdf.setFillColor(26, 92, 55);
+        pdf.rect(0, 0, pageW, 11, "F");
+        pdf.setFillColor(201, 168, 76);
+        pdf.rect(0, 11, pageW, 1, "F");
 
-        // ── Header ─────────────────────────────────────────────
-        drawHeader(pdf, pageW, isAr);
+        // BG text
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(9);
+        pdf.setTextColor(255, 255, 255);
+        const mainX = isAr ? pageW - 10 : 10;
+        const mainAlign = isAr ? "right" as const : "left" as const;
+        pdf.text("BUSINESS GATE", mainX, 5.5, { align: mainAlign });
 
-        // ── Content slice ──────────────────────────────────────
-        const sliceCanvas = document.createElement("canvas");
-        sliceCanvas.width = imgW;
-        sliceCanvas.height = Math.min(pxPerPage, imgH - page * pxPerPage);
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(201, 168, 76);
+        pdf.text("Technical Consulting", mainX, 8.5, { align: mainAlign });
 
-        const ctx = sliceCanvas.getContext("2d");
-        if (ctx) {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
-          ctx.drawImage(
-            canvas, 0, page * pxPerPage, imgW, sliceCanvas.height,
-            0, 0, imgW, sliceCanvas.height
-          );
-        }
+        // Gold BG badge
+        pdf.setFillColor(201, 168, 76);
+        const bx = isAr ? 10 : pageW - 20;
+        pdf.roundedRect(bx, 2.5, 12, 6, 1.5, 1.5, "F");
+        pdf.setFontSize(8);
+        pdf.setTextColor(26, 92, 55);
+        pdf.text("BG", bx + 6, 6.5, { align: "center" });
 
-        const sliceData = sliceCanvas.toDataURL("image/jpeg", 0.95);
-        const sliceH = (sliceCanvas.height / imgW) * contentW;
-        pdf.addImage(sliceData, "JPEG", marginX, headerH, contentW, sliceH);
+        // ── Footer: line + info + page number ──────────────────
+        const fy = pageH - 7;
+        pdf.setDrawColor(26, 92, 55);
+        pdf.setLineWidth(0.3);
+        pdf.line(10, fy - 2.5, pageW - 10, fy - 2.5);
 
-        // ── Footer ─────────────────────────────────────────────
-        drawFooter(pdf, pageW, pageH, page + 1, totalPages, isAr);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(6.5);
+        pdf.setTextColor(122, 142, 128);
+        pdf.text(
+          "www.businessesgates.com  ·  OUN@businessesgates.com  ·  +965 9999 0412  ·  Kuwait",
+          10, fy
+        );
+
+        pdf.setFontSize(7);
+        pdf.setTextColor(26, 92, 55);
+        const pageLabel = isAr ? `${i} / ${totalPages}` : `Page ${i} of ${totalPages}`;
+        pdf.text(pageLabel, pageW - 10, fy, { align: "right" });
       }
 
-      // ── 5. Download ──────────────────────────────────────────
+      // ── 5. Save ──────────────────────────────────────────────
       const safeName = fileName.replace(/[^\p{L}\p{N}_-]+/gu, "_");
       pdf.save(`${safeName}.pdf`);
 
@@ -150,129 +164,106 @@ export function PdfDownloadButton({ html, fileName, language }: Props) {
   );
 }
 
-// ─────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────
-
-/** Strip sidebar/topbar and expand content to full width for PDF. */
-function preparePrintHtml(html: string): string {
+/**
+ * Build a self-contained print-ready HTML document optimized for A4 PDF.
+ * Removes sidebar/topbar, expands content full-width, applies clean
+ * typography sizing, and ensures proper section spacing.
+ */
+function buildPrintDocument(html: string, language: "ar" | "en" | null): string {
   let h = html;
 
-  // Remove sidebar + topbar + overlay elements entirely
+  // Remove sidebar, topbar, overlay elements
   h = h.replace(/<aside[^>]*class="[^"]*sidebar[^"]*"[^>]*>[\s\S]*?<\/aside>/gi, "");
   h = h.replace(/<div[^>]*id="sidebar"[^>]*>[\s\S]*?<\/div>\s*(?=<!--)/gi, "");
   h = h.replace(/<div[^>]*id="topbar"[^>]*>[\s\S]*?<\/div>/gi, "");
   h = h.replace(/<div[^>]*class="topbar"[^>]*>[\s\S]*?<\/div>\s*(?=<!--|\s*<(?:section|main|div))/gi, "");
   h = h.replace(/<div[^>]*class="sidebar-overlay"[^>]*>[\s\S]*?<\/div>/gi, "");
 
-  // Inject print-specific CSS overrides
-  const printOverrides = `
-  <style id="pdf-overrides">
-    * { box-shadow: none !important; text-shadow: none !important; }
-    html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
-    .main, main.main, main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
-    .wrap { display: block !important; }
-    .section, section { padding: 28px 24px !important; border-bottom: 1px solid #e2e8e3 !important; background: #fff !important; max-width: 100% !important; }
-    .section:nth-child(even), .section:nth-child(odd) { background: #fff !important; }
-    .hero, #hero, section#hero { padding: 36px 24px !important; border-radius: 0 !important; }
-    .hero-inner { padding: 0 !important; }
+  // Inject PDF-specific styling for A4
+  const pdfCSS = `<style id="pdf-layout">
+    * { box-shadow: none !important; text-shadow: none !important; animation: none !important; transition: none !important; }
+    html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; width: 794px !important; }
+    body { font-size: 13px !important; line-height: 1.6 !important; color: #141f18 !important; }
 
-    /* Grids optimized for A4 width (794px) */
+    .main, main, main.main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    .wrap, .shell { display: block !important; width: 100% !important; }
+    .content { width: 100% !important; }
+
+    /* Sections */
+    .section, section.section, section {
+      padding: 24px 20px !important;
+      border-bottom: 1px solid #e2e8e3 !important;
+      background: #fff !important;
+      max-width: 100% !important;
+      page-break-inside: avoid;
+    }
+    .section:nth-child(even), .section:nth-child(odd) { background: #fff !important; }
+
+    /* Hero */
+    .hero, #hero, section#hero, section.hero {
+      padding: 32px 20px !important;
+      border-radius: 0 !important;
+    }
+    .hero-inner { padding: 0 16px !important; }
+    .hero-title { font-size: 26px !important; line-height: 1.2 !important; }
+    .hero-client, .hero-client-name { font-size: 20px !important; }
+    .hero-subtitle, .hero-client-en { font-size: 12px !important; }
+    .hero-meta { gap: 8px !important; margin-top: 16px !important; }
+    .hero-meta-card, .hero-badge { font-size: 10px !important; padding: 5px 10px !important; }
+
+    /* Section headers */
+    .section-header { margin-bottom: 16px !important; }
+    .section-title, h2.section-title { font-size: 18px !important; font-weight: 700 !important; color: #1a5c37 !important; }
+    .section-sub { font-size: 11px !important; }
+    .section-num { width: 26px !important; height: 26px !important; font-size: 11px !important; }
+
+    /* Grids for A4 */
     .mod-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
     .kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
-    .feat-grid, .exec-grid, .phases-grid, .fin-grid, .plans-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 12px !important; }
-    .resp-grid, .sign-grid, .terms-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 14px !important; }
+    .feat-grid, .exec-grid, .fin-grid, .plans-grid, .phases-grid, .sup-grid {
+      grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important;
+    }
+    .resp-grid, .sign-grid, .terms-grid, .lic-grid {
+      grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important;
+    }
 
-    /* Cards tighter */
-    .mod-card, .feat-card, .exec-card, .phase-card, .fin-card, .kpi-card, .card { padding: 12px !important; border-radius: 6px !important; }
+    /* Cards */
+    .mod-card, .feat-card, .exec-card, .phase-card, .fin-card, .kpi-card,
+    .plan-card, .sup-card, .lic-card, .card, .mini-card {
+      padding: 10px !important;
+      border-radius: 6px !important;
+      page-break-inside: avoid;
+    }
+    .mod-card h4, .mod-name { font-size: 12px !important; }
+    .mod-card p, .mod-features { font-size: 10px !important; }
 
     /* Tables */
-    table { width: 100% !important; border-collapse: collapse !important; font-size: 11px !important; }
-    th { background: #eaf3ed !important; color: #1a5c37 !important; padding: 8px 10px !important; }
-    td { padding: 7px 10px !important; border-bottom: 1px solid #e2e8e3 !important; }
-
-    /* Signature */
-    .sign-card { min-height: auto !important; }
-    .sign-line { margin-top: 28px !important; }
+    table { width: 100% !important; border-collapse: collapse !important; font-size: 10px !important; }
+    th { background: #eaf3ed !important; color: #1a5c37 !important; font-weight: 700 !important; padding: 7px 8px !important; font-size: 10px !important; }
+    td { padding: 6px 8px !important; border-bottom: 1px solid #e2e8e3 !important; }
+    thead { display: table-header-group !important; }
+    tr { page-break-inside: avoid; }
 
     /* Configurator */
-    .configurator, .cfg-wrap { border-radius: 8px !important; }
+    .configurator, .cfg-wrap { border: 1px solid #e2e8e3 !important; border-radius: 8px !important; }
+    .cfg-header { padding: 10px 14px !important; }
+    .cfg-total-live { font-size: 18px !important; }
 
-    /* Typography */
-    .hero-title { font-size: 28px !important; }
-    .hero-client, .hero-client-name { font-size: 22px !important; }
-    .section-title { font-size: 20px !important; }
-    h2.section-title { font-size: 20px !important; }
-    body { font-size: 13px !important; line-height: 1.55 !important; }
+    /* Signature */
+    .sign-card { page-break-inside: avoid; }
+    .sign-line { border-bottom: 1px solid #141f18 !important; margin-top: 24px !important; }
+
+    /* KPIs */
+    .kpi-num { font-size: 22px !important; }
+    .kpi-label { font-size: 10px !important; }
+
+    /* Financial cards */
+    .fin-value { font-size: 24px !important; }
+    .fin-label { font-size: 10px !important; }
+    .fin-sub { font-size: 9px !important; }
   </style>`;
 
-  h = h.replace(/<\/head>/i, `${printOverrides}\n</head>`);
+  h = h.replace(/<\/head>/i, `${pdfCSS}\n</head>`);
 
   return h;
-}
-
-/** Draw a branded header bar at the top of each PDF page. */
-function drawHeader(pdf: InstanceType<typeof import("jspdf").jsPDF>, pageW: number, isAr: boolean) {
-  // Green bar
-  pdf.setFillColor(26, 92, 55); // --green #1a5c37
-  pdf.rect(0, 0, pageW, 10, "F");
-
-  // Gold accent line
-  pdf.setFillColor(201, 168, 76); // --gold #c9a84c
-  pdf.rect(0, 10, pageW, 1.2, "F");
-
-  // BG text on the left (or right for Arabic)
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(8);
-  pdf.setTextColor(255, 255, 255);
-  const bgText = "BUSINESS GATE";
-  const subText = "Technical Consulting";
-
-  if (isAr) {
-    pdf.text(bgText, pageW - 8, 5, { align: "right" });
-    pdf.setFontSize(6);
-    pdf.setTextColor(201, 168, 76);
-    pdf.text(subText, pageW - 8, 8, { align: "right" });
-  } else {
-    pdf.text(bgText, 8, 5);
-    pdf.setFontSize(6);
-    pdf.setTextColor(201, 168, 76);
-    pdf.text(subText, 8, 8);
-  }
-
-  // Gold "BG" badge on the opposite side
-  pdf.setFillColor(201, 168, 76);
-  const badgeX = isAr ? 8 : pageW - 18;
-  pdf.roundedRect(badgeX, 2.5, 10, 5.5, 1.5, 1.5, "F");
-  pdf.setFontSize(7);
-  pdf.setTextColor(26, 92, 55);
-  pdf.setFont("helvetica", "bold");
-  pdf.text("BG", badgeX + 5, 6.3, { align: "center" });
-}
-
-/** Draw footer with page number and website. */
-function drawFooter(
-  pdf: InstanceType<typeof import("jspdf").jsPDF>,
-  pageW: number, pageH: number,
-  current: number, total: number,
-  isAr: boolean,
-) {
-  const y = pageH - 6;
-
-  // Thin green line
-  pdf.setDrawColor(26, 92, 55);
-  pdf.setLineWidth(0.3);
-  pdf.line(8, y - 2, pageW - 8, y - 2);
-
-  // Website on left
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(7);
-  pdf.setTextColor(122, 142, 128); // --tgray
-  pdf.text("www.businessesgates.com  |  OUN@businessesgates.com  |  +965 9999 0412", 8, y);
-
-  // Page number on right
-  const pageText = isAr
-    ? `${current} / ${total} صفحة`
-    : `Page ${current} of ${total}`;
-  pdf.text(pageText, pageW - 8, y, { align: "right" });
 }
