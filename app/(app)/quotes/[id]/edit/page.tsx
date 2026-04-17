@@ -4,7 +4,6 @@ import { QuoteBuilder } from "@/components/builder/quote-builder";
 import { AutosaveInit } from "@/components/builder/autosave-init";
 import { BuilderToolbar } from "@/components/builder/toolbar";
 import type { QuoteBuilderState } from "@/lib/builder/types";
-import { getQuoteStageHistory } from "@/lib/actions/quotes";
 
 export const metadata = { title: "تعديل العرض · BG Quotes" };
 
@@ -14,40 +13,65 @@ export default async function EditQuotePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) notFound();
 
-  const { data: quote } = await supabase
-    .from("quotes")
-    .select("id, ref, title, status, generated_at")
-    .eq("id", id)
-    .eq("owner_id", user.id)
-    .single();
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) notFound();
 
-  if (!quote) notFound();
+    const { data: quote } = await supabase
+      .from("quotes")
+      .select("id, ref, title, status, generated_at")
+      .eq("id", id)
+      .eq("owner_id", user.id)
+      .single();
 
-  const { data: section } = await supabase
-    .from("quote_sections")
-    .select("payload")
-    .eq("quote_id", id)
-    .single();
+    if (!quote) notFound();
 
-  const initial = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
-  const stageHistory = await getQuoteStageHistory(id);
+    const { data: section } = await supabase
+      .from("quote_sections")
+      .select("payload")
+      .eq("quote_id", id)
+      .single();
 
-  return (
-    <>
-      <AutosaveInit quoteId={id} initial={initial} />
-      <BuilderToolbar
-        quoteId={id}
-        ref_={quote.ref}
-        title={quote.title}
-        status={quote.status}
-        generatedAt={quote.generated_at}
-        stageHistory={stageHistory}
-      />
-      <QuoteBuilder />
-    </>
-  );
+    const initial = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
+
+    // Stage history — non-critical, catch errors
+    let stageHistory: Record<string, string | null> = {};
+    try {
+      const { data: events } = await supabase
+        .from("quote_events")
+        .select("kind, metadata, created_at")
+        .eq("quote_id", id)
+        .order("created_at", { ascending: true });
+
+      (events ?? []).forEach((e: { kind: string; created_at: string }) => {
+        if (e.kind === "created" && !stageHistory.draft) stageHistory.draft = e.created_at;
+        if (e.kind === "sent" && !stageHistory.sent) stageHistory.sent = e.created_at;
+        if (e.kind === "opened" && !stageHistory.opened) stageHistory.opened = e.created_at;
+        if (e.kind === "accepted" && !stageHistory.accepted) stageHistory.accepted = e.created_at;
+        if (e.kind === "rejected" && !stageHistory.rejected) stageHistory.rejected = e.created_at;
+      });
+    } catch {
+      // stage history is optional
+    }
+
+    return (
+      <>
+        <AutosaveInit quoteId={id} initial={initial} />
+        <BuilderToolbar
+          quoteId={id}
+          ref_={quote.ref}
+          title={quote.title}
+          status={quote.status}
+          generatedAt={quote.generated_at}
+          stageHistory={stageHistory}
+        />
+        <QuoteBuilder />
+      </>
+    );
+  } catch (err) {
+    console.error("[edit-page]", err);
+    notFound();
+  }
 }
