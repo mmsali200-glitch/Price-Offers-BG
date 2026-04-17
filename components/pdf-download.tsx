@@ -71,8 +71,8 @@ function buildPrintDoc(html: string, title: string, isAr: boolean): string {
 <style id="bg-pdf-final">
   @media print {
     @page {
-      size: A4 landscape;
-      margin: 8mm 12mm;
+      size: A4 portrait;
+      margin: 10mm 12mm;
     }
 
     * {
@@ -131,14 +131,14 @@ function buildPrintDoc(html: string, title: string, isAr: boolean): string {
     .section-title, h2.section-title { font-size: 15px !important; }
     .section-num { width: 22px !important; height: 22px !important; font-size: 10px !important; }
 
-    /* ─── Grids for A4 Landscape (wider → more columns) ─── */
-    .mod-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; }
-    .kpi-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 8px !important; }
+    /* ─── Grids for A4 Portrait ─── */
+    .mod-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+    .kpi-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 6px !important; }
     .feat-grid, .exec-grid, .fin-grid, .phases-grid, .sup-grid, .plans-grid {
-      grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important;
+      grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important;
     }
     .resp-grid, .sign-grid, .terms-grid, .lic-grid {
-      grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important;
+      grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important;
     }
 
     /* ─── Cards compact ─── */
