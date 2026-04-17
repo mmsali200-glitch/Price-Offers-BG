@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { computeTotals } from "@/lib/builder/store";
 import type { QuoteBuilderState } from "@/lib/builder/types";
+import { generateQuoteRef } from "./ref-generator";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -60,7 +61,7 @@ export async function createQuote(formData: FormData) {
   const f = (k: string) => (formData.get(k) as string | null) ?? "";
   const nameAr = f("nameAr") || f("name") || "عميل جديد";
   const nameEn = f("nameEn");
-  const ref = f("ref") || `BG-${new Date().getFullYear()}-XXX-${String(Date.now()).slice(-3)}`;
+  const ref = f("ref") || await generateQuoteRef();
   const currency = f("currency") || "KWD";
   const quoteLanguage = (f("quoteLanguage") || "ar") as "ar" | "en";
   const communicationLanguage = (f("communicationLanguage") || "ar") as "ar" | "en";

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { findTemplate } from "@/lib/templates/catalog";
 import { makeInitialState } from "@/lib/builder/defaults";
 import { LICENSE_PRICING } from "@/lib/modules-catalog";
+import { generateQuoteRef } from "./ref-generator";
 
 /**
  * Create a new quote pre-filled from the chosen sector template.
@@ -18,9 +19,7 @@ export async function createQuoteFromTemplate(formData: FormData) {
 
   const templateId = formData.get("template") as string;
   const clientName = (formData.get("name") as string) || "عميل جديد";
-  const ref =
-    (formData.get("ref") as string) ||
-    `BG-${new Date().getFullYear()}-${clientName.slice(0, 3).toUpperCase().padEnd(3, "X")}-${String(Date.now()).slice(-3)}`;
+  const ref = (formData.get("ref") as string) || await generateQuoteRef();
 
   const template = findTemplate(templateId);
   if (!template) throw new Error("Template not found");

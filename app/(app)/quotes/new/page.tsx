@@ -89,8 +89,8 @@ export default function NewQuotePage() {
             </Field>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-            <Field label="رقم العرض" required hint={`الصيغة: ${suggestedRef}`}>
-              <input name="ref" required className="input tabular" placeholder={suggestedRef} dir="ltr" />
+            <Field label="رقم العرض" hint="يُولَّد تلقائياً إن تُرك فارغاً (BG-YYYY-MM-DD-N)">
+              <input name="ref" className="input tabular" placeholder="تلقائي — أو أدخل يدوياً" dir="ltr" />
             </Field>
             <Field label="تاريخ الإصدار">
               <input name="date" className="input" placeholder={`أبريل ${year}`} />
