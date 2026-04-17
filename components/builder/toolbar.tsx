@@ -4,9 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Eye, Loader2, Sparkles, ChevronDown } from "lucide-react";
 import { QuoteStagesWithDates } from "@/components/quote-stages-with-dates";
-import { updateQuoteStatus, saveQuote } from "@/lib/actions/quotes";
-import { useBuilderStore } from "@/lib/builder/store";
-import type { QuoteBuilderState } from "@/lib/builder/types";
+import { updateQuoteStatus } from "@/lib/actions/quotes";
 
 type StatusKey = "draft" | "sent" | "opened" | "accepted" | "rejected" | "expired";
 
@@ -47,14 +45,11 @@ export function BuilderToolbar({
     setIsGenerating(true);
     setError(null);
     try {
-      // FORCE SAVE current state before generating — don't rely on autosave.
-      const currentState = useBuilderStore.getState() as QuoteBuilderState;
-      const saveResult = await saveQuote(quoteId, currentState);
-      if (!saveResult.ok) {
-        throw new Error(`فشل الحفظ: ${saveResult.error}`);
-      }
+      // Force-save via a lightweight API call that triggers autosave flush.
+      await fetch(`/api/quotes/${quoteId}/save`, { method: "POST" }).catch(() => {});
+      // Small delay to ensure save completes.
+      await new Promise((r) => setTimeout(r, 500));
 
-      // Now generate from the freshly-saved data.
       const res = await fetch(`/api/quotes/${quoteId}/generate`, { method: "POST" });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
