@@ -9,6 +9,11 @@ const CUR_SYMBOLS: Record<string, string> = {
   KWD: "د.ك",
   SAR: "ر.س",
   AED: "د.إ",
+  QAR: "ر.ق",
+  BHD: "د.ب",
+  OMR: "ر.ع",
+  EGP: "ج.م",
+  JOD: "د.أ",
   USD: "$",
 };
 

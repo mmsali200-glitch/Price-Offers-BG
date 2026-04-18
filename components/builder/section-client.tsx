@@ -3,7 +3,14 @@
 import { SectionCard, Field } from "./section-card";
 import { useBuilderStore } from "@/lib/builder/store";
 import { ODOO_VERSIONS } from "@/lib/modules-catalog";
+import { getCountryPricing } from "@/lib/country-pricing";
 import { cn } from "@/lib/utils";
+
+const COUNTRY_CURRENCY: Record<string, string> = {
+  "الكويت": "KWD", "السعودية": "SAR", "الإمارات": "AED",
+  "قطر": "QAR", "البحرين": "BHD", "عمان": "OMR",
+  "مصر": "EGP", "الأردن": "JOD", "أخرى": "USD",
+};
 
 const SECTORS = [
   ["trading", "تجارة وتوزيع"],
@@ -59,6 +66,11 @@ export function SectionClient() {
             <option value="KWD">KWD — د.ك</option>
             <option value="SAR">SAR — ر.س</option>
             <option value="AED">AED — د.إ</option>
+            <option value="QAR">QAR — ر.ق</option>
+            <option value="BHD">BHD — د.ب</option>
+            <option value="OMR">OMR — ر.ع</option>
+            <option value="EGP">EGP — ج.م</option>
+            <option value="JOD">JOD — د.أ</option>
             <option value="USD">USD — $</option>
           </select>
         </Field>
@@ -123,9 +135,14 @@ export function SectionClient() {
         📍 الموقع
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-        <Field label="الدولة">
+        <Field label="الدولة" hint="يتم تعديل العملة والأسعار تلقائياً">
           <select className="input" value={client.country ?? ""}
-            onChange={(e) => setClient("country", e.target.value)}>
+            onChange={(e) => {
+              const c = e.target.value;
+              setClient("country", c);
+              const cur = COUNTRY_CURRENCY[c] as typeof meta.currency;
+              if (cur) setMeta("currency", cur);
+            }}>
             <option value="الكويت">🇰🇼 الكويت</option>
             <option value="السعودية">🇸🇦 السعودية</option>
             <option value="الإمارات">🇦🇪 الإمارات</option>

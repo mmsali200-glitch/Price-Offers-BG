@@ -3,7 +3,7 @@
  * Mirrors the payload JSONB stored in quote_sections.payload.
  */
 
-export type QuoteCurrency = "KWD" | "SAR" | "AED" | "USD";
+export type QuoteCurrency = "KWD" | "SAR" | "AED" | "QAR" | "BHD" | "OMR" | "EGP" | "JOD" | "USD";
 
 export type PriceMode = "total" | "items" | "hidden";
 
