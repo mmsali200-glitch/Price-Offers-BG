@@ -306,16 +306,31 @@ export async function listQuotes(): Promise<QuoteWithOwner[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data } = await supabase
+  // Check role — admin/manager see ALL quotes, sales sees own only.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const role = profile?.role ?? "sales";
+
+  let query = supabase
     .from("quotes")
     .select(`
       id, ref, title, status, currency, total_development, total_monthly,
       created_at, updated_at, owner_id,
       profiles:owner_id ( full_name, email )
     `)
-    .eq("owner_id", user.id)
     .order("updated_at", { ascending: false })
-    .limit(100);
+    .limit(200);
+
+  // Sales users only see their own quotes.
+  if (role === "sales") {
+    query = query.eq("owner_id", user.id);
+  }
+  // Admin + Manager see all (RLS policy already allows this).
+
+  const { data } = await query;
 
   if (!data) return [];
 

@@ -26,19 +26,36 @@ export async function listClients(): Promise<ClientWithQuotes[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data: clients } = await supabase
+  // Check role — admin/manager see ALL clients
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const role = profile?.role ?? "sales";
+
+  let clientQuery = supabase
     .from("clients")
     .select("id, name_ar, name_en, sector, country, city, contact_name, contact_phone, contact_email, created_at")
-    .eq("owner_id", user.id)
     .order("created_at", { ascending: false });
 
+  if (role === "sales") {
+    clientQuery = clientQuery.eq("owner_id", user.id);
+  }
+
+  const { data: clients } = await clientQuery;
   if (!clients || clients.length === 0) return [];
 
   // Aggregate quotes per client
-  const { data: quotes } = await supabase
+  let quotesQuery = supabase
     .from("quotes")
-    .select("client_id, total_development, updated_at")
-    .eq("owner_id", user.id);
+    .select("client_id, total_development, updated_at");
+
+  if (role === "sales") {
+    quotesQuery = quotesQuery.eq("owner_id", user.id);
+  }
+
+  const { data: quotes } = await quotesQuery;
 
   const agg = new Map<string, { count: number; value: number; lastDate: string | null }>();
   (quotes ?? []).forEach((q) => {
