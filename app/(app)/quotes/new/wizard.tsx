@@ -4,12 +4,13 @@ import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import {
   Search, Plus, ArrowLeft, ArrowRight, Check, Building,
-  Phone, MapPin, Globe, Briefcase, Sparkles, UserPlus, Users,
+  Phone, MapPin, Sparkles, UserPlus, Users,
 } from "lucide-react";
 import type { ClientOption } from "@/lib/actions/client-search";
 import { createQuote } from "@/lib/actions/quotes";
+import { NeedsAssessment } from "./needs-assessment";
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2 | 3 | 4;
 
 const SECTORS = [
   ["trading", "تجارة وتوزيع"], ["manufacturing", "تصنيع وإنتاج"],
@@ -31,7 +32,7 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // Client form fields (for new client)
+  // Client form fields
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
   const [sector, setSector] = useState("trading");
@@ -42,10 +43,17 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const [contactEmail, setContactEmail] = useState("");
   const [businessActivity, setBusinessActivity] = useState("");
 
-  // Quote settings (step 2)
+  // Quote settings (step 3)
   const [currency, setCurrency] = useState("KWD");
   const [quoteLanguage, setQuoteLanguage] = useState<"ar" | "en">("ar");
   const [validity, setValidity] = useState("30 يوم");
+
+  // Assessment results (step 2)
+  const [assessmentData, setAssessmentData] = useState<{
+    selectedModules: string[];
+    answers: Record<string, Record<string, string | boolean>>;
+    prices: Record<string, number>;
+  } | null>(null);
 
   const selectedClient = useMemo(
     () => existingClients.find((c) => c.id === selectedClientId),
@@ -64,6 +72,9 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   }, [existingClients, search]);
 
   const canGoStep2 = mode === "select" ? !!selectedClientId : nameAr.trim().length > 0;
+  const currentSector = mode === "select" ? (selectedClient?.sector || "other") : sector;
+  const currentCountry = mode === "select" ? (selectedClient?.country || "الكويت") : country;
+  const currentName = mode === "select" ? (selectedClient?.name_ar || "عميل") : nameAr;
 
   function handleSubmit() {
     const formData = new FormData();
@@ -84,32 +95,39 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
     formData.set("currency", currency);
     formData.set("quoteLanguage", quoteLanguage);
     formData.set("validity", validity);
+
+    // Pass assessment data
+    if (assessmentData) {
+      formData.set("assessmentModules", JSON.stringify(assessmentData.selectedModules));
+      formData.set("assessmentAnswers", JSON.stringify(assessmentData.answers));
+      formData.set("assessmentPrices", JSON.stringify(assessmentData.prices));
+    }
+
     startTransition(() => { createQuote(formData); });
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-5">
+    <div className="max-w-3xl mx-auto p-3 sm:p-6 space-y-5">
       {/* Steps indicator */}
-      <div className="flex items-center justify-center gap-2 mb-2">
+      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-2 flex-wrap">
         {[
           { n: 1, label: "العميل" },
-          { n: 2, label: "إعدادات العرض" },
-          { n: 3, label: "تأكيد وإنشاء" },
+          { n: 2, label: "تقييم الاحتياج" },
+          { n: 3, label: "إعدادات العرض" },
+          { n: 4, label: "تأكيد وإنشاء" },
         ].map((s, i) => (
-          <div key={s.n} className="flex items-center gap-2">
+          <div key={s.n} className="flex items-center gap-1.5">
             <div
-              className={`size-8 rounded-full flex items-center justify-center text-xs font-black ${
-                step >= s.n
-                  ? "bg-bg-green text-white"
-                  : "bg-bg-line text-bg-text-3"
+              className={`size-7 sm:size-8 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black ${
+                step >= s.n ? "bg-bg-green text-white" : "bg-bg-line text-bg-text-3"
               }`}
             >
-              {step > s.n ? <Check className="size-4" /> : s.n}
+              {step > s.n ? <Check className="size-3.5" /> : s.n}
             </div>
-            <span className={`text-xs font-bold ${step >= s.n ? "text-bg-green" : "text-bg-text-3"}`}>
+            <span className={`text-[10px] sm:text-xs font-bold ${step >= s.n ? "text-bg-green" : "text-bg-text-3"}`}>
               {s.label}
             </span>
-            {i < 2 && <div className={`w-8 h-0.5 ${step > s.n ? "bg-bg-green" : "bg-bg-line"}`} />}
+            {i < 3 && <div className={`w-4 sm:w-6 h-0.5 ${step > s.n ? "bg-bg-green" : "bg-bg-line"}`} />}
           </div>
         ))}
       </div>
@@ -136,96 +154,66 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
             الخطوة 1: اختر العميل
           </h2>
 
-          {/* Toggle: existing vs new */}
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => { setMode("select"); setSelectedClientId(null); }}
+            <button type="button" onClick={() => { setMode("select"); setSelectedClientId(null); }}
               className={`flex-1 rounded-sm2 border-2 px-3 py-2 text-xs font-bold flex items-center justify-center gap-2 ${
                 mode === "select" ? "border-bg-green bg-bg-green-lt text-bg-green" : "border-bg-line text-bg-text-3"
-              }`}
-            >
-              <Users className="size-4" />
-              عميل موجود ({existingClients.length})
+              }`}>
+              <Users className="size-4" /> عميل موجود ({existingClients.length})
             </button>
-            <button
-              type="button"
-              onClick={() => setMode("new")}
+            <button type="button" onClick={() => setMode("new")}
               className={`flex-1 rounded-sm2 border-2 px-3 py-2 text-xs font-bold flex items-center justify-center gap-2 ${
                 mode === "new" ? "border-bg-green bg-bg-green-lt text-bg-green" : "border-bg-line text-bg-text-3"
-              }`}
-            >
-              <UserPlus className="size-4" />
-              عميل جديد
+              }`}>
+              <UserPlus className="size-4" /> عميل جديد
             </button>
           </div>
 
           {mode === "select" ? (
             <div className="space-y-3">
-              {/* Search */}
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-bg-text-3" />
-                <input
-                  type="search"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="input pr-10"
-                  placeholder="ابحث بالاسم أو جهة الاتصال..."
-                />
+                <input type="search" value={search} onChange={(e) => setSearch(e.target.value)}
+                  className="input pr-10" placeholder="ابحث بالاسم أو جهة الاتصال..." />
               </div>
-
-              {/* Client list */}
               <div className="max-h-[300px] overflow-y-auto space-y-1.5">
                 {filteredClients.length === 0 ? (
                   <div className="text-center py-6 text-sm text-bg-text-3">
-                    لا يوجد عملاء مطابقين —{" "}
-                    <button type="button" onClick={() => setMode("new")} className="text-bg-green font-bold">
-                      أنشئ عميلاً جديداً
-                    </button>
+                    لا يوجد عملاء —{" "}
+                    <button type="button" onClick={() => setMode("new")} className="text-bg-green font-bold">أنشئ جديداً</button>
                   </div>
-                ) : (
-                  filteredClients.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setSelectedClientId(c.id)}
-                      className={`w-full text-right rounded-sm2 border-[1.5px] p-3 flex items-start gap-3 transition-colors ${
-                        selectedClientId === c.id
-                          ? "border-bg-green bg-bg-green-lt"
-                          : "border-bg-line hover:border-bg-green-2"
-                      }`}
-                    >
-                      <div className="size-9 rounded-lg bg-bg-green-lt text-bg-green flex items-center justify-center text-xs font-black shrink-0">
-                        {c.name_ar.slice(0, 2)}
+                ) : filteredClients.map((c) => (
+                  <button key={c.id} type="button" onClick={() => setSelectedClientId(c.id)}
+                    className={`w-full text-right rounded-sm2 border-[1.5px] p-3 flex items-start gap-3 transition-colors ${
+                      selectedClientId === c.id ? "border-bg-green bg-bg-green-lt" : "border-bg-line hover:border-bg-green-2"
+                    }`}>
+                    <div className="size-9 rounded-lg bg-bg-green-lt text-bg-green flex items-center justify-center text-xs font-black shrink-0">
+                      {c.name_ar.slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-bg-text-1 truncate">{c.name_ar}</div>
+                      <div className="text-[10px] text-bg-text-3 mt-0.5 flex items-center gap-2 flex-wrap">
+                        {c.contact_name && <span>📞 {c.contact_name}</span>}
+                        {c.country && <span>📍 {c.country}</span>}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-bg-text-1 truncate">{c.name_ar}</div>
-                        {c.name_en && <div className="text-[10px] text-bg-text-3 truncate" dir="ltr">{c.name_en}</div>}
-                        <div className="text-[10px] text-bg-text-3 mt-0.5 flex items-center gap-2 flex-wrap">
-                          {c.contact_name && <span>📞 {c.contact_name}</span>}
-                          {c.country && <span>📍 {c.country}</span>}
-                          {c.sector && <span>🏷 {c.sector}</span>}
-                        </div>
+                    </div>
+                    {selectedClientId === c.id && (
+                      <div className="size-6 rounded-full bg-bg-green text-white flex items-center justify-center shrink-0">
+                        <Check className="size-4" />
                       </div>
-                      {selectedClientId === c.id && (
-                        <div className="size-6 rounded-full bg-bg-green text-white flex items-center justify-center shrink-0">
-                          <Check className="size-4" />
-                        </div>
-                      )}
-                    </button>
-                  ))
-                )}
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
           ) : (
-            /* New client form */
             <div className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Fld label="اسم العميل (عربي)" required>
-                  <input className="input" value={nameAr} onChange={(e) => setNameAr(e.target.value)} placeholder="شركة النور للتجارة" />
+                  <input className="input" value={nameAr} onChange={(e) => setNameAr(e.target.value)} placeholder="شركة النور" />
                 </Fld>
                 <Fld label="اسم العميل (إنجليزي)">
-                  <input className="input" value={nameEn} onChange={(e) => setNameEn(e.target.value)} placeholder="Al-Noor Trading Co." />
+                  <input className="input" value={nameEn} onChange={(e) => setNameEn(e.target.value)} placeholder="Al-Noor Co." />
                 </Fld>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -248,53 +236,64 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
               </Fld>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <Fld label="جهة الاتصال">
-                  <input className="input" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="أحمد الخالد" />
+                  <input className="input" value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="أحمد" />
                 </Fld>
                 <Fld label="الهاتف">
-                  <input className="input tabular" dir="ltr" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+965 9999 0000" />
+                  <input className="input tabular" dir="ltr" value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="+965" />
                 </Fld>
                 <Fld label="البريد">
-                  <input className="input" dir="ltr" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="name@example.com" />
+                  <input className="input" dir="ltr" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="email@co.com" />
                 </Fld>
               </div>
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={() => canGoStep2 && setStep(2)}
-            disabled={!canGoStep2}
-            className="btn-primary w-full inline-flex items-center justify-center gap-2 h-10"
-          >
-            التالي: إعدادات العرض
-            <ArrowLeft className="size-4" />
+          <button type="button" onClick={() => canGoStep2 && setStep(2)} disabled={!canGoStep2}
+            className="btn-primary w-full inline-flex items-center justify-center gap-2 h-10">
+            التالي: تقييم الاحتياج <ArrowLeft className="size-4" />
           </button>
         </div>
       )}
 
-      {/* ═══ STEP 2: Quote Settings ═══ */}
+      {/* ═══ STEP 2: Needs Assessment ═══ */}
       {step === 2 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-black text-bg-green flex items-center gap-2">
+            📋 الخطوة 2: تقييم الاحتياج — {currentName}
+          </h2>
+          <div className="text-xs text-bg-text-3 bg-bg-card-alt rounded-sm2 p-2 flex items-center gap-2">
+            <span>📍 {currentCountry}</span> · <span>🏷 {SECTORS.find(([id]) => id === currentSector)?.[1] || currentSector}</span>
+          </div>
+          <NeedsAssessment
+            sector={currentSector}
+            country={currentCountry}
+            onComplete={(data) => {
+              setAssessmentData(data);
+              setStep(3);
+            }}
+            onBack={() => setStep(1)}
+          />
+        </div>
+      )}
+
+      {/* ═══ STEP 3: Quote Settings ═══ */}
+      {step === 3 && (
         <div className="card p-5 space-y-4">
           <h2 className="text-lg font-black text-bg-green flex items-center gap-2">
-            💼 الخطوة 2: إعدادات العرض
+            💼 الخطوة 3: إعدادات العرض
           </h2>
 
-          {/* Selected client summary */}
           <div className="rounded-sm2 bg-bg-green-lt border border-bg-green/20 p-3 flex items-center gap-3">
             <div className="size-10 rounded-lg bg-bg-green text-white flex items-center justify-center text-sm font-black">
-              {(mode === "select" ? selectedClient?.name_ar : nameAr)?.slice(0, 2) || ".."}
+              {currentName.slice(0, 2)}
             </div>
             <div className="flex-1">
-              <div className="text-sm font-bold text-bg-green">
-                {mode === "select" ? selectedClient?.name_ar : nameAr}
-              </div>
+              <div className="text-sm font-bold text-bg-green">{currentName}</div>
               <div className="text-[10px] text-bg-text-3">
-                {mode === "select" ? `عميل موجود · ${selectedClient?.country || ""}` : `عميل جديد · ${country}`}
+                {currentCountry} · {assessmentData ? `${assessmentData.selectedModules.length} موديول` : ""}
               </div>
             </div>
-            <button type="button" onClick={() => setStep(1)} className="text-xs text-bg-green hover:underline">
-              تغيير
-            </button>
+            <button type="button" onClick={() => setStep(1)} className="text-xs text-bg-green hover:underline">تغيير</button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -323,45 +322,47 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
           </div>
 
           <div className="flex gap-2">
-            <button type="button" onClick={() => setStep(1)} className="btn-outline flex-1 inline-flex items-center justify-center gap-2 h-10">
-              <ArrowRight className="size-4" />
-              السابق
+            <button type="button" onClick={() => setStep(2)} className="btn-outline flex-1 inline-flex items-center justify-center gap-2 h-10">
+              <ArrowRight className="size-4" /> السابق
             </button>
-            <button type="button" onClick={() => setStep(3)} className="btn-primary flex-1 inline-flex items-center justify-center gap-2 h-10">
-              التالي: تأكيد
-              <ArrowLeft className="size-4" />
+            <button type="button" onClick={() => setStep(4)} className="btn-primary flex-1 inline-flex items-center justify-center gap-2 h-10">
+              التالي: تأكيد <ArrowLeft className="size-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* ═══ STEP 3: Confirm + Create ═══ */}
-      {step === 3 && (
+      {/* ═══ STEP 4: Confirm + Create ═══ */}
+      {step === 4 && (
         <div className="card p-5 space-y-4">
           <h2 className="text-lg font-black text-bg-green flex items-center gap-2">
-            ✅ الخطوة 3: تأكيد وإنشاء
+            ✅ الخطوة 4: تأكيد وإنشاء
           </h2>
 
           <div className="grid grid-cols-2 gap-3">
-            <SummaryItem label="العميل" value={mode === "select" ? selectedClient?.name_ar || "—" : nameAr} />
-            <SummaryItem label="الدولة" value={mode === "select" ? selectedClient?.country || "—" : country} />
+            <SummaryItem label="العميل" value={currentName} />
+            <SummaryItem label="الدولة" value={currentCountry} />
             <SummaryItem label="العملة" value={currency} />
             <SummaryItem label="لغة العرض" value={quoteLanguage === "ar" ? "العربية" : "English"} />
             <SummaryItem label="الصلاحية" value={validity} />
-            <SummaryItem label="رقم العرض" value="تلقائي" />
+            <SummaryItem label="الموديولات" value={assessmentData ? `${assessmentData.selectedModules.length} موديول` : "—"} />
           </div>
 
+          {assessmentData && (
+            <div className="rounded-sm2 bg-bg-green text-white p-3">
+              <div className="text-xs opacity-70 mb-1">إجمالي التطوير المقدّر</div>
+              <div className="text-xl font-black tabular">
+                {Object.values(assessmentData.prices).reduce((s, p) => s + p, 0).toLocaleString("en-US")}
+              </div>
+            </div>
+          )}
+
           <div className="flex gap-2">
-            <button type="button" onClick={() => setStep(2)} className="btn-outline flex-1 inline-flex items-center justify-center gap-2 h-10">
-              <ArrowRight className="size-4" />
-              السابق
+            <button type="button" onClick={() => setStep(3)} className="btn-outline flex-1 inline-flex items-center justify-center gap-2 h-10">
+              <ArrowRight className="size-4" /> السابق
             </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isPending}
-              className="btn-primary flex-1 inline-flex items-center justify-center gap-2 h-11 text-base"
-            >
+            <button type="button" onClick={handleSubmit} disabled={isPending}
+              className="btn-primary flex-1 inline-flex items-center justify-center gap-2 h-11 text-base">
               {isPending ? "جاري الإنشاء..." : "🚀 إنشاء العرض وفتح Builder"}
             </button>
           </div>

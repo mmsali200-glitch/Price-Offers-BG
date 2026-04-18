@@ -152,8 +152,41 @@ export async function createQuote(formData: FormData) {
     quoteId = q2.id;
   }
 
-  // Seed sections payload — this always works (jsonb).
-  const seedPayload = {
+  // Seed sections payload — includes assessment data if provided.
+  const assessmentModules = f("assessmentModules");
+  const assessmentAnswers = f("assessmentAnswers");
+  const assessmentPrices = f("assessmentPrices");
+
+  // Build modules state from assessment
+  let modulesState: Record<string, { id: string; categoryId: string; selected: boolean; discount: number; separate: boolean; priceOverride?: number }> = {};
+  let moduleAnswersState: Record<string, Record<string, string | boolean>> = {};
+
+  if (assessmentModules) {
+    try {
+      const selectedIds: string[] = JSON.parse(assessmentModules);
+      const prices: Record<string, number> = assessmentPrices ? JSON.parse(assessmentPrices) : {};
+      const answers: Record<string, Record<string, string | boolean>> = assessmentAnswers ? JSON.parse(assessmentAnswers) : {};
+
+      // Import module catalog to build full state
+      const { ODOO_MODULES } = await import("@/lib/modules-catalog");
+      ODOO_MODULES.forEach((cat) => {
+        cat.modules.forEach((m) => {
+          modulesState[m.id] = {
+            id: m.id,
+            categoryId: cat.id,
+            selected: selectedIds.includes(m.id),
+            discount: 0,
+            separate: false,
+            priceOverride: prices[m.id] || undefined,
+          };
+        });
+      });
+
+      moduleAnswersState = answers;
+    } catch { /* ignore parse errors */ }
+  }
+
+  const seedPayload: Record<string, unknown> = {
     meta: {
       ref,
       date: f("date") || "",
@@ -182,6 +215,12 @@ export async function createQuote(formData: FormData) {
       commissionPct,
     },
   };
+
+  // Add assessment data if available
+  if (Object.keys(modulesState).length > 0) {
+    seedPayload.modules = modulesState;
+    seedPayload.moduleAnswers = moduleAnswersState;
+  }
 
   await supabase
     .from("quote_sections")
