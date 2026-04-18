@@ -140,7 +140,7 @@ export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): st
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
   const sub = isAr ? "العمليات المؤتمتة التي ستعمل داخل النظام بناءً على الموديولات المختارة" : "Automated processes running inside the system based on selected modules";
   const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",mrp:"🏭",accounting:"📊",payroll:"💰",hr:"👤",project:"📋",helpdesk:"🎧",website:"🌐",realestate:"🏢",hms:"🏥",fieldservice:"🗺️",subscriptions:"🔁",maintenance:"🛠️",marketing:"📢"};
-  const COLORS = ["#1a5c37","#247a4a","#2563eb","#c9a84c","#8e44ad","#e67e22","#16a085","#c0392b"];
+  const COLORS = ["#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37"];
 
   let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:linear-gradient(180deg,#f7f9f6 0%,#fff 100%);">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
@@ -220,7 +220,7 @@ export function renderPhasesHtml(state: QuoteBuilderState, isAr: boolean): strin
 
   const title = isAr ? "خطة التنفيذ" : "Implementation Plan";
   const sub = isAr ? `${phases.length} مراحل — المدة الإجمالية: ${state.durationLabel || "—"}` : `${phases.length} phases — Total: ${state.durationLabel || "—"}`;
-  const colors = ["#1a5c37", "#c9a84c", "#2563eb", "#27ae60", "#8e44ad", "#e67e22"];
+  const colors = ["#1a5c37", "#c9a84c", "#247a4a", "#1a5c37", "#c9a84c", "#247a4a"];
 
   let html = `<section id="dyn-phases" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#fff;page-break-inside:avoid;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
