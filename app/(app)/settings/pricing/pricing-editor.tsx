@@ -9,7 +9,8 @@ type Row = { id: string; category: string; key: string; value: number; label: st
 
 const CAT_LABELS: Record<string, { title: string; icon: string; unit: string }> = {
   module_price: { title: "أسعار الموديولات (بالعملة الأساسية — د.ك)", icon: "📦", unit: "د.ك" },
-  country_multiplier: { title: "معاملات الدول", icon: "🌍", unit: "×" },
+  country_multiplier: { title: "معاملات الدول (السعر الأساسي × المعامل = سعر الدولة)", icon: "🌍", unit: "×" },
+  question_weight: { title: "معاملات أسئلة التعقيد (تضاف للسعر عند إجابة نعم)", icon: "❓", unit: "%" },
   support_price: { title: "أسعار باقات الدعم الفني", icon: "🛟", unit: "د.ك/شهر" },
   bg_app_price: { title: "أسعار تطبيقات BG الحصرية", icon: "⭐", unit: "د.ك" },
 };
@@ -34,7 +35,7 @@ export function PricingEditor({ config }: { config: Record<string, Row[]> }) {
     setTimeout(() => setSaved(null), 2000);
   }
 
-  const categories = Object.keys(CAT_LABELS);
+  const categories = ["module_price", "country_multiplier", "question_weight", "support_price", "bg_app_price"];
 
   if (Object.keys(config).length === 0) {
     return (
@@ -50,6 +51,50 @@ export function PricingEditor({ config }: { config: Record<string, Row[]> }) {
 
   return (
     <div className="space-y-5">
+      {/* Price conversion preview */}
+      {config.module_price && config.country_multiplier && (
+        <div className="card overflow-hidden">
+          <div className="bg-bg-gold text-bg-green px-4 py-3 flex items-center gap-2">
+            <span className="text-lg">💱</span>
+            <span className="text-sm font-black">معاينة تحويل الأسعار حسب الدولة</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-bg-card-alt">
+                  <th className="px-3 py-2 text-right font-bold text-bg-text-2 sticky right-0 bg-bg-card-alt">الموديول</th>
+                  {config.country_multiplier.map(c => (
+                    <th key={c.key} className="px-3 py-2 text-center font-bold text-bg-text-2 whitespace-nowrap">
+                      {c.label} (×{c.value})
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {config.module_price.slice(0, 10).map(mod => (
+                  <tr key={mod.key} className="border-t border-bg-line">
+                    <td className="px-3 py-1.5 font-bold text-bg-green sticky right-0 bg-white">{mod.label}</td>
+                    {config.country_multiplier.map(c => {
+                      const converted = Math.round(mod.value * c.value);
+                      const meta = c.metadata as Record<string, unknown> | null;
+                      const symbol = (meta?.symbol as string) || "";
+                      return (
+                        <td key={c.key} className="px-3 py-1.5 text-center tabular text-bg-text-1">
+                          {fmtNum(converted)} <span className="text-[9px] text-bg-text-3">{symbol}</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-4 py-2 bg-bg-card-alt text-[10px] text-bg-text-3">
+            💡 السعر النهائي = السعر الأساسي × معامل الدولة × معامل التعقيد (من الأسئلة)
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="text-xs text-bg-danger bg-red-50 border border-red-200 rounded-sm2 px-3 py-2">{error}</div>
       )}
@@ -76,7 +121,12 @@ export function PricingEditor({ config }: { config: Record<string, Row[]> }) {
                   <div key={row.id} className="px-4 py-2.5 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold text-bg-text-1">{row.label || row.key}</div>
-                      <div className="text-[10px] text-bg-text-3 tabular" dir="ltr">{row.key}</div>
+                      <div className="text-[10px] text-bg-text-3 tabular" dir="ltr">
+                        {row.key}
+                        {row.category === "question_weight" && row.metadata && (
+                          <span className="text-bg-green mr-2">← {(row.metadata as Record<string,string>).module}</span>
+                        )}
+                      </div>
                     </div>
 
                     {isEditing ? (

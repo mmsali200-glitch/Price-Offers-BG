@@ -88,7 +88,54 @@ insert into public.pricing_config (category, key, value, label) values
   ('support_price', 'premium', 450, 'مميزة')
 on conflict (category, key) do update set value = excluded.value;
 
--- ── Seed: BG App prices ─────────────────────────────────
+-- ── Seed: Question complexity weights ────────────────────
+insert into public.pricing_config (category, key, value, label, metadata) values
+  -- Accounting
+  ('question_weight', 'acc_multi_company', 0.15, 'شركات متعددة', '{"module":"accounting"}'),
+  ('question_weight', 'acc_branches', 0.10, 'فروع متعددة', '{"module":"accounting"}'),
+  ('question_weight', 'acc_multi_currency', 0.10, 'عملات متعددة', '{"module":"accounting"}'),
+  ('question_weight', 'acc_multi_coa', 0.10, 'شجرة حسابات متعددة', '{"module":"accounting"}'),
+  ('question_weight', 'acc_cost_centers', 0.08, 'مراكز تكلفة', '{"module":"accounting"}'),
+  ('question_weight', 'acc_budget', 0.08, 'إدارة ميزانيات', '{"module":"accounting"}'),
+  ('question_weight', 'acc_fixed_assets', 0.08, 'أصول ثابتة وإهلاك', '{"module":"accounting"}'),
+  ('question_weight', 'acc_project_accounting', 0.10, 'محاسبة مشاريع', '{"module":"accounting"}'),
+  ('question_weight', 'acc_mfg_costing', 0.12, 'محاسبة تصنيع', '{"module":"accounting"}'),
+  ('question_weight', 'acc_vat', 0.05, 'ضريبة VAT', '{"module":"accounting"}'),
+  ('question_weight', 'acc_zatca', 0.15, 'ربط ZATCA', '{"module":"accounting"}'),
+  ('question_weight', 'acc_einvoice', 0.10, 'فوترة إلكترونية', '{"module":"accounting"}'),
+  ('question_weight', 'acc_migration', 0.12, 'ترحيل بيانات', '{"module":"accounting"}'),
+  -- Sales
+  ('question_weight', 'sal_teams', 0.08, 'فرق مبيعات متعددة', '{"module":"sales"}'),
+  ('question_weight', 'sal_targets', 0.05, 'أهداف مبيعات', '{"module":"sales"}'),
+  ('question_weight', 'sal_approval', 0.08, 'اعتماد عروض أسعار', '{"module":"sales"}'),
+  ('question_weight', 'sal_discount_approval', 0.08, 'اعتماد خصومات', '{"module":"sales"}'),
+  ('question_weight', 'sal_pricelists', 0.08, 'قوائم أسعار متعددة', '{"module":"sales"}'),
+  ('question_weight', 'sal_custom_quote', 0.10, 'قالب عرض مخصص', '{"module":"sales"}'),
+  -- CRM
+  ('question_weight', 'crm_scoring', 0.08, 'Lead Scoring', '{"module":"crm"}'),
+  ('question_weight', 'crm_whatsapp', 0.10, 'ربط WhatsApp', '{"module":"crm"}'),
+  ('question_weight', 'crm_campaigns', 0.08, 'حملات تسويقية', '{"module":"crm"}'),
+  ('question_weight', 'crm_sla', 0.08, 'SLA متابعة', '{"module":"crm"}'),
+  -- Inventory
+  ('question_weight', 'inv_locations', 0.08, 'مواقع داخلية', '{"module":"inventory"}'),
+  ('question_weight', 'inv_barcode', 0.08, 'نظام باركود', '{"module":"inventory"}'),
+  ('question_weight', 'inv_serial', 0.08, 'أرقام تسلسلية', '{"module":"inventory"}'),
+  ('question_weight', 'inv_batch', 0.08, 'تتبع باتشات', '{"module":"inventory"}'),
+  ('question_weight', 'inv_expiry', 0.08, 'تتبع صلاحية', '{"module":"inventory"}'),
+  -- MRP
+  ('question_weight', 'mrp_multi_bom', 0.10, 'BOM متعددة', '{"module":"mrp"}'),
+  ('question_weight', 'mrp_routing', 0.10, 'مسارات إنتاج', '{"module":"mrp"}'),
+  ('question_weight', 'mrp_subcontract', 0.12, 'تصنيع خارجي', '{"module":"mrp"}'),
+  ('question_weight', 'mrp_costing', 0.10, 'تكلفة فعلية', '{"module":"mrp"}'),
+  ('question_weight', 'mrp_planning', 0.10, 'تخطيط MRP', '{"module":"mrp"}'),
+  -- HR
+  ('question_weight', 'hr_attendance', 0.10, 'ربط أجهزة البصمة', '{"module":"hr"}'),
+  ('question_weight', 'hr_leave_complex', 0.08, 'سياسة إجازات معقدة', '{"module":"hr"}'),
+  ('question_weight', 'hr_approval', 0.08, 'تسلسل اعتماد معقد', '{"module":"hr"}'),
+  -- Payroll
+  ('question_weight', 'pay_wps', 0.08, 'ملف تحويل بنكي WPS', '{"module":"payroll"}'),
+  ('question_weight', 'pay_gosi', 0.10, 'ربط تأمينات اجتماعية', '{"module":"payroll"}')
+on conflict (category, key) do update set value = excluded.value, label = excluded.label, metadata = excluded.metadata;
 insert into public.pricing_config (category, key, value, label) values
   ('bg_app_price', 'onesales', 1200, 'One Sales'),
   ('bg_app_price', 'onetime', 800, 'One Time'),
