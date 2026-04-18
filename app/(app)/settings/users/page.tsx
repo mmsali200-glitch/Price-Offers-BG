@@ -1,6 +1,7 @@
 import { getCurrentRole, listUsers } from "@/lib/actions/users";
 import { redirect } from "next/navigation";
 import { UsersTable } from "./users-table";
+import { InviteUserForm } from "./invite-form";
 import { Shield, Users as UsersIcon } from "lucide-react";
 
 export const metadata = { title: "المستخدمون والصلاحيات · BG Quotes" };
@@ -44,6 +45,8 @@ export default async function UsersPage() {
           </div>
         </div>
       </div>
+
+      <InviteUserForm />
 
       <UsersTable users={users} />
     </div>
