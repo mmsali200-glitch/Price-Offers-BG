@@ -7,6 +7,7 @@
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
+import { getExtended } from "./modules-extended";
 
 function esc(s: string) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -51,10 +52,12 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
       </tr></thead><tbody>`;
 
   mods.forEach((m) => {
+    const ext = getExtended(m.id);
+    const feats = ext.features.length > 0 ? ext.features : m.features;
     const finalPrice = Math.round(m.price * (1 - (m.discount || 0) / 100));
     html += `<tr style="border-bottom:1px solid #e2e8e3;page-break-inside:avoid;">
       <td style="padding:8px 10px;font-weight:700;color:#1a5c37;white-space:nowrap;">${esc(m.name)}</td>
-      <td style="padding:8px 10px;color:#3e5446;line-height:1.6;">${m.features.map((f) => esc(f)).join(" · ")}</td>
+      <td style="padding:8px 10px;color:#3e5446;line-height:1.6;">${feats.map((f) => esc(f)).join(" · ")}</td>
       <td style="padding:8px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(finalPrice)} ${cur}${m.discount > 0 ? `<br><span style="font-size:9px;color:#c9a84c;">خصم ${m.discount}%</span>` : ""}</td>
     </tr>`;
   });
