@@ -129,35 +129,60 @@ export function UsersTable({ users }: { users: UserProfile[] }) {
                 </div>
               </div>
 
-              {/* Expanded permissions */}
+              {/* Expanded permissions — EDITABLE */}
               {isExpanded && (
                 <div className="border-t border-bg-line bg-bg-card-alt p-4">
                   <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-3">
-                    صلاحيات {u.full_name} ({ROLE_OPTIONS.find(r => r.v === u.role)?.label})
+                    صلاحيات {u.full_name} — اضغط على أي صلاحية لتغييرها
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {Object.entries(perms).map(([section, sPerms]) => (
                       <div key={section} className="rounded-sm2 bg-white border border-bg-line p-3">
                         <div className="text-[10px] font-bold text-bg-text-2 mb-2">{section}</div>
                         <div className="flex flex-wrap gap-1">
-                          {Object.entries(sPerms).map(([key, allowed]) => (
-                            <span
-                              key={key}
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
-                                allowed
-                                  ? "bg-bg-green-lt text-bg-green"
-                                  : "bg-red-50 text-bg-danger line-through opacity-50"
-                              }`}
-                            >
-                              {allowed ? "✓" : "✕"} {key}
-                            </span>
-                          ))}
+                          {Object.entries(sPerms).map(([key, allowed]) => {
+                            // Determine which role gives/removes this permission
+                            const needsAdmin = !PERMS.manager[section]?.[key] && PERMS.admin[section]?.[key];
+                            const needsManager = !PERMS.sales[section]?.[key] && PERMS.manager[section]?.[key];
+
+                            return (
+                              <button
+                                key={key}
+                                onClick={() => {
+                                  if (allowed) {
+                                    // Downgrade: if currently admin perm, go to manager; if manager perm, go to sales
+                                    if (needsAdmin) handleRoleChange(u.id, "manager");
+                                    else if (needsManager) handleRoleChange(u.id, "sales");
+                                  } else {
+                                    // Upgrade: if needs admin, set admin; if needs manager, set manager
+                                    if (needsAdmin) handleRoleChange(u.id, "admin");
+                                    else if (needsManager) handleRoleChange(u.id, "manager");
+                                    else handleRoleChange(u.id, "admin");
+                                  }
+                                }}
+                                className={`text-[9px] font-bold px-2 py-1 rounded-full cursor-pointer transition-all hover:scale-105 active:scale-95 ${
+                                  allowed
+                                    ? "bg-bg-green-lt text-bg-green hover:bg-bg-green hover:text-white"
+                                    : "bg-red-50 text-bg-danger hover:bg-bg-danger hover:text-white"
+                                }`}
+                                title={allowed
+                                  ? `اضغط لإلغاء "${key}" — سيتغيّر الدور تلقائياً`
+                                  : `اضغط لتفعيل "${key}" — سيتغيّر الدور تلقائياً`
+                                }
+                              >
+                                {allowed ? "✓" : "✕"} {key}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}
                   </div>
-                  <div className="text-[9px] text-bg-text-3 mt-2">
-                    انضم في {fmtDateArabic(u.created_at)} · لتغيير الصلاحيات، غيّر الدور من الأزرار أعلاه
+                  <div className="mt-3 p-2 bg-bg-gold-lt border border-bg-gold rounded-sm2 text-[10px] text-[#8a6010]">
+                    💡 الضغط على صلاحية يغيّر الدور تلقائياً:
+                    <b> مندوب</b> (صلاحيات محدودة) →
+                    <b> مدير</b> (يرى كل شي) →
+                    <b> مسؤول</b> (تحكم كامل)
                   </div>
                 </div>
               )}
