@@ -47,7 +47,7 @@ function getSelectedBG(state: QuoteBuilderState) {
   }));
 }
 
-/** §5 — Module details table */
+/** §5 — Module details — creative card design */
 export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
@@ -55,80 +55,157 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   const cur = curSymbol(state.meta.currency);
   const title = isAr ? "تفاصيل الموديولات" : "Module Details";
   const sub = isAr ? `وصف تفصيلي لكل موديول ومميزاته الرئيسية — ${mods.length + bgApps.length} موديول` : `Detailed breakdown — ${mods.length + bgApps.length} modules`;
+  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",barcode:"🔖",mrp:"🏭",accounting:"📊",invoicing:"🧾",payroll:"💰",hr:"👤",attendance:"⏰",leaves:"🌴",recruitment:"🎯",project:"📋",helpdesk:"🎧",website:"🌐",ecommerce:"🛒",realestate:"🏢",hms:"🏥",lab:"🔬",quality:"✅",maintenance:"🛠️",delivery:"🚚",repair:"🔧",timesheets:"⏱️",fieldservice:"🗺️",expenses:"💳",subscriptions:"🔁",plm:"🧬",eam:"🏭",livechat:"💬",elearning:"🎓",appraisals:"📈",rental:"📅",marketing:"📢",documents:"📄",fleet:"🚗",studio:"🎨"};
 
-  let html = `<section id="dyn-modules" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#fff;page-break-inside:auto;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+  let html = `<section id="dyn-modules" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#fff;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
       <div style="width:30px;height:30px;background:#1a5c37;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">📦</div>
       <div><div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div><div style="font-size:11px;color:#7a8e80;">${sub}</div></div>
-    </div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px;">
-      <thead><tr style="background:#eaf3ed;">
-        <th style="padding:8px 10px;text-align:${isAr ? "right" : "left"};color:#1a5c37;font-weight:700;">${isAr ? "الموديول" : "Module"}</th>
-        <th style="padding:8px 10px;text-align:${isAr ? "right" : "left"};color:#1a5c37;font-weight:700;">${isAr ? "المميزات الرئيسية" : "Key Features"}</th>
-        <th style="padding:8px 10px;text-align:center;color:#1a5c37;font-weight:700;width:80px;">${isAr ? "السعر" : "Price"}</th>
-      </tr></thead><tbody>`;
+    </div>`;
 
-  mods.forEach((m) => {
+  mods.forEach((m, idx) => {
     const ext = getExtended(m.id);
     const feats = ext.features.length > 0 ? ext.features : m.features;
     const finalPrice = Math.round(m.price * (1 - (m.discount || 0) / 100));
-    html += `<tr style="border-bottom:1px solid #e2e8e3;page-break-inside:avoid;">
-      <td style="padding:8px 10px;font-weight:700;color:#1a5c37;white-space:nowrap;">${esc(m.name)}</td>
-      <td style="padding:8px 10px;color:#3e5446;line-height:1.6;">${feats.map((f) => esc(f)).join(" · ")}</td>
-      <td style="padding:8px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(finalPrice)} ${cur}${m.discount > 0 ? `<br><span style="font-size:9px;color:#c9a84c;">خصم ${m.discount}%</span>` : ""}</td>
-    </tr>`;
+    const icon = ICONS[m.id] || "📦";
+    const isEven = idx % 2 === 0;
+
+    html += `
+    <div style="border:1.5px solid #e2e8e3;border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;box-shadow:0 2px 10px rgba(26,92,55,0.05);">
+      <!-- Module header -->
+      <div style="background:${isEven ? "linear-gradient(135deg,#1a5c37,#247a4a)" : "linear-gradient(135deg,#247a4a,#2d9052)"};padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:28px;">${icon}</div>
+          <div>
+            <div style="color:#fff;font-size:15px;font-weight:800;">${esc(m.name)}</div>
+            <div style="color:rgba(255,255,255,0.65);font-size:10px;">${feats.length} ${isAr ? "ميزة" : "features"}</div>
+          </div>
+        </div>
+        <div style="text-align:left;">
+          <div style="color:#c9a84c;font-size:18px;font-weight:800;font-family:monospace;">${fmtNum(finalPrice)}</div>
+          <div style="color:rgba(255,255,255,0.6);font-size:9px;">${cur}${m.discount > 0 ? ` (${isAr ? "خصم" : "disc"} ${m.discount}%)` : ""}</div>
+        </div>
+      </div>
+      <!-- Features grid -->
+      <div style="padding:14px 18px;">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+          ${feats.map((f, i) => `
+            <div style="display:flex;align-items:flex-start;gap:6px;padding:5px 8px;background:${i % 2 === 0 ? "#f7f9f6" : "#fff"};border-radius:6px;">
+              <span style="color:#1a5c37;font-weight:800;font-size:10px;margin-top:1px;">✓</span>
+              <span style="font-size:10px;color:#3e5446;line-height:1.5;">${esc(f)}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
   });
 
+  // BG Apps
   bgApps.forEach((a) => {
-    html += `<tr style="border-bottom:1px solid #e2e8e3;background:#fdf5e0;page-break-inside:avoid;">
-      <td style="padding:8px 10px;font-weight:700;color:#8a6010;"><span style="background:#c9a84c;color:#1a5c37;font-size:8px;font-weight:800;padding:1px 5px;border-radius:8px;margin-left:4px;">BG</span> ${esc(a.name)}</td>
-      <td style="padding:8px 10px;color:#3e5446;line-height:1.6;">${a.features.slice(0, 4).map((f) => esc(f)).join(" · ")}</td>
-      <td style="padding:8px 10px;text-align:center;font-weight:700;color:#8a6010;">${fmtNum(a.implementationPrice)} ${cur}</td>
-    </tr>`;
+    const icon = ICONS[a.id] || "⭐";
+    html += `
+    <div style="border:2px solid #c9a84c;border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;">
+      <div style="background:linear-gradient(135deg,#c9a84c,#e0bc5a);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:28px;">${icon}</div>
+          <div>
+            <div style="color:#1a5c37;font-size:15px;font-weight:800;">${esc(a.name)}</div>
+            <div style="background:#1a5c37;color:#fff;font-size:8px;font-weight:800;padding:1px 8px;border-radius:10px;display:inline-block;margin-top:2px;">حصري BG</div>
+          </div>
+        </div>
+        <div style="color:#1a5c37;font-size:18px;font-weight:800;font-family:monospace;">${fmtNum(a.implementationPrice)} ${cur}</div>
+      </div>
+      <div style="padding:12px 18px;">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
+          ${a.features.slice(0, 6).map((f, i) => `
+            <div style="display:flex;align-items:flex-start;gap:6px;padding:5px 8px;background:${i % 2 === 0 ? "#fdf5e0" : "#fff"};border-radius:6px;">
+              <span style="color:#c9a84c;font-weight:800;font-size:10px;margin-top:1px;">★</span>
+              <span style="font-size:10px;color:#3e5446;line-height:1.5;">${esc(f)}</span>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
   });
 
-  html += `</tbody></table></section>`;
+  html += `</section>`;
   return html;
 }
 
-/** §6 — Workflows — auto-generated from extended module data */
+/** §6 — Workflows — visual timeline design */
 export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
-  const ids = mods.map(m => m.id);
+  if (mods.length === 0 && !state.workflows?.trim()) return "";
 
-  if (ids.length === 0 && !state.workflows?.trim()) return "";
-
-  // If user wrote custom workflows, use them only.
   if (state.workflows?.trim()) {
     const lines = state.workflows.split("\n\n").filter(Boolean);
     return buildWorkflowSection(lines, isAr);
   }
 
-  // Auto-generate from extended module data — each module gets its own workflow card.
-  const cards: string[] = [];
-  mods.forEach((m) => {
-    const ext = getExtended(m.id);
-    if (ext.workflow.length > 0) {
-      const steps = ext.workflow.map((s, i) => `<span style="color:#7a8e80;margin-left:4px;">${i + 1}.</span> ${esc(s)}`).join("<br>");
-      cards.push(`<div style="background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:14px 16px;margin-bottom:10px;page-break-inside:avoid;">
-        <div style="font-size:13px;font-weight:700;color:#1a5c37;margin-bottom:8px;border-bottom:2px solid #c9a84c;padding-bottom:6px;">🔄 ${esc(m.name)}</div>
-        <div style="font-size:11px;color:#3e5446;line-height:1.9;">${steps}</div>
-      </div>`);
-    }
-  });
-
-  if (cards.length === 0) return "";
-
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
-  const sub = isAr ? `${cards.length} دورة عمل مؤتمتة بناءً على الموديولات المختارة` : `${cards.length} automated workflows based on selected modules`;
+  const sub = isAr ? `${mods.length} دورة عمل مؤتمتة بناءً على الموديولات المختارة` : `${mods.length} automated workflows`;
+  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",mrp:"🏭",accounting:"📊",payroll:"💰",hr:"👤",project:"📋",helpdesk:"🎧",website:"🌐",realestate:"🏢",hms:"🏥",fieldservice:"🗺️",subscriptions:"🔁",maintenance:"🛠️"};
+  const COLORS = ["#1a5c37","#c9a84c","#2563eb","#27ae60","#8e44ad","#e67e22","#c0392b","#16a085"];
 
-  return `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;page-break-inside:auto;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+  let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
       <div style="width:30px;height:30px;background:#c9a84c;color:#1a5c37;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">🔄</div>
       <div><div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div><div style="font-size:11px;color:#7a8e80;">${sub}</div></div>
-    </div>
-    ${cards.join("\n")}
-  </section>`;
+    </div>`;
+
+  mods.forEach((m, mIdx) => {
+    const ext = getExtended(m.id);
+    if (ext.workflow.length === 0) return;
+    const icon = ICONS[m.id] || "🔄";
+    const color = COLORS[mIdx % COLORS.length];
+
+    html += `
+    <div style="margin-bottom:20px;page-break-inside:avoid;">
+      <!-- Module workflow header -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="font-size:24px;">${icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:800;color:${color};">${esc(m.name)}</div>
+          <div style="height:2px;background:${color};width:60px;margin-top:4px;border-radius:2px;"></div>
+        </div>
+        <div style="font-size:10px;color:#7a8e80;background:#fff;padding:2px 10px;border-radius:10px;border:1px solid #e2e8e3;">
+          ${ext.workflow.length} ${isAr ? "خطوة" : "steps"}
+        </div>
+      </div>
+
+      <!-- Timeline steps -->
+      <div style="position:relative;padding-right:${isAr ? "24px" : "0"};padding-left:${isAr ? "0" : "24px"};">
+        <!-- Vertical line -->
+        <div style="position:absolute;${isAr ? "right" : "left"}:8px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,${color},#e2e8e3);border-radius:2px;"></div>
+
+        ${ext.workflow.map((step, i) => {
+          const parts = step.split(":");
+          const stepTitle = parts[0]?.trim() || "";
+          const stepDesc = parts.slice(1).join(":").trim() || step;
+          const isLast = i === ext.workflow.length - 1;
+
+          return `
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:${isLast ? "0" : "8px"};position:relative;">
+            <!-- Dot -->
+            <div style="width:18px;height:18px;border-radius:50%;background:${i === 0 ? color : "#fff"};border:2.5px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;margin-top:2px;">
+              <span style="font-size:8px;font-weight:800;color:${i === 0 ? "#fff" : color};">${i + 1}</span>
+            </div>
+            <!-- Content -->
+            <div style="flex:1;background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:8px 12px;${i === 0 ? `border-right:3px solid ${color};` : ""}">
+              ${stepTitle !== stepDesc
+                ? `<div style="font-size:11px;font-weight:700;color:#141f18;margin-bottom:2px;">${esc(stepTitle)}</div>
+                   <div style="font-size:10px;color:#7a8e80;line-height:1.5;">${esc(stepDesc)}</div>`
+                : `<div style="font-size:10px;color:#3e5446;line-height:1.5;">${esc(step)}</div>`
+              }
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+  });
+
+  html += `</section>`;
+  return html;
 }
 
 /** §7 — Implementation phases — uses user's phases from Builder */
