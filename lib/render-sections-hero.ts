@@ -61,30 +61,54 @@ export function renderScopeHtml(state: QuoteBuilderState, isAr: boolean): string
   const cur = curSymbol(state.meta.currency);
   const total = mods.length + bgApps.length;
   const title = isAr ? "نطاق المشروع" : "Project Scope";
+  const clientName = isAr ? (state.client.nameAr || "الشركة") : (state.client.nameEn || state.client.nameAr || "the company");
+  const sector = isAr ? SECTOR_AR[state.client.sector] || "الأعمال" : SECTOR_EN[state.client.sector] || "Business";
+  const modNames = mods.map(m => m.name).join(isAr ? " و" : ", ");
+
+  // Auto-generate project description
+  const desc = state.projectDescription?.trim() || (isAr
+    ? `يهدف هذا المشروع إلى تحويل العمليات الرقمية لشركة ${esc(clientName)} العاملة في قطاع ${esc(sector)} من خلال تطبيق نظام Odoo ${state.odooVersion} المتكامل.\n\nيشمل نطاق العمل تطبيق وتخصيص موديولات: ${esc(modNames)}.\n\nيضمن هذا النظام: توحيد البيانات في منصة واحدة، تسريع اتخاذ القرار بالتقارير الفورية، تقليل الأخطاء اليدوية، وتحسين كفاءة الفرق.`
+    : `This project aims to digitally transform ${esc(clientName)} operations in the ${esc(sector)} sector through a comprehensive Odoo ${state.odooVersion} ERP implementation.\n\nScope includes: ${esc(modNames)}.\n\nThe system ensures: unified data platform, real-time decision intelligence, reduced manual errors, and improved team efficiency.`);
 
   let html = `<section id="scope" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
       <div style="width:30px;height:30px;background:#1a5c37;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">02</div>
       <div><div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div>
-      <div style="font-size:11px;color:#7a8e80;">${total} Odoo ${state.odooVersion} ${isAr?"موديول":"modules"} | ${isAr?SECTOR_AR[state.client.sector]||"":SECTOR_EN[state.client.sector]||""}</div></div>
+      <div style="font-size:11px;color:#7a8e80;">${total} Odoo ${state.odooVersion} ${isAr ? "موديول" : "modules"} | ${isAr ? SECTOR_AR[state.client.sector] || "" : SECTOR_EN[state.client.sector] || ""}</div></div>
     </div>
+
+    <!-- وصف المشروع -->
+    <div style="background:#f7f9f6;border:1px solid #e2e8e3;border-right:3px solid #1a5c37;border-radius:8px;padding:16px 18px;margin-bottom:20px;font-size:12px;color:#3e5446;line-height:1.8;white-space:pre-line;">${esc(desc)}</div>
+
+    <!-- بطاقات الموديولات -->
+    <div style="font-size:11px;font-weight:700;color:#7a8e80;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">${isAr ? "الموديولات المشمولة" : "Included Modules"}</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">`;
 
   mods.forEach(m => {
     html += `<div style="background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:12px;text-align:center;box-shadow:0 2px 8px rgba(26,92,55,0.06);">
-      <div style="font-size:20px;margin-bottom:4px;">${ICONS[m.id]||"📦"}</div>
+      <div style="font-size:20px;margin-bottom:4px;">${ICONS[m.id] || "📦"}</div>
       <div style="font-size:11px;font-weight:700;color:#141f18;">${esc(m.name)}</div>
-      <div style="font-size:9px;color:#7a8e80;margin-top:2px;">${m.features.slice(0,2).join(" · ")}</div>
+      <div style="font-size:9px;color:#7a8e80;margin-top:2px;">${m.features.slice(0, 2).join(" · ")}</div>
     </div>`;
   });
   bgApps.forEach(a => {
     html += `<div style="background:#fdf5e0;border:1px solid #c9a84c;border-radius:8px;padding:12px;text-align:center;">
       <div style="font-size:8px;font-weight:800;background:#c9a84c;color:#1a5c37;display:inline-block;padding:1px 6px;border-radius:8px;margin-bottom:4px;">BG</div>
-      <div style="font-size:11px;font-weight:700;color:#8a6010;">${esc(a.name.split("—")[0]||a.name)}</div>
+      <div style="font-size:11px;font-weight:700;color:#8a6010;">${esc(a.name.split("—")[0] || a.name)}</div>
     </div>`;
   });
 
-  html += `</div></section>`;
+  html += `</div>`;
+
+  // شروط خاصة (إن وجدت)
+  if (state.extraNotes?.trim()) {
+    html += `<div style="background:#fdf5e0;border:1px solid #c9a84c;border-radius:8px;padding:12px 16px;margin-top:16px;">
+      <div style="font-size:11px;font-weight:700;color:#8a6010;margin-bottom:4px;">⚠️ ${isAr ? "شروط وملاحظات خاصة" : "Special Terms"}</div>
+      <div style="font-size:11px;color:#3e5446;line-height:1.6;white-space:pre-line;">${esc(state.extraNotes)}</div>
+    </div>`;
+  }
+
+  html += `</section>`;
   return html;
 }
 
