@@ -44,10 +44,17 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const [contactEmail, setContactEmail] = useState("");
   const [businessActivity, setBusinessActivity] = useState("");
 
-  // Quote settings (step 3)
-  const [currency, setCurrency] = useState("KWD");
+  // Quote settings
   const [quoteLanguage, setQuoteLanguage] = useState<"ar" | "en">("ar");
   const [validity, setValidity] = useState("30 يوم");
+
+  // Currency auto-set from country
+  const COUNTRY_CURRENCY: Record<string, string> = {
+    "الكويت": "KWD", "السعودية": "SAR", "الإمارات": "AED",
+    "قطر": "QAR", "البحرين": "BHD", "عمان": "OMR",
+    "مصر": "EGP", "الأردن": "JOD", "أخرى": "USD",
+  };
+  const currency = COUNTRY_CURRENCY[country] || "KWD";
 
   // Assessment results (step 2)
   const [assessmentData, setAssessmentData] = useState<{
@@ -305,13 +312,11 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Fld label="العملة" required>
-              <select className="input" value={currency} onChange={(e) => setCurrency(e.target.value)}>
-                <option value="KWD">KWD — د.ك</option>
-                <option value="SAR">SAR — ر.س</option>
-                <option value="AED">AED — د.إ</option>
-                <option value="USD">USD — $</option>
-              </select>
+            <Fld label="العملة (تلقائي من الدولة)">
+              <div className="input bg-bg-card-alt flex items-center gap-2 cursor-not-allowed">
+                <span className="font-bold text-bg-green">{currency}</span>
+                <span className="text-xs text-bg-text-3">← {currentCountry}</span>
+              </div>
             </Fld>
             <Fld label="لغة العرض المطبوع" required>
               <select className="input" value={quoteLanguage} onChange={(e) => setQuoteLanguage(e.target.value as "ar" | "en")}>
