@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, Settings as SettingsIcon, Shield } from "lucide-react";
+import { Users, Settings as SettingsIcon, Shield, DollarSign } from "lucide-react";
 import { getCurrentRole } from "@/lib/actions/users";
 
 export const metadata = { title: "الإعدادات · BG Quotes" };
@@ -22,6 +22,27 @@ export default async function SettingsPage() {
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link
+          href="/settings/pricing"
+          className={`card p-5 card-hover block ${!isAdmin && "opacity-50 pointer-events-none"}`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="size-10 rounded-xl bg-bg-gold-lt text-bg-gold flex items-center justify-center">
+              <DollarSign className="size-5" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-sm font-black text-bg-green">جدول التسعير</h2>
+              <p className="text-xs text-bg-text-3 mt-1 leading-relaxed">
+                أسعار الموديولات، معاملات الدول، باقات الدعم — كلها قابلة للتعديل.
+              </p>
+              {!isAdmin && (
+                <p className="text-[10px] text-bg-danger mt-2 inline-flex items-center gap-1">
+                  <Shield className="size-3" /> متاح للمسؤولين فقط
+                </p>
+              )}
+            </div>
+          </div>
+        </Link>
         <Link
           href="/settings/users"
           className={`card p-5 card-hover block ${!isAdmin && "opacity-50 pointer-events-none"}`}
