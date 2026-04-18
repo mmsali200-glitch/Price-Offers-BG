@@ -6,6 +6,8 @@
 
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
+import { MODULE_QUESTIONS, calculateComplexity } from "./module-questions";
+import { getCountryPricing } from "./country-pricing";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
 import { getExtended } from "./modules-extended";
 
@@ -47,6 +49,38 @@ function getSelectedBG(state: QuoteBuilderState) {
   }));
 }
 
+function getCountryMultiplier(state: QuoteBuilderState) {
+  return getCountryPricing(state.client?.country || "الكويت").priceMultiplier;
+}
+
+function getModuleAdjustedPrice(state: QuoteBuilderState, moduleId: string, basePrice: number) {
+  const answers = state.moduleAnswers?.[moduleId] ?? {};
+  const { multiplier } = calculateComplexity(moduleId, answers);
+  return Math.round(basePrice * getCountryMultiplier(state) * multiplier);
+}
+
+function computeRenderTotals(state: QuoteBuilderState) {
+  const mods = getSelectedMods(state);
+  const bgApps = getSelectedBG(state);
+  const cm = getCountryMultiplier(state);
+
+  const modsTotal = mods.reduce((s, m) => {
+    const adjusted = getModuleAdjustedPrice(state, m.id, m.price);
+    return s + Math.round(adjusted * (1 - (m.discount || 0) / 100));
+  }, 0);
+  const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * cm), 0);
+  const devRaw = modsTotal + bgImpl;
+  const dev = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));
+  const licM = Math.round(state.license.serverMonthly + state.license.perUserMonthly * state.license.users);
+  const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
+  const supM = state.support.packageId === "none" ? 0 : state.support.prices[state.support.packageId as "basic" | "advanced" | "premium"] ?? pkg?.price ?? 0;
+  const annualLic = licM * 12;
+  const grandY1 = dev + annualLic;
+  const firstPay = Math.round(grandY1 * (state.payment.firstPaymentPct || 30) / 100);
+
+  return { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay };
+}
+
 /** §5 — Module details — creative card design */
 export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
@@ -66,9 +100,12 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   mods.forEach((m, idx) => {
     const ext = getExtended(m.id);
     const feats = ext.features.length > 0 ? ext.features : m.features;
-    const finalPrice = Math.round(m.price * (1 - (m.discount || 0) / 100));
+    const adjustedBase = getModuleAdjustedPrice(state, m.id, m.price);
+    const finalPrice = Math.round(adjustedBase * (1 - (m.discount || 0) / 100));
     const icon = ICONS[m.id] || "📦";
     const isEven = idx % 2 === 0;
+    const answers = state.moduleAnswers?.[m.id] ?? {};
+    const { level: complexityLevel, multiplier: complexityMult } = calculateComplexity(m.id, answers);
 
     html += `
     <div style="border:1.5px solid #e2e8e3;border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;box-shadow:0 2px 10px rgba(26,92,55,0.05);">
@@ -77,7 +114,7 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="font-size:28px;">${icon}</div>
           <div>
-            <div style="color:#fff;font-size:15px;font-weight:800;">${esc(m.name)}</div>
+            <div style="color:#fff;font-size:15px;font-weight:800;">${esc(m.name)}${complexityMult > 1 ? ` <span style="background:rgba(255,255,255,0.2);font-size:9px;padding:1px 6px;border-radius:8px;margin-${isAr ? "right" : "left"}:6px;">${complexityLevel} ×${complexityMult.toFixed(2)}</span>` : ""}</div>
             <div style="color:rgba(255,255,255,0.65);font-size:10px;">${feats.length} ${isAr ? "ميزة" : "features"}</div>
           </div>
         </div>
@@ -100,9 +137,11 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
     </div>`;
   });
 
-  // BG Apps
+  // BG Apps — apply country multiplier
+  const bgCm = getCountryMultiplier(state);
   bgApps.forEach((a) => {
     const icon = ICONS[a.id] || "⭐";
+    const adjustedBgPrice = Math.round(a.implementationPrice * bgCm);
     html += `
     <div style="border:2px solid #c9a84c;border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;">
       <div style="background:linear-gradient(135deg,#c9a84c,#e0bc5a);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;">
@@ -113,7 +152,7 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
             <div style="background:#1a5c37;color:#fff;font-size:8px;font-weight:800;padding:1px 8px;border-radius:10px;display:inline-block;margin-top:2px;">حصري BG</div>
           </div>
         </div>
-        <div style="color:#1a5c37;font-size:18px;font-weight:800;font-family:monospace;">${fmtNum(a.implementationPrice)} ${cur}</div>
+        <div style="color:#1a5c37;font-size:18px;font-weight:800;font-family:monospace;">${fmtNum(adjustedBgPrice)} ${cur}</div>
       </div>
       <div style="padding:12px 18px;">
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">
@@ -243,21 +282,90 @@ export function renderPhasesHtml(state: QuoteBuilderState, isAr: boolean): strin
   return html;
 }
 
+/** §8b — Complexity Assessment Results */
+export function renderAssessmentHtml(state: QuoteBuilderState, isAr: boolean): string {
+  const mods = getSelectedMods(state);
+  const cm = getCountryMultiplier(state);
+  const countryName = state.client?.country || "الكويت";
+
+  const assessedMods = mods.filter((m) => {
+    const questions = MODULE_QUESTIONS[m.id];
+    const answers = state.moduleAnswers?.[m.id] ?? {};
+    if (!questions || questions.length === 0) return false;
+    return Object.values(answers).some((v) => v === true || (typeof v === "string" && v !== ""));
+  });
+
+  if (assessedMods.length === 0) return "";
+
+  const title = isAr ? "نتائج تقييم التعقيد" : "Complexity Assessment Results";
+  const sub = isAr ? "تحليل مستوى تعقيد كل موديول بناءً على متطلبات العميل" : "Module complexity analysis based on client requirements";
+  const cur = curSymbol(state.meta.currency);
+
+  const LEVEL_COLORS: Record<string, string> = {
+    "قياسي": "#22c55e", "Standard": "#22c55e",
+    "متوسط": "#f59e0b", "Medium": "#f59e0b",
+    "متقدم": "#f97316", "Advanced": "#f97316",
+    "معقد": "#ef4444", "Complex": "#ef4444",
+  };
+
+  let totalBase = 0, totalAdjusted = 0;
+
+  let html = `<section id="dyn-assessment" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:linear-gradient(180deg,#eff6ff 0%,#fff 100%);page-break-inside:avoid;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="width:30px;height:30px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">📊</div>
+      <div><div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div><div style="font-size:11px;color:#7a8e80;">${sub}</div></div>
+    </div>`;
+
+  if (cm !== 1) {
+    html += `<div style="background:#fdf5e0;border:1px solid #c9a84c;border-radius:6px;padding:8px 14px;margin-bottom:14px;font-size:10px;color:#8a6010;">
+      🌍 ${isAr ? "معامل تسعير" : "Pricing multiplier"} ${countryName}: <strong>×${cm}</strong>
+    </div>`;
+  }
+
+  html += `<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;">
+    <thead><tr style="background:#1a5c37;color:#fff;">
+      <th style="padding:8px 10px;text-align:${isAr ? "right" : "left"};">${isAr ? "الموديول" : "Module"}</th>
+      <th style="padding:8px 10px;text-align:center;">${isAr ? "المستوى" : "Level"}</th>
+      <th style="padding:8px 10px;text-align:center;">${isAr ? "المعامل" : "Multiplier"}</th>
+      <th style="padding:8px 10px;text-align:center;">${isAr ? "السعر الأساسي" : "Base"}</th>
+      <th style="padding:8px 10px;text-align:center;">${isAr ? "السعر المعدّل" : "Adjusted"}</th>
+    </tr></thead><tbody>`;
+
+  assessedMods.forEach((m) => {
+    const answers = state.moduleAnswers?.[m.id] ?? {};
+    const { multiplier, level, levelEn } = calculateComplexity(m.id, answers);
+    const lbl = isAr ? level : levelEn;
+    const adjusted = Math.round(m.price * cm * multiplier);
+    const color = LEVEL_COLORS[lbl] || "#7a8e80";
+    totalBase += m.price;
+    totalAdjusted += adjusted;
+
+    html += `<tr style="border-bottom:1px solid #e2e8e3;">
+      <td style="padding:7px 10px;font-weight:700;color:#1a5c37;">${esc(m.name)}</td>
+      <td style="padding:7px 10px;text-align:center;"><span style="background:${color}20;color:${color};font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${lbl}</span></td>
+      <td style="padding:7px 10px;text-align:center;font-weight:700;color:#2563eb;font-family:monospace;">×${multiplier.toFixed(2)}</td>
+      <td style="padding:7px 10px;text-align:center;color:#7a8e80;">${fmtNum(m.price)}</td>
+      <td style="padding:7px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(adjusted)} ${cur}</td>
+    </tr>`;
+  });
+
+  const diff = totalAdjusted - totalBase;
+  html += `<tr style="background:#eaf3ed;font-weight:800;">
+    <td colspan="3" style="padding:8px 10px;color:#1a5c37;">${isAr ? "الإجمالي" : "Total"}</td>
+    <td style="padding:8px 10px;text-align:center;color:#7a8e80;">${fmtNum(totalBase)}</td>
+    <td style="padding:8px 10px;text-align:center;color:#1a5c37;">${fmtNum(totalAdjusted)} ${cur}${diff > 0 ? ` <span style="font-size:9px;color:#2563eb;">(+${fmtNum(diff)})</span>` : ""}</td>
+  </tr></tbody></table></section>`;
+
+  return html;
+}
+
 /** §9+10+11 — Pricing + Financial + Items */
 export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   const cur = curSymbol(state.meta.currency);
-  const modsTotal = mods.reduce((s, m) => s + Math.round(m.price * (1 - (m.discount || 0) / 100)), 0);
-  const bgImpl = bgApps.reduce((s, a) => s + a.implementationPrice, 0);
-  const devRaw = modsTotal + bgImpl;
-  const dev = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));
-  const licM = Math.round(state.license.serverMonthly + state.license.perUserMonthly * state.license.users);
+  const { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay } = computeRenderTotals(state);
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
-  const supM = state.support.packageId === "none" ? 0 : state.support.prices[state.support.packageId as "basic" | "advanced" | "premium"] ?? pkg?.price ?? 0;
-  const annualLic = licM * 12;
-  const grandY1 = dev + annualLic;
-  const firstPay = Math.round(grandY1 * (state.payment.firstPaymentPct || 30) / 100);
 
   const title = isAr ? "الملخص المالي" : "Financial Summary";
 
@@ -330,12 +438,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
 export function renderInstallmentsHtml(state: QuoteBuilderState, isAr: boolean): string {
   if (state.payment.installments <= 1) return "";
   const cur = curSymbol(state.meta.currency);
-  const mods = getSelectedMods(state);
-  const bgApps = getSelectedBG(state);
-  const modsTotal = mods.reduce((s, m) => s + Math.round(m.price * (1 - (m.discount || 0) / 100)), 0);
-  const bgImpl = bgApps.reduce((s, a) => s + a.implementationPrice, 0);
-  const dev = Math.round((modsTotal + bgImpl) * (1 - (state.totalDiscount || 0) / 100));
-  const licM = Math.round(state.license.serverMonthly + state.license.perUserMonthly * state.license.users);
+  const { dev, licM } = computeRenderTotals(state);
   const total = dev + licM * 12;
   const n = state.payment.installments;
   const fp = state.payment.firstPaymentPct || 30;

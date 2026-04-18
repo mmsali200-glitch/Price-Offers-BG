@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { generateQuoteRef } from "./ref-generator";
+import { getModulePrices } from "./pricing";
 import { ODOO_MODULES } from "@/lib/modules-catalog";
 
 /**
@@ -78,9 +79,12 @@ export async function createQuoteAndReturnId(
   }
   if (!quoteId) return { ok: false, error: `فشل بعد 3 محاولات: ${lastError}` };
 
-  // Build modules from assessment list
+  // Build modules from assessment list, using DB prices when available
   const assessmentList = f("assessmentModulesList");
   let modulesState: Record<string, unknown> | null = null;
+  let dbPrices: Record<string, number> = {};
+  try { dbPrices = await getModulePrices(); } catch { /* fallback to catalog */ }
+
   if (assessmentList) {
     const selectedIds = assessmentList.split(",").filter(Boolean);
     if (selectedIds.length > 0) {
@@ -91,6 +95,7 @@ export async function createQuoteAndReturnId(
             id: m.id, categoryId: cat.id,
             selected: selectedIds.includes(m.id),
             discount: 0, separate: false,
+            ...(dbPrices[m.id] !== undefined ? { priceOverride: dbPrices[m.id] } : {}),
           };
         });
       });

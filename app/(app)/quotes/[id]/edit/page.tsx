@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { QuoteBuilder } from "@/components/builder/quote-builder";
 import { AutosaveInit } from "@/components/builder/autosave-init";
 import { BuilderToolbar } from "@/components/builder/toolbar";
+import { getModulePrices } from "@/lib/actions/pricing";
 import type { QuoteBuilderState } from "@/lib/builder/types";
 
 export const metadata = { title: "تعديل العرض · BG Quotes" };
@@ -35,6 +36,20 @@ export default async function EditQuotePage({
       .single();
 
     const initial = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
+
+    // Load DB prices and apply to modules that don't have overrides
+    try {
+      const dbPrices = await getModulePrices();
+      if (initial.modules && Object.keys(dbPrices).length > 0) {
+        for (const [moduleId, modState] of Object.entries(initial.modules)) {
+          if (dbPrices[moduleId] !== undefined && !modState.priceOverride) {
+            (modState as { priceOverride?: number }).priceOverride = dbPrices[moduleId];
+          }
+        }
+      }
+    } catch {
+      // DB pricing is optional — falls back to catalog prices
+    }
 
     // Stage history — non-critical, catch errors
     let stageHistory: Record<string, string | null> = {};

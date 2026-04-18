@@ -13,6 +13,8 @@
 import { getReferenceTemplateAr, getReferenceTemplateEn } from "./reference-template";
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
+import { calculateComplexity } from "./module-questions";
+import { getCountryPricing } from "./country-pricing";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
 import { PRINT_CSS } from "./print-css";
 import {
@@ -24,6 +26,7 @@ import {
   renderModuleDetailsHtml,
   renderWorkflowsHtml,
   renderPhasesHtml,
+  renderAssessmentHtml,
   renderPricingHtml,
   renderInstallmentsHtml,
 } from "./render-dynamic-sections-2";
@@ -81,6 +84,7 @@ function injectDynamicSections(html: string, state: QuoteBuilderState, isAr: boo
     renderWorkflowsHtml(state, isAr),
     renderPhasesHtml(state, isAr),
     renderRequirementsHtml(state, isAr),
+    renderAssessmentHtml(state, isAr),
     renderPricingHtml(state, isAr),
     renderInstallmentsHtml(state, isAr),
     renderSupportHtml(state, isAr),
@@ -181,12 +185,21 @@ function getSelectedBGApps(state: QuoteBuilderState) {
 function computeTotals(state: QuoteBuilderState) {
   const mods = getSelectedModules(state);
   const bgApps = getSelectedBGApps(state);
-  const modulesAfterItemDiscount = mods.reduce(
-    (s, m) => s + Math.round(m.price * (1 - (m.discount || 0) / 100)),
-    0
-  );
-  const modulesBeforeDiscount = mods.reduce((s, m) => s + m.price, 0);
-  const bgImpl = bgApps.reduce((s, a) => s + a.implementationPrice, 0);
+  const countryPricing = getCountryPricing(state.client?.country || "الكويت");
+  const cm = countryPricing.priceMultiplier;
+
+  const modulesAfterItemDiscount = mods.reduce((s, m) => {
+    const answers = state.moduleAnswers?.[m.id] ?? {};
+    const { multiplier: complexity } = calculateComplexity(m.id, answers);
+    const adjustedPrice = Math.round(m.price * cm * complexity);
+    return s + Math.round(adjustedPrice * (1 - (m.discount || 0) / 100));
+  }, 0);
+  const modulesBeforeDiscount = mods.reduce((s, m) => {
+    const answers = state.moduleAnswers?.[m.id] ?? {};
+    const { multiplier: complexity } = calculateComplexity(m.id, answers);
+    return s + Math.round(m.price * cm * complexity);
+  }, 0);
+  const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * cm), 0);
   const bgMonthly = bgApps.reduce((s, a) => s + a.monthlyPrice, 0);
   const devRaw = modulesAfterItemDiscount + bgImpl;
   const development = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));
@@ -479,6 +492,7 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
     renderWorkflowsHtml(state, isAr),
     renderPhasesHtml(state, isAr),
     renderRequirementsHtml(state, isAr),
+    renderAssessmentHtml(state, isAr),
     renderPricingHtml(state, isAr),
     renderInstallmentsHtml(state, isAr),
     renderSupportHtml(state, isAr),
