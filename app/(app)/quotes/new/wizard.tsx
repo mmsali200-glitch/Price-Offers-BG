@@ -113,7 +113,14 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
     startTransition(async () => {
       try {
         await createQuote(formData);
-      } catch (err) {
+      } catch (err: unknown) {
+        // Next.js redirect() throws a special error — re-throw it
+        if (err && typeof err === "object" && "digest" in err) {
+          const digest = (err as { digest?: string }).digest;
+          if (digest && typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
+            throw err; // Let Next.js handle the redirect
+          }
+        }
         setSubmitError(err instanceof Error ? err.message : "فشل إنشاء العرض");
       }
     });
