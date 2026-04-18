@@ -13,6 +13,23 @@ function esc(s: string) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+/** Helper for custom workflow text from textarea. */
+function buildWorkflowSection(lines: string[], isAr: boolean): string {
+  const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
+  let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="width:30px;height:30px;background:#c9a84c;color:#1a5c37;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">🔄</div>
+      <div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div>
+    </div>`;
+  lines.forEach((line) => {
+    html += `<div style="background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
+      <div style="font-size:11px;color:#3e5446;line-height:1.7;">${esc(line)}</div>
+    </div>`;
+  });
+  html += `</section>`;
+  return html;
+}
+
 function getSelectedMods(state: QuoteBuilderState) {
   const r: Array<{ id: string; name: string; price: number; discount: number; features: string[]; separate: boolean }> = [];
   ODOO_MODULES.forEach((cat) => {
@@ -74,89 +91,44 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   return html;
 }
 
-/** §6 — Workflows — auto-generated from selected modules if empty */
+/** §6 — Workflows — auto-generated from extended module data */
 export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
   const ids = mods.map(m => m.id);
 
-  // If user wrote custom workflows, use them.
-  // Otherwise, auto-generate from selected modules.
-  let lines: string[] = [];
+  if (ids.length === 0 && !state.workflows?.trim()) return "";
 
+  // If user wrote custom workflows, use them only.
   if (state.workflows?.trim()) {
-    lines = state.workflows.split("\n\n").filter(Boolean);
-  } else if (mods.length > 0) {
-    // Auto-generate workflows based on selected modules
-    const workflows: Record<string, { ar: string; en: string }> = {
-      "sales,crm": {
-        ar: "دورة المبيعات: من العميل المحتمل في CRM ← عرض سعر ← اعتماد ← أمر بيع ← تحقق ائتماني ← شحن ← فاتورة ← تحصيل ← قيود محاسبية تلقائية",
-        en: "Sales Cycle: Lead → Opportunity → Quotation → Approval → Sales Order → Credit Check → Delivery → Invoice → Collection",
-      },
-      "purchase": {
-        ar: "دورة المشتريات: طلب داخلي ← اعتماد المدير ← RFQ للموردين ← مقارنة العروض ← أمر شراء ← استلام البضاعة ← فاتورة المورد ← دفع ← تحديث المخزون",
-        en: "Purchase Cycle: Internal Request → Approval → RFQ → Vendor Comparison → Purchase Order → Goods Receipt → Vendor Bill → Payment",
-      },
-      "inventory": {
-        ar: "دورة المخزون: استلام البضاعة وتسجيل الباتش والصلاحية ← تخزين في المواقع ← تحويلات داخلية ← تنبيه إعادة الطلب ← جرد دوري ← تقرير المخزون",
-        en: "Inventory Flow: Goods Receipt + Batch/Expiry → Storage → Internal Transfers → Reorder Alerts → Cycle Count → Stock Report",
-      },
-      "accounting": {
-        ar: "دورة المحاسبة: قيود تلقائية من كل العمليات ← مطابقة البنك ← إدارة الذمم ← إغلاق شهري ← تقارير مالية (ميزانية/دخل/تدفقات)",
-        en: "Accounting: Auto Journal Entries → Bank Reconciliation → AR/AP → Monthly Close → Financial Reports (BS/PL/CF)",
-      },
-      "payroll,hr": {
-        ar: "دورة الرواتب: تجميع بيانات الحضور ← احتساب العمل الإضافي ← خصم الغيابات ← احتساب البدلات ← اعتماد كشف الراتب ← صرف وإرسال القسائم",
-        en: "Payroll: Attendance Data → Overtime → Deductions → Allowances → Payslip Approval → Disbursement → E-Payslips",
-      },
-      "hms": {
-        ar: "دورة المريض: تسجيل المريض ← حجز موعد ← كشف طبي وتشخيص ← وصفة وتحاليل ← تصفية تأمين ← فاتورة ← تحصيل ← أرشفة السجل",
-        en: "Patient Flow: Registration → Appointment → Diagnosis → Prescription/Labs → Insurance → Billing → Collection → Archive",
-      },
-      "mrp": {
-        ar: "دورة الإنتاج: طلب إنتاج ← تحقق المواد الخام ← أمر تصنيع ← تتبع مراحل الإنتاج ← فحص جودة ← إدخال المنتج النهائي ← ربط التكاليف",
-        en: "Manufacturing: Production Request → Raw Material Check → Work Order → Production Tracking → QC → Finished Goods → Cost Allocation",
-      },
-      "realestate": {
-        ar: "دورة العقارات: تسجيل الوحدة ← عقد المستأجر ← فوترة دورية تلقائية ← استلام الإيجار ← متابعة المتأخرات ← تجديد أو إنهاء العقد",
-        en: "Real Estate: Unit Registration → Tenant Contract → Auto Invoicing → Rent Collection → Arrears Follow-up → Renewal/Termination",
-      },
-      "project": {
-        ar: "دورة المشاريع: إنشاء مشروع ← تقسيم المهام ← تتبع ساعات العمل ← مراجعة التقدم ← فوترة بالساعة أو ثابت ← إغلاق المشروع",
-        en: "Projects: Create Project → Task Breakdown → Time Tracking → Progress Review → Billing → Project Close",
-      },
-    };
-
-    Object.entries(workflows).forEach(([keys, text]) => {
-      const keyList = keys.split(",");
-      if (keyList.some(k => ids.includes(k))) {
-        lines.push(isAr ? text.ar : text.en);
-      }
-    });
+    const lines = state.workflows.split("\n\n").filter(Boolean);
+    return buildWorkflowSection(lines, isAr);
   }
 
-  if (lines.length === 0) return "";
+  // Auto-generate from extended module data — each module gets its own workflow card.
+  const cards: string[] = [];
+  mods.forEach((m) => {
+    const ext = getExtended(m.id);
+    if (ext.workflow.length > 0) {
+      const steps = ext.workflow.map((s, i) => `<span style="color:#7a8e80;margin-left:4px;">${i + 1}.</span> ${esc(s)}`).join("<br>");
+      cards.push(`<div style="background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:14px 16px;margin-bottom:10px;page-break-inside:avoid;">
+        <div style="font-size:13px;font-weight:700;color:#1a5c37;margin-bottom:8px;border-bottom:2px solid #c9a84c;padding-bottom:6px;">🔄 ${esc(m.name)}</div>
+        <div style="font-size:11px;color:#3e5446;line-height:1.9;">${steps}</div>
+      </div>`);
+    }
+  });
+
+  if (cards.length === 0) return "";
 
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
-  const sub = isAr ? "تدفقات مؤتمتة تربط كل الأقسام" : "Automated flows connecting all departments";
+  const sub = isAr ? `${cards.length} دورة عمل مؤتمتة بناءً على الموديولات المختارة` : `${cards.length} automated workflows based on selected modules`;
 
-  let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;page-break-inside:auto;">
+  return `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;page-break-inside:auto;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
       <div style="width:30px;height:30px;background:#c9a84c;color:#1a5c37;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">🔄</div>
       <div><div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div><div style="font-size:11px;color:#7a8e80;">${sub}</div></div>
-    </div>`;
-
-  lines.forEach((line) => {
-    const parts = line.split(":");
-    const label = parts[0]?.trim() || "";
-    const flow = parts.slice(1).join(":").trim() || line;
-    html += `<div style="background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:12px 16px;margin-bottom:8px;page-break-inside:avoid;">
-      ${label !== flow ? `<div style="font-size:12px;font-weight:700;color:#1a5c37;margin-bottom:4px;">${esc(label)}</div>` : ""}
-      <div style="font-size:11px;color:#3e5446;line-height:1.7;">${esc(flow)}</div>
-    </div>`;
-  });
-
-  html += `</section>`;
-  return html;
+    </div>
+    ${cards.join("\n")}
+  </section>`;
 }
 
 /** §7 — Implementation phases — uses user's phases from Builder */
