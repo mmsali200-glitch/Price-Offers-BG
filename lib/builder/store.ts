@@ -4,6 +4,8 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES, LICENSE_PRICING } from "@/lib/modules-catalog";
 import { makeInitialState } from "./defaults";
+import { calculateComplexity } from "@/lib/module-questions";
+import { getCountryPricing } from "@/lib/country-pricing";
 import type {
   QuoteBuilderState,
   ModuleState,
@@ -27,6 +29,7 @@ type Actions = {
   toggleModule: (id: string) => void;
   setModule: (id: string, patch: Partial<ModuleState>) => void;
 
+  setModuleAnswer: (moduleId: string, questionId: string, value: string | boolean) => void;
   toggleBGApp: (id: string) => void;
   setBGApp: (id: string, patch: Partial<BGAppState>) => void;
 
@@ -119,6 +122,13 @@ export const useBuilderStore = create<QuoteBuilderState & Actions>()(
       return { modules: { ...s.modules, [id]: { ...m, ...patch } } };
     }),
 
+  setModuleAnswer: (moduleId, questionId, value) =>
+    set((s) => ({
+      moduleAnswers: {
+        ...s.moduleAnswers,
+        [moduleId]: { ...(s.moduleAnswers[moduleId] ?? {}), [questionId]: value },
+      },
+    })),
   toggleBGApp: (id) =>
     set((s) => {
       const a = s.bgApps[id];
@@ -262,8 +272,16 @@ export function selectedBGApps(state: QuoteBuilderState) {
 export function computeTotals(state: QuoteBuilderState) {
   const mods = selectedModules(state);
   const bgApps = selectedBGApps(state);
-  const modulesRaw = mods.reduce((s, m) => s + Math.round(m.price * (1 - (m.discount || 0) / 100)), 0);
-  const bgImpl = bgApps.reduce((s, a) => s + a.implementationPrice, 0);
+  const countryPricing = getCountryPricing(state.client?.country || "الكويت");
+
+  // Apply country multiplier + complexity multiplier per module
+  const modulesRaw = mods.reduce((s, m) => {
+    const answers = state.moduleAnswers?.[m.id] ?? {};
+    const { multiplier: complexity } = calculateComplexity(m.id, answers);
+    const adjustedPrice = Math.round(m.price * countryPricing.priceMultiplier * complexity);
+    return s + Math.round(adjustedPrice * (1 - (m.discount || 0) / 100));
+  }, 0);
+  const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * countryPricing.priceMultiplier), 0);
   const bgMonthly = bgApps.reduce((s, a) => s + a.monthlyPrice, 0);
   const devRaw = modulesRaw + bgImpl;
   const development = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));

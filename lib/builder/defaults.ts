@@ -58,6 +58,7 @@ export function makeInitialState(): QuoteBuilderState {
     priceMode: "total",
     totalDiscount: 0,
     modules,
+    moduleAnswers: {},
     bgApps,
     options: [
       { id: 1, name: "تهجير البيانات من النظام القديم", price: 500, selected: false },

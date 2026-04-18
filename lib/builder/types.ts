@@ -126,6 +126,7 @@ export type QuoteBuilderState = {
   priceMode: PriceMode;
   totalDiscount: number;
   modules: Record<string, ModuleState>;
+  moduleAnswers: Record<string, Record<string, string | boolean>>;
   bgApps: Record<string, BGAppState>;
   options: OptionalComponent[];
   phases: ProjectPhase[];
