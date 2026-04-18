@@ -71,12 +71,70 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   return html;
 }
 
-/** §6 — Workflows */
+/** §6 — Workflows — auto-generated from selected modules if empty */
 export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): string {
-  if (!state.workflows?.trim()) return "";
+  const mods = getSelectedMods(state);
+  const ids = mods.map(m => m.id);
+
+  // If user wrote custom workflows, use them.
+  // Otherwise, auto-generate from selected modules.
+  let lines: string[] = [];
+
+  if (state.workflows?.trim()) {
+    lines = state.workflows.split("\n\n").filter(Boolean);
+  } else if (mods.length > 0) {
+    // Auto-generate workflows based on selected modules
+    const workflows: Record<string, { ar: string; en: string }> = {
+      "sales,crm": {
+        ar: "دورة المبيعات: من العميل المحتمل في CRM ← عرض سعر ← اعتماد ← أمر بيع ← تحقق ائتماني ← شحن ← فاتورة ← تحصيل ← قيود محاسبية تلقائية",
+        en: "Sales Cycle: Lead → Opportunity → Quotation → Approval → Sales Order → Credit Check → Delivery → Invoice → Collection",
+      },
+      "purchase": {
+        ar: "دورة المشتريات: طلب داخلي ← اعتماد المدير ← RFQ للموردين ← مقارنة العروض ← أمر شراء ← استلام البضاعة ← فاتورة المورد ← دفع ← تحديث المخزون",
+        en: "Purchase Cycle: Internal Request → Approval → RFQ → Vendor Comparison → Purchase Order → Goods Receipt → Vendor Bill → Payment",
+      },
+      "inventory": {
+        ar: "دورة المخزون: استلام البضاعة وتسجيل الباتش والصلاحية ← تخزين في المواقع ← تحويلات داخلية ← تنبيه إعادة الطلب ← جرد دوري ← تقرير المخزون",
+        en: "Inventory Flow: Goods Receipt + Batch/Expiry → Storage → Internal Transfers → Reorder Alerts → Cycle Count → Stock Report",
+      },
+      "accounting": {
+        ar: "دورة المحاسبة: قيود تلقائية من كل العمليات ← مطابقة البنك ← إدارة الذمم ← إغلاق شهري ← تقارير مالية (ميزانية/دخل/تدفقات)",
+        en: "Accounting: Auto Journal Entries → Bank Reconciliation → AR/AP → Monthly Close → Financial Reports (BS/PL/CF)",
+      },
+      "payroll,hr": {
+        ar: "دورة الرواتب: تجميع بيانات الحضور ← احتساب العمل الإضافي ← خصم الغيابات ← احتساب البدلات ← اعتماد كشف الراتب ← صرف وإرسال القسائم",
+        en: "Payroll: Attendance Data → Overtime → Deductions → Allowances → Payslip Approval → Disbursement → E-Payslips",
+      },
+      "hms": {
+        ar: "دورة المريض: تسجيل المريض ← حجز موعد ← كشف طبي وتشخيص ← وصفة وتحاليل ← تصفية تأمين ← فاتورة ← تحصيل ← أرشفة السجل",
+        en: "Patient Flow: Registration → Appointment → Diagnosis → Prescription/Labs → Insurance → Billing → Collection → Archive",
+      },
+      "mrp": {
+        ar: "دورة الإنتاج: طلب إنتاج ← تحقق المواد الخام ← أمر تصنيع ← تتبع مراحل الإنتاج ← فحص جودة ← إدخال المنتج النهائي ← ربط التكاليف",
+        en: "Manufacturing: Production Request → Raw Material Check → Work Order → Production Tracking → QC → Finished Goods → Cost Allocation",
+      },
+      "realestate": {
+        ar: "دورة العقارات: تسجيل الوحدة ← عقد المستأجر ← فوترة دورية تلقائية ← استلام الإيجار ← متابعة المتأخرات ← تجديد أو إنهاء العقد",
+        en: "Real Estate: Unit Registration → Tenant Contract → Auto Invoicing → Rent Collection → Arrears Follow-up → Renewal/Termination",
+      },
+      "project": {
+        ar: "دورة المشاريع: إنشاء مشروع ← تقسيم المهام ← تتبع ساعات العمل ← مراجعة التقدم ← فوترة بالساعة أو ثابت ← إغلاق المشروع",
+        en: "Projects: Create Project → Task Breakdown → Time Tracking → Progress Review → Billing → Project Close",
+      },
+    };
+
+    Object.entries(workflows).forEach(([keys, text]) => {
+      const keyList = keys.split(",");
+      if (keyList.some(k => ids.includes(k))) {
+        lines.push(isAr ? text.ar : text.en);
+      }
+    });
+  }
+
+  if (lines.length === 0) return "";
+
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
   const sub = isAr ? "تدفقات مؤتمتة تربط كل الأقسام" : "Automated flows connecting all departments";
-  const lines = state.workflows.split("\n\n").filter(Boolean);
 
   let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;page-break-inside:auto;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
@@ -98,11 +156,13 @@ export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): st
   return html;
 }
 
-/** §7 — Implementation phases */
+/** §7 — Implementation phases — uses user's phases from Builder */
 export function renderPhasesHtml(state: QuoteBuilderState, isAr: boolean): string {
-  if (state.phases.length === 0) return "";
+  const phases = state.phases && state.phases.length > 0 ? state.phases : [];
+  if (phases.length === 0) return "";
+
   const title = isAr ? "خطة التنفيذ" : "Implementation Plan";
-  const sub = isAr ? `${state.phases.length} مراحل — المدة الإجمالية: ${state.durationLabel}` : `${state.phases.length} phases — Total: ${state.durationLabel}`;
+  const sub = isAr ? `${phases.length} مراحل — المدة الإجمالية: ${state.durationLabel || "—"}` : `${phases.length} phases — Total: ${state.durationLabel || "—"}`;
   const colors = ["#1a5c37", "#c9a84c", "#2563eb", "#27ae60", "#8e44ad", "#e67e22"];
 
   let html = `<section id="dyn-phases" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#fff;page-break-inside:avoid;">
@@ -112,7 +172,7 @@ export function renderPhasesHtml(state: QuoteBuilderState, isAr: boolean): strin
     </div>
     <div style="display:grid;grid-template-columns:repeat(${Math.min(state.phases.length, 4)},1fr);gap:12px;">`;
 
-  state.phases.forEach((p, i) => {
+  phases.forEach((p, i) => {
     const c = colors[i % 6];
     html += `<div style="border:1.5px solid ${c};border-top:4px solid ${c};border-radius:8px;padding:14px;page-break-inside:avoid;">
       <div style="font-size:10px;font-weight:800;color:${c};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${isAr ? "المرحلة" : "Phase"} ${i + 1}</div>
