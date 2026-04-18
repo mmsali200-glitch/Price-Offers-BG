@@ -56,21 +56,34 @@ export async function createQuoteAndReturnId(
     }
   }
 
-  // Create quote
-  const { data: quote, error: qErr } = await supabase
-    .from("quotes")
-    .insert({
-      owner_id: user.id,
-      client_id: clientId,
-      ref,
-      title: nameAr,
-      status: "draft",
-      currency,
-    })
-    .select("id")
-    .single();
+  // Create quote (retry with new ref if duplicate)
+  let quote: { id: string } | null = null;
+  let attempts = 0;
+  while (!quote && attempts < 3) {
+    attempts++;
+    const currentRef = attempts === 1 ? ref : await generateQuoteRef();
+    const { data, error: qErr } = await supabase
+      .from("quotes")
+      .insert({
+        owner_id: user.id,
+        client_id: clientId,
+        ref: currentRef,
+        title: nameAr,
+        status: "draft",
+        currency,
+      })
+      .select("id")
+      .single();
 
-  if (qErr || !quote) return { ok: false, error: `فشل إنشاء العرض: ${qErr?.message}` };
+    if (!qErr && data) {
+      quote = data;
+      break;
+    }
+    if (qErr && !qErr.message.includes("duplicate")) {
+      return { ok: false, error: `فشل إنشاء العرض: ${qErr.message}` };
+    }
+  }
+  if (!quote) return { ok: false, error: "فشل إنشاء العرض — حاول مرة أخرى" };
 
   // Build modules from assessment list
   const assessmentList = f("assessmentModulesList");
