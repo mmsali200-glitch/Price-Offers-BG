@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Search, Plus, ArrowLeft, ArrowRight, Check, Building,
-  Phone, MapPin, Sparkles, UserPlus, Users,
+  Phone, MapPin, Sparkles, UserPlus, Users, Loader2,
 } from "lucide-react";
 import type { ClientOption } from "@/lib/actions/client-search";
-import { createQuote } from "@/lib/actions/quotes";
+import { createQuoteAndReturnId } from "@/lib/actions/create-quote";
 import { NeedsAssessment } from "./needs-assessment";
 
 type Step = 1 | 2 | 3 | 4;
@@ -30,7 +31,8 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const [mode, setMode] = useState<"select" | "new">(existingClients.length > 0 ? "select" : "new");
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const [isPending, setIsPending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Client form fields
@@ -84,13 +86,9 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const currentCountry = mode === "select" ? (selectedClient?.country || "الكويت") : country;
   const currentName = mode === "select" ? (selectedClient?.name_ar || "عميل") : nameAr;
 
-  function handleSubmit() {
-    // Use a hidden form submission — this lets Next.js handle
-    // the redirect() from createQuote correctly without try-catch
-    // interfering with NEXT_REDIRECT.
-    const form = document.createElement("form");
-    form.method = "POST";
-    form.style.display = "none";
+  async function handleSubmit() {
+    setIsPending(true);
+    setSubmitError(null);
 
     const formData = new FormData();
     if (mode === "select" && selectedClientId) {
@@ -115,10 +113,18 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
       formData.set("assessmentModulesList", assessmentData.selectedModules.join(","));
     }
 
-    // Submit via server action directly
-    startTransition(() => {
-      createQuote(formData);
-    });
+    try {
+      const result = await createQuoteAndReturnId(formData);
+      if (result.ok) {
+        router.push(`/quotes/${result.quoteId}/edit`);
+      } else {
+        setSubmitError(result.error);
+        setIsPending(false);
+      }
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : "خطأ غير متوقع");
+      setIsPending(false);
+    }
   }
 
   return (
