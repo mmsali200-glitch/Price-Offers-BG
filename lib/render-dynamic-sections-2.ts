@@ -132,15 +132,10 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   return html;
 }
 
-/** §6 — Workflows — professional process flow design */
+/** §6 — Workflows — ALWAYS uses extended module data */
 export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
-  if (mods.length === 0 && !state.workflows?.trim()) return "";
-
-  if (state.workflows?.trim()) {
-    const lines = state.workflows.split("\n\n").filter(Boolean);
-    return buildWorkflowSection(lines, isAr);
-  }
+  if (mods.length === 0) return "";
 
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
   const sub = isAr ? "العمليات المؤتمتة التي ستعمل داخل النظام بناءً على الموديولات المختارة" : "Automated processes running inside the system based on selected modules";
