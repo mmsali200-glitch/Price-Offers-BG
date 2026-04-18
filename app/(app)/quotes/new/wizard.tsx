@@ -85,6 +85,13 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const currentName = mode === "select" ? (selectedClient?.name_ar || "عميل") : nameAr;
 
   function handleSubmit() {
+    // Use a hidden form submission — this lets Next.js handle
+    // the redirect() from createQuote correctly without try-catch
+    // interfering with NEXT_REDIRECT.
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.style.display = "none";
+
     const formData = new FormData();
     if (mode === "select" && selectedClientId) {
       formData.set("clientId", selectedClientId);
@@ -104,25 +111,13 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
     formData.set("quoteLanguage", quoteLanguage);
     formData.set("validity", validity);
 
-    // Pass assessment data as simple module list (avoid complex JSON that breaks SSR)
     if (assessmentData) {
       formData.set("assessmentModulesList", assessmentData.selectedModules.join(","));
     }
 
-    setSubmitError(null);
-    startTransition(async () => {
-      try {
-        await createQuote(formData);
-      } catch (err: unknown) {
-        // Next.js redirect() throws a special error — re-throw it
-        if (err && typeof err === "object" && "digest" in err) {
-          const digest = (err as { digest?: string }).digest;
-          if (digest && typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
-            throw err; // Let Next.js handle the redirect
-          }
-        }
-        setSubmitError(err instanceof Error ? err.message : "فشل إنشاء العرض");
-      }
+    // Submit via server action directly
+    startTransition(() => {
+      createQuote(formData);
     });
   }
 
