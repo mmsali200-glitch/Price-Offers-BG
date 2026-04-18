@@ -132,7 +132,7 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   return html;
 }
 
-/** §6 — Workflows — visual timeline design */
+/** §6 — Workflows — professional process flow design */
 export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getSelectedMods(state);
   if (mods.length === 0 && !state.workflows?.trim()) return "";
@@ -143,14 +143,14 @@ export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): st
   }
 
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
-  const sub = isAr ? `${mods.length} دورة عمل مؤتمتة بناءً على الموديولات المختارة` : `${mods.length} automated workflows`;
-  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",mrp:"🏭",accounting:"📊",payroll:"💰",hr:"👤",project:"📋",helpdesk:"🎧",website:"🌐",realestate:"🏢",hms:"🏥",fieldservice:"🗺️",subscriptions:"🔁",maintenance:"🛠️"};
-  const COLORS = ["#1a5c37","#c9a84c","#2563eb","#27ae60","#8e44ad","#e67e22","#c0392b","#16a085"];
+  const sub = isAr ? "العمليات المؤتمتة التي ستعمل داخل النظام بناءً على الموديولات المختارة" : "Automated processes running inside the system based on selected modules";
+  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",mrp:"🏭",accounting:"📊",payroll:"💰",hr:"👤",project:"📋",helpdesk:"🎧",website:"🌐",realestate:"🏢",hms:"🏥",fieldservice:"🗺️",subscriptions:"🔁",maintenance:"🛠️",marketing:"📢"};
+  const COLORS = ["#1a5c37","#247a4a","#2563eb","#c9a84c","#8e44ad","#e67e22","#16a085","#c0392b"];
 
-  let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
-      <div style="width:30px;height:30px;background:#c9a84c;color:#1a5c37;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">🔄</div>
-      <div><div style="font-size:17px;font-weight:700;color:#1a5c37;">${title}</div><div style="font-size:11px;color:#7a8e80;">${sub}</div></div>
+  let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:linear-gradient(180deg,#f7f9f6 0%,#fff 100%);">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+      <div style="width:34px;height:34px;background:linear-gradient(135deg,#c9a84c,#e0bc5a);color:#1a5c37;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;">🔄</div>
+      <div><div style="font-size:18px;font-weight:800;color:#1a5c37;">${title}</div><div style="font-size:11px;color:#7a8e80;margin-top:2px;">${sub}</div></div>
     </div>`;
 
   mods.forEach((m, mIdx) => {
@@ -160,46 +160,56 @@ export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): st
     const color = COLORS[mIdx % COLORS.length];
 
     html += `
-    <div style="margin-bottom:20px;page-break-inside:avoid;">
-      <!-- Module workflow header -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="font-size:24px;">${icon}</div>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:800;color:${color};">${esc(m.name)}</div>
-          <div style="height:2px;background:${color};width:60px;margin-top:4px;border-radius:2px;"></div>
-        </div>
-        <div style="font-size:10px;color:#7a8e80;background:#fff;padding:2px 10px;border-radius:10px;border:1px solid #e2e8e3;">
-          ${ext.workflow.length} ${isAr ? "خطوة" : "steps"}
+    <div style="margin-bottom:28px;page-break-inside:avoid;">
+      <!-- Workflow header bar -->
+      <div style="background:${color};border-radius:10px 10px 0 0;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;">${icon}</div>
+          <div>
+            <div style="color:#fff;font-size:14px;font-weight:800;">${isAr ? "دورة عمل" : "Workflow"}: ${esc(m.name)}</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:10px;">${ext.workflow.length} ${isAr ? "خطوة متتابعة" : "sequential steps"}</div>
+          </div>
         </div>
       </div>
 
-      <!-- Timeline steps -->
-      <div style="position:relative;padding-right:${isAr ? "24px" : "0"};padding-left:${isAr ? "0" : "24px"};">
-        <!-- Vertical line -->
-        <div style="position:absolute;${isAr ? "right" : "left"}:8px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,${color},#e2e8e3);border-radius:2px;"></div>
+      <!-- Steps flow -->
+      <div style="border:1.5px solid ${color};border-top:none;border-radius:0 0 10px 10px;background:#fff;padding:16px;">
+        <!-- Horizontal flow for first 3-4 key steps -->
+        <div style="display:flex;flex-wrap:wrap;gap:0;margin-bottom:12px;align-items:stretch;">
+          ${ext.workflow.slice(0, Math.min(ext.workflow.length, 4)).map((step, i, arr) => {
+            const parts = step.split(":");
+            const sTitle = parts[0]?.trim() || `${isAr ? "خطوة" : "Step"} ${i + 1}`;
+            return `
+            <div style="flex:1;min-width:120px;display:flex;align-items:stretch;">
+              <div style="flex:1;background:${i === 0 ? color : "#f7f9f6"};border-radius:8px;padding:10px;text-align:center;position:relative;">
+                <div style="width:24px;height:24px;border-radius:50%;background:${i === 0 ? "rgba(255,255,255,0.3)" : color};color:${i === 0 ? "#fff" : "#fff"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin:0 auto 6px;">${i + 1}</div>
+                <div style="font-size:10px;font-weight:700;color:${i === 0 ? "#fff" : "#141f18"};line-height:1.4;">${esc(sTitle)}</div>
+              </div>
+              ${i < arr.length - 1 ? `<div style="display:flex;align-items:center;padding:0 2px;"><span style="color:${color};font-size:16px;font-weight:800;">→</span></div>` : ""}
+            </div>`;
+          }).join("")}
+        </div>
 
-        ${ext.workflow.map((step, i) => {
-          const parts = step.split(":");
-          const stepTitle = parts[0]?.trim() || "";
-          const stepDesc = parts.slice(1).join(":").trim() || step;
-          const isLast = i === ext.workflow.length - 1;
+        <!-- Detailed steps list -->
+        <div style="border-top:1px solid #e2e8e3;padding-top:12px;">
+          ${ext.workflow.map((step, i) => {
+            const parts = step.split(":");
+            const sTitle = parts[0]?.trim() || "";
+            const sDesc = parts.slice(1).join(":").trim() || step;
+            const hasDesc = sTitle !== step && sDesc.length > 0;
 
-          return `
-          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:${isLast ? "0" : "8px"};position:relative;">
-            <!-- Dot -->
-            <div style="width:18px;height:18px;border-radius:50%;background:${i === 0 ? color : "#fff"};border:2.5px solid ${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;z-index:1;margin-top:2px;">
-              <span style="font-size:8px;font-weight:800;color:${i === 0 ? "#fff" : color};">${i + 1}</span>
-            </div>
-            <!-- Content -->
-            <div style="flex:1;background:#fff;border:1px solid #e2e8e3;border-radius:8px;padding:8px 12px;${i === 0 ? `border-right:3px solid ${color};` : ""}">
-              ${stepTitle !== stepDesc
-                ? `<div style="font-size:11px;font-weight:700;color:#141f18;margin-bottom:2px;">${esc(stepTitle)}</div>
-                   <div style="font-size:10px;color:#7a8e80;line-height:1.5;">${esc(stepDesc)}</div>`
-                : `<div style="font-size:10px;color:#3e5446;line-height:1.5;">${esc(step)}</div>`
-              }
-            </div>
-          </div>`;
-        }).join("")}
+            return `
+            <div style="display:flex;gap:10px;margin-bottom:${i === ext.workflow.length - 1 ? "0" : "8px"};align-items:flex-start;">
+              <div style="width:22px;height:22px;border-radius:50%;background:${i < 4 ? color : "#e2e8e3"};color:${i < 4 ? "#fff" : "#7a8e80"};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px;">${i + 1}</div>
+              <div style="flex:1;min-width:0;">
+                ${hasDesc
+                  ? `<div style="font-size:11px;font-weight:700;color:#141f18;">${esc(sTitle)}</div><div style="font-size:10px;color:#7a8e80;line-height:1.5;margin-top:1px;">${esc(sDesc)}</div>`
+                  : `<div style="font-size:11px;color:#3e5446;line-height:1.5;">${esc(step)}</div>`
+                }
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
       </div>
     </div>`;
   });
