@@ -157,33 +157,34 @@ export async function createQuote(formData: FormData) {
   const assessmentAnswers = f("assessmentAnswers");
   const assessmentPrices = f("assessmentPrices");
 
-  // Build modules state from assessment
-  let modulesState: Record<string, { id: string; categoryId: string; selected: boolean; discount: number; separate: boolean; priceOverride?: number }> = {};
-  let moduleAnswersState: Record<string, Record<string, string | boolean>> = {};
+  // Build modules state from assessment (safe parsing)
+  let modulesState: Record<string, unknown> | null = null;
+  let moduleAnswersState: Record<string, unknown> | null = null;
 
-  if (assessmentModules) {
+  if (assessmentModules && assessmentModules.startsWith("[")) {
     try {
       const selectedIds: string[] = JSON.parse(assessmentModules);
       const prices: Record<string, number> = assessmentPrices ? JSON.parse(assessmentPrices) : {};
-      const answers: Record<string, Record<string, string | boolean>> = assessmentAnswers ? JSON.parse(assessmentAnswers) : {};
+      const answers = assessmentAnswers ? JSON.parse(assessmentAnswers) : {};
 
-      // Import module catalog to build full state
+      const mods: Record<string, unknown> = {};
       const { ODOO_MODULES } = await import("@/lib/modules-catalog");
       ODOO_MODULES.forEach((cat) => {
         cat.modules.forEach((m) => {
-          modulesState[m.id] = {
-            id: m.id,
-            categoryId: cat.id,
+          mods[m.id] = {
+            id: m.id, categoryId: cat.id,
             selected: selectedIds.includes(m.id),
-            discount: 0,
-            separate: false,
-            priceOverride: prices[m.id] || undefined,
+            discount: 0, separate: false,
+            ...(prices[m.id] ? { priceOverride: prices[m.id] } : {}),
           };
         });
       });
 
+      modulesState = mods;
       moduleAnswersState = answers;
-    } catch { /* ignore parse errors */ }
+    } catch (e) {
+      console.warn("[createQuote] assessment parse error:", e);
+    }
   }
 
   const seedPayload: Record<string, unknown> = {
@@ -217,8 +218,10 @@ export async function createQuote(formData: FormData) {
   };
 
   // Add assessment data if available
-  if (Object.keys(modulesState).length > 0) {
+  if (modulesState) {
     seedPayload.modules = modulesState;
+  }
+  if (moduleAnswersState) {
     seedPayload.moduleAnswers = moduleAnswersState;
   }
 

@@ -31,6 +31,7 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Client form fields
   const [nameAr, setNameAr] = useState("");
@@ -103,7 +104,14 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
       formData.set("assessmentPrices", JSON.stringify(assessmentData.prices));
     }
 
-    startTransition(() => { createQuote(formData); });
+    setSubmitError(null);
+    startTransition(async () => {
+      try {
+        await createQuote(formData);
+      } catch (err) {
+        setSubmitError(err instanceof Error ? err.message : "فشل إنشاء العرض");
+      }
+    });
   }
 
   return (
@@ -354,6 +362,12 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
               <div className="text-xl font-black tabular">
                 {Object.values(assessmentData.prices).reduce((s, p) => s + p, 0).toLocaleString("en-US")}
               </div>
+            </div>
+          )}
+
+          {submitError && (
+            <div className="text-xs text-bg-danger bg-red-50 border border-red-200 rounded-sm2 px-3 py-2">
+              ⚠️ {submitError}
             </div>
           )}
 
