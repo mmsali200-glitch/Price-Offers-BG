@@ -82,7 +82,7 @@ export default async function EditQuotePage({
           generatedAt={quote.generated_at}
           stageHistory={stageHistory}
         />
-        <QuoteBuilder />
+        <QuoteBuilder quoteId={id} />
       </>
     );
   } catch (err) {

@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, Loader2, ChevronDown } from "lucide-react";
+import { Eye, Loader2, ChevronDown, Cloud, CloudOff, Check } from "lucide-react";
 import { QuoteStagesWithDates } from "@/components/quote-stages-with-dates";
 import { updateQuoteStatus } from "@/lib/actions/quotes";
+import { useSaveStatus } from "@/lib/builder/use-autosave";
 import { GenerateButton } from "./generate-button";
 
 type StatusKey = "draft" | "sent" | "opened" | "accepted" | "rejected" | "expired";
@@ -39,6 +40,7 @@ export function BuilderToolbar({
   const [statusOpen, setStatusOpen] = useState(false);
   const [isChangingStatus, setIsChangingStatus] = useState(false);
 
+  const saveStatus = useSaveStatus((s) => s.status);
   const currentStatus = STATUS_OPTIONS.find((s) => s.v === status) ?? STATUS_OPTIONS[0];
 
   async function handleStatusChange(newStatus: StatusKey) {
@@ -63,6 +65,9 @@ export function BuilderToolbar({
             {ref_}
           </span>
           <span className="text-xs text-bg-text-3 truncate">{title || "بدون عنوان"}</span>
+          {saveStatus === "saving" && <span className="flex items-center gap-1 text-[10px] text-bg-text-3"><Loader2 className="size-3 animate-spin" />حفظ...</span>}
+          {saveStatus === "saved" && <span className="flex items-center gap-1 text-[10px] text-emerald-600"><Check className="size-3" />تم الحفظ</span>}
+          {saveStatus === "error" && <span className="flex items-center gap-1 text-[10px] text-bg-danger"><CloudOff className="size-3" />فشل الحفظ</span>}
         </div>
 
         {/* Status selector */}

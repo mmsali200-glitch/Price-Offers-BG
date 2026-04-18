@@ -1,19 +1,26 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
+import { create } from "zustand";
 import { useBuilderStore } from "@/lib/builder/store";
 import { saveQuote } from "@/lib/actions/quotes";
 import type { QuoteBuilderState } from "@/lib/builder/types";
 
-/**
- * Hydrates the builder store with a saved payload, then debounce-saves any
- * subsequent changes back to the database every 2s.
- */
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
+export const useSaveStatus = create<{
+  status: SaveStatus;
+  setStatus: (s: SaveStatus) => void;
+}>((set) => ({
+  status: "idle",
+  setStatus: (status) => set({ status }),
+}));
+
 export function useBuilderAutosave(quoteId: string, initial: Partial<QuoteBuilderState>) {
   const hydrate = useBuilderStore((s) => s.hydrate);
   const hydratedRef = useRef(false);
+  const setStatus = useSaveStatus((s) => s.setStatus);
 
-  // Hydrate once on mount
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
@@ -22,7 +29,17 @@ export function useBuilderAutosave(quoteId: string, initial: Partial<QuoteBuilde
     }
   }, [hydrate, initial]);
 
-  // Subscribe to store changes and debounce save
+  const doSave = useCallback(async (state: QuoteBuilderState) => {
+    setStatus("saving");
+    try {
+      const result = await saveQuote(quoteId, state);
+      setStatus(result.ok ? "saved" : "error");
+      if (result.ok) setTimeout(() => useSaveStatus.getState().setStatus("idle"), 2000);
+    } catch {
+      setStatus("error");
+    }
+  }, [quoteId, setStatus]);
+
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -30,9 +47,7 @@ export function useBuilderAutosave(quoteId: string, initial: Partial<QuoteBuilde
       if (!hydratedRef.current) return;
       if (timer) clearTimeout(timer);
       timer = setTimeout(() => {
-        saveQuote(quoteId, state as QuoteBuilderState).catch(() => {
-          // Silent failure; user can manually save
-        });
+        doSave(state as QuoteBuilderState);
       }, 2000);
     });
 
@@ -40,5 +55,5 @@ export function useBuilderAutosave(quoteId: string, initial: Partial<QuoteBuilde
       if (timer) clearTimeout(timer);
       unsubscribe();
     };
-  }, [quoteId]);
+  }, [quoteId, doSave]);
 }

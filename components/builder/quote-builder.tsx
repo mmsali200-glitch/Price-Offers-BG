@@ -12,12 +12,11 @@ import { SectionContacts } from "./section-contacts";
 import { SectionMeetingNotes, SectionExtraReqs, SectionDiscount } from "./section-notes";
 import { SectionRequirements } from "./section-requirements";
 import { SummaryBar } from "./summary-bar";
-import { Sparkles } from "lucide-react";
+import { GenerateButton } from "./generate-button";
 
-export function QuoteBuilder() {
+export function QuoteBuilder({ quoteId }: { quoteId: string }) {
   return (
     <div className="max-w-5xl mx-auto px-3 lg:px-6 py-4 lg:py-6 space-y-3 pb-24">
-      {/* Header */}
       <header className="text-center py-4 space-y-1">
         <h1 className="text-2xl lg:text-3xl font-black text-bg-green">
           🟢 مُعِد عروض الأسعار
@@ -47,13 +46,11 @@ export function QuoteBuilder() {
 
       <SummaryBar />
 
-      <button
-        type="button"
-        className="w-full py-4 rounded-card bg-gradient-to-br from-bg-green to-bg-green-2 text-white font-black text-base shadow-[0_5px_20px_rgba(26,92,55,0.26)] hover:shadow-[0_9px_28px_rgba(26,92,55,0.36)] hover:-translate-y-0.5 transition-all inline-flex items-center justify-center gap-2"
-      >
-        <Sparkles className="size-5" />
-        توليد العرض النهائي (Phase 3)
-      </button>
+      <div className="flex justify-center">
+        <div className="w-full max-w-md [&_button]:w-full [&_button]:h-12 [&_button]:text-base [&_button]:rounded-card [&_button]:shadow-[0_5px_20px_rgba(26,92,55,0.26)] [&_button]:hover:shadow-[0_9px_28px_rgba(26,92,55,0.36)] [&_button]:hover:-translate-y-0.5 [&_button]:transition-all">
+          <GenerateButton quoteId={quoteId} />
+        </div>
+      </div>
     </div>
   );
 }
