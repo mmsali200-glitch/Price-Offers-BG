@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { computeTotals } from "@/lib/builder/store";
 import type { QuoteBuilderState } from "@/lib/builder/types";
 import { generateQuoteRef } from "./ref-generator";
+import { ODOO_MODULES } from "@/lib/modules-catalog";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -168,7 +169,6 @@ export async function createQuote(formData: FormData) {
       const answers = assessmentAnswers ? JSON.parse(assessmentAnswers) : {};
 
       const mods: Record<string, unknown> = {};
-      const { ODOO_MODULES } = await import("@/lib/modules-catalog");
       ODOO_MODULES.forEach((cat) => {
         cat.modules.forEach((m) => {
           mods[m.id] = {
