@@ -104,11 +104,9 @@ export function QuoteWizard({ existingClients }: { existingClients: ClientOption
     formData.set("quoteLanguage", quoteLanguage);
     formData.set("validity", validity);
 
-    // Pass assessment data
+    // Pass assessment data as simple module list (avoid complex JSON that breaks SSR)
     if (assessmentData) {
-      formData.set("assessmentModules", JSON.stringify(assessmentData.selectedModules));
-      formData.set("assessmentAnswers", JSON.stringify(assessmentData.answers));
-      formData.set("assessmentPrices", JSON.stringify(assessmentData.prices));
+      formData.set("assessmentModulesList", assessmentData.selectedModules.join(","));
     }
 
     setSubmitError(null);

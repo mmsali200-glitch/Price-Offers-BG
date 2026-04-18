@@ -153,21 +153,13 @@ export async function createQuote(formData: FormData) {
     quoteId = q2.id;
   }
 
-  // Seed sections payload — includes assessment data if provided.
-  const assessmentModules = f("assessmentModules");
-  const assessmentAnswers = f("assessmentAnswers");
-  const assessmentPrices = f("assessmentPrices");
-
-  // Build modules state from assessment (safe parsing)
+  // Build modules from assessment (simple comma-separated list)
+  const assessmentList = f("assessmentModulesList");
   let modulesState: Record<string, unknown> | null = null;
-  let moduleAnswersState: Record<string, unknown> | null = null;
 
-  if (assessmentModules && assessmentModules.startsWith("[")) {
-    try {
-      const selectedIds: string[] = JSON.parse(assessmentModules);
-      const prices: Record<string, number> = assessmentPrices ? JSON.parse(assessmentPrices) : {};
-      const answers = assessmentAnswers ? JSON.parse(assessmentAnswers) : {};
-
+  if (assessmentList) {
+    const selectedIds = assessmentList.split(",").filter(Boolean);
+    if (selectedIds.length > 0) {
       const mods: Record<string, unknown> = {};
       ODOO_MODULES.forEach((cat) => {
         cat.modules.forEach((m) => {
@@ -175,15 +167,10 @@ export async function createQuote(formData: FormData) {
             id: m.id, categoryId: cat.id,
             selected: selectedIds.includes(m.id),
             discount: 0, separate: false,
-            ...(prices[m.id] ? { priceOverride: prices[m.id] } : {}),
           };
         });
       });
-
       modulesState = mods;
-      moduleAnswersState = answers;
-    } catch (e) {
-      console.warn("[createQuote] assessment parse error:", e);
     }
   }
 
@@ -217,12 +204,9 @@ export async function createQuote(formData: FormData) {
     },
   };
 
-  // Add assessment data if available
+  // Add selected modules if available
   if (modulesState) {
     seedPayload.modules = modulesState;
-  }
-  if (moduleAnswersState) {
-    seedPayload.moduleAnswers = moduleAnswersState;
   }
 
   await supabase
