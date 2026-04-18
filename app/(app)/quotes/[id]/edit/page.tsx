@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { QuoteBuilder } from "@/components/builder/quote-builder";
 import { AutosaveInit } from "@/components/builder/autosave-init";
 import { BuilderToolbar } from "@/components/builder/toolbar";
-import { getModulePrices } from "@/lib/actions/pricing";
+import { getAllBuilderPrices } from "@/lib/actions/pricing";
 import type { QuoteBuilderState } from "@/lib/builder/types";
 
 export const metadata = { title: "تعديل العرض · BG Quotes" };
@@ -37,15 +37,32 @@ export default async function EditQuotePage({
 
     const initial = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
 
-    // Load DB prices and apply to modules that don't have overrides
+    // Load DB prices and apply to modules/apps/support that don't have overrides
     try {
-      const dbPrices = await getModulePrices();
-      if (initial.modules && Object.keys(dbPrices).length > 0) {
+      const { modules: dbModPrices, bgApps: dbBgPrices, support: dbSupportPrices } = await getAllBuilderPrices();
+
+      if (initial.modules && Object.keys(dbModPrices).length > 0) {
         for (const [moduleId, modState] of Object.entries(initial.modules)) {
-          if (dbPrices[moduleId] !== undefined && !modState.priceOverride) {
-            (modState as { priceOverride?: number }).priceOverride = dbPrices[moduleId];
+          if (dbModPrices[moduleId] !== undefined && !modState.priceOverride) {
+            (modState as { priceOverride?: number }).priceOverride = dbModPrices[moduleId];
           }
         }
+      }
+
+      if (initial.bgApps && Object.keys(dbBgPrices).length > 0) {
+        for (const [appId, appState] of Object.entries(initial.bgApps)) {
+          if (dbBgPrices[appId] !== undefined) {
+            (appState as { implementationPrice: number }).implementationPrice = dbBgPrices[appId];
+          }
+        }
+      }
+
+      if (initial.support && Object.keys(dbSupportPrices).length > 0) {
+        const prices = initial.support.prices || { basic: 250, advanced: 350, premium: 450 };
+        if (dbSupportPrices.basic) prices.basic = dbSupportPrices.basic;
+        if (dbSupportPrices.advanced) prices.advanced = dbSupportPrices.advanced;
+        if (dbSupportPrices.premium) prices.premium = dbSupportPrices.premium;
+        initial.support = { ...initial.support, prices };
       }
     } catch {
       // DB pricing is optional — falls back to catalog prices

@@ -62,3 +62,29 @@ export async function getModulePrices(): Promise<Record<string, number>> {
   (data ?? []).forEach((r) => { map[r.key] = Number(r.value); });
   return map;
 }
+
+/** Get all builder-relevant prices: modules, BG apps, support packages. */
+export async function getAllBuilderPrices(): Promise<{
+  modules: Record<string, number>;
+  bgApps: Record<string, number>;
+  support: Record<string, number>;
+}> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("pricing_config")
+    .select("category, key, value")
+    .in("category", ["module_price", "bg_app_price", "support_price"]);
+
+  const modules: Record<string, number> = {};
+  const bgApps: Record<string, number> = {};
+  const support: Record<string, number> = {};
+
+  (data ?? []).forEach((r) => {
+    const v = Number(r.value);
+    if (r.category === "module_price") modules[r.key] = v;
+    else if (r.category === "bg_app_price") bgApps[r.key] = v;
+    else if (r.category === "support_price") support[r.key] = v;
+  });
+
+  return { modules, bgApps, support };
+}
