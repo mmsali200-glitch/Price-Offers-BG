@@ -34,7 +34,6 @@ export async function createQuoteAndReturnId(
         name_ar: nameAr,
         name_en: nameEn || null,
         sector: f("sector") || "other",
-        employee_size: f("employeeSize") || null,
         contact_name: f("contactName") || null,
         contact_phone: f("contactPhone") || null,
         contact_email: f("contactEmail") || null,
@@ -43,25 +42,18 @@ export async function createQuoteAndReturnId(
       .single();
 
     if (error) {
-      // Try without extended columns
-      const { data: d2, error: e2 } = await supabase
-        .from("clients")
-        .insert({ owner_id: user.id, name_ar: nameAr })
-        .select("id")
-        .single();
-      if (e2) return { ok: false, error: `فشل إنشاء العميل: ${e2.message}` };
-      clientId = d2?.id ?? null;
-    } else {
-      clientId = data?.id ?? null;
+      return { ok: false, error: `فشل إنشاء العميل: ${error.message}` };
     }
+    clientId = data?.id ?? null;
   }
 
+  if (!clientId) return { ok: false, error: "فشل تحديد العميل" };
+
   // Create quote (retry with new ref if duplicate)
-  let quote: { id: string } | null = null;
-  let attempts = 0;
-  while (!quote && attempts < 3) {
-    attempts++;
-    const currentRef = attempts === 1 ? ref : await generateQuoteRef();
+  let quoteId: string | null = null;
+  let lastError = "";
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const currentRef = attempt === 0 ? ref : await generateQuoteRef();
     const { data, error: qErr } = await supabase
       .from("quotes")
       .insert({
@@ -76,14 +68,15 @@ export async function createQuoteAndReturnId(
       .single();
 
     if (!qErr && data) {
-      quote = data;
+      quoteId = data.id;
       break;
     }
-    if (qErr && !qErr.message.includes("duplicate")) {
-      return { ok: false, error: `فشل إنشاء العرض: ${qErr.message}` };
+    lastError = qErr?.message || "unknown";
+    if (!lastError.includes("duplicate")) {
+      return { ok: false, error: `فشل إنشاء العرض: ${lastError}` };
     }
   }
-  if (!quote) return { ok: false, error: "فشل إنشاء العرض — حاول مرة أخرى" };
+  if (!quoteId) return { ok: false, error: `فشل بعد 3 محاولات: ${lastError}` };
 
   // Build modules from assessment list
   const assessmentList = f("assessmentModulesList");
@@ -127,13 +120,13 @@ export async function createQuoteAndReturnId(
   if (modulesState) seedPayload.modules = modulesState;
 
   await supabase.from("quote_sections")
-    .insert({ quote_id: quote.id, payload: seedPayload })
+    .insert({ quote_id: quoteId, payload: seedPayload })
     .then(null, () => {});
 
   await supabase.from("quote_events")
-    .insert({ quote_id: quote.id, kind: "created", actor_type: "user", actor_id: user.id })
+    .insert({ quote_id: quoteId, kind: "created", actor_type: "user", actor_id: user.id })
     .then(null, () => {});
 
   revalidatePath("/quotes");
-  return { ok: true, quoteId: quote.id };
+  return { ok: true, quoteId: quoteId };
 }
