@@ -70,7 +70,17 @@ export function renderTermsHtml(state: QuoteBuilderState, isAr: boolean): string
 }
 
 export function renderSignatureHtml(state: QuoteBuilderState, isAr: boolean): string {
+  // The SIGNATORY is always م. محمود عون (CEO) — fixed.
+  const signatory = {
+    name: isAr ? "م. محمود عون" : "Eng. Mahmoud Oun",
+    role: isAr ? "المدير التنفيذي والمؤسس المشارك" : "CEO & Co-Founder",
+    phone: "+965 9999 0412",
+    email: "OUN@businessesgates.com",
+  };
+
+  // The CONTACT PERSON is whoever was selected in the Builder.
   const contact = state.contacts.find(c => c.id === state.selectedContactId) || state.contacts[0];
+
   const client = isAr ? state.client.nameAr : (state.client.nameEn || state.client.nameAr);
   const title = isAr ? "الاعتماد والتوقيع" : "Approval & Signature";
   const ref = state.meta.ref || "";
@@ -85,14 +95,16 @@ export function renderSignatureHtml(state: QuoteBuilderState, isAr: boolean): st
       ${isAr ? "بالتوقيع أدناه، يُعتمد العرض ويبدأ التنفيذ بحسب مراحل المشروع المحددة." : "By signing below, both parties agree to the terms and scope outlined in this quotation."}
     </div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;">
+
+      <!-- BG Side — ALWAYS م. محمود عون -->
       <div style="border:1.5px solid #1a5c37;border-radius:10px;overflow:hidden;">
-        <div style="background:#1a5c37;color:#fff;padding:10px 16px;font-size:12px;font-weight:700;">${isAr ? "عن Business Gate" : "Business Gate"}</div>
+        <div style="background:#1a5c37;color:#fff;padding:10px 16px;font-size:12px;font-weight:700;">Business Gate Technical Consulting</div>
         <div style="padding:16px;">
-          <div style="font-size:13px;font-weight:700;color:#141f18;margin-bottom:10px;">${esc(contact?.name||"م. محمود عون")}</div>
+          <div style="font-size:13px;font-weight:700;color:#141f18;margin-bottom:10px;">${esc(signatory.name)}</div>
           ${[
-            [isAr?"المسمى":"Title", contact?.role||""],
-            [isAr?"الهاتف":"Phone", contact?.phone||""],
-            [isAr?"البريد":"Email", contact?.email||""],
+            [isAr?"المسمى":"Title", signatory.role],
+            [isAr?"الهاتف":"Phone", signatory.phone],
+            [isAr?"البريد":"Email", signatory.email],
             [isAr?"رقم العرض":"Ref", ref],
           ].map(([l,v]) => `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f2ef;font-size:11px;">
             <span style="color:#7a8e80;font-weight:600;">${l}:</span><span style="color:#141f18;">${esc(v||"")}</span>
@@ -101,6 +113,8 @@ export function renderSignatureHtml(state: QuoteBuilderState, isAr: boolean): st
           <div style="font-size:10px;color:#7a8e80;margin-top:4px;text-align:center;">${isAr ? "التوقيع والختم" : "Signature & Stamp"}</div>
         </div>
       </div>
+
+      <!-- Client Side -->
       <div style="border:1.5px solid #c9a84c;border-radius:10px;overflow:hidden;">
         <div style="background:#c9a84c;color:#1a5c37;padding:10px 16px;font-size:12px;font-weight:700;">${esc(client||"العميل")}</div>
         <div style="padding:16px;">
@@ -118,8 +132,13 @@ export function renderSignatureHtml(state: QuoteBuilderState, isAr: boolean): st
         </div>
       </div>
     </div>
-    <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e2e8e3;text-align:center;font-size:10px;color:#7a8e80;">
-      <b>${esc(contact?.name||"")}</b> — ${esc(contact?.role||"")} | ${esc(contact?.email||"")} | ${esc(contact?.phone||"")} | www.businessesgates.com
+
+    <!-- Footer: جهة الاتصال المحددة (ليست المفوّض بالتوقيع) -->
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid #e2e8e3;">
+      <div style="font-size:10px;color:#7a8e80;margin-bottom:4px;">${isAr ? "جهة الاتصال لهذا العرض:" : "Quote Contact Person:"}</div>
+      <div style="font-size:12px;font-weight:700;color:#1a5c37;">${esc(contact?.name || signatory.name)}</div>
+      <div style="font-size:10px;color:#3e5446;">${esc(contact?.role || signatory.role)} | ${esc(contact?.email || signatory.email)} | ${esc(contact?.phone || signatory.phone)}</div>
+      <div style="font-size:10px;color:#7a8e80;margin-top:4px;">www.businessesgates.com</div>
     </div>
   </section>`;
 }
