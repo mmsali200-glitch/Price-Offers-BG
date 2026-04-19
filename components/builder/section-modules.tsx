@@ -9,6 +9,8 @@ import { getCountryPricing } from "@/lib/country-pricing";
 import { cn, fmtNum, curSymbol } from "@/lib/utils";
 import { Check, ChevronDown, AlertTriangle } from "lucide-react";
 
+const EMPTY_ANSWERS: Record<string, string | boolean> = {};
+
 const COMPLEXITY_COLORS: Record<string, string> = {
   "قياسي": "bg-emerald-100 text-emerald-700 border-emerald-200",
   "متوسط": "bg-amber-100 text-amber-700 border-amber-200",
@@ -18,7 +20,7 @@ const COMPLEXITY_COLORS: Record<string, string> = {
 
 function ModuleQuestions({ moduleId }: { moduleId: string }) {
   const questions = MODULE_QUESTIONS[moduleId];
-  const answers = useBuilderStore((s) => s.moduleAnswers[moduleId] ?? {});
+  const answers = useBuilderStore((s) => s.moduleAnswers[moduleId] ?? EMPTY_ANSWERS);
   const setAnswer = useBuilderStore((s) => s.setModuleAnswer);
   if (!questions || questions.length === 0) return null;
 
@@ -126,7 +128,7 @@ function ModuleCard({ moduleId, categoryId }: { moduleId: string; categoryId: st
   const [showFeatures, setShowFeatures] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
   const state = useBuilderStore((s) => s.modules[moduleId]);
-  const answers = useBuilderStore((s) => s.moduleAnswers[moduleId] ?? {});
+  const answers = useBuilderStore((s) => s.moduleAnswers[moduleId] ?? EMPTY_ANSWERS);
   const currency = useBuilderStore((s) => s.meta.currency);
   const country = useBuilderStore((s) => s.client.country);
   const catalog = ODOO_MODULES.find((c) => c.id === categoryId);
