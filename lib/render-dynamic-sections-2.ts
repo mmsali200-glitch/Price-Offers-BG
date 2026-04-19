@@ -78,10 +78,11 @@ function computeRenderTotals(state: QuoteBuilderState) {
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
   const supM = state.support.packageId === "none" ? 0 : state.support.prices[state.support.packageId as "basic" | "advanced" | "premium"] ?? pkg?.price ?? 0;
   const annualLic = licM * 12;
-  const grandY1 = dev + annualLic;
+  const includeOdoo = state.license.includeOdooInTotal;
+  const grandY1 = dev + (includeOdoo ? annualLic : 0);
   const firstPay = Math.round(grandY1 * (state.payment.firstPaymentPct || 30) / 100);
 
-  return { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay };
+  return { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo };
 }
 
 /** §5 — Module details — creative card design */
@@ -365,7 +366,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   const cur = curSymbol(state.meta.currency);
-  const { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay } = computeRenderTotals(state);
+  const { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo } = computeRenderTotals(state);
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
 
   const title = isAr ? "الملخص المالي" : "Financial Summary";
@@ -407,7 +408,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(dev)}</td>
   </tr>`;
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
-    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type})</td>
+    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type})${!includeOdoo ? ` <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span>` : ""}</td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(licM)}</td>
   </tr>`;
@@ -439,8 +440,8 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
 export function renderInstallmentsHtml(state: QuoteBuilderState, isAr: boolean): string {
   if (state.payment.installments <= 1) return "";
   const cur = curSymbol(state.meta.currency);
-  const { dev, licM } = computeRenderTotals(state);
-  const total = dev + licM * 12;
+  const { dev, licM, includeOdoo } = computeRenderTotals(state);
+  const total = dev + (includeOdoo ? licM * 12 : 0);
   const n = state.payment.installments;
   const fp = state.payment.firstPaymentPct || 30;
   const fa = Math.round(total * fp / 100);
