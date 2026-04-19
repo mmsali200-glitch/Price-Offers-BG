@@ -118,6 +118,13 @@ export type ContactPerson = {
   isDefault: boolean;
 };
 
+export type CountryMultiplierEntry = {
+  multiplier: number;
+  currency: string;
+  symbol: string;
+  exchange: number;
+};
+
 export type QuoteBuilderState = {
   meta: QuoteMeta;
   client: ClientInfo;
@@ -142,4 +149,5 @@ export type QuoteBuilderState = {
   selectedContactId: string;
   meetingNotes: MeetingNote[];
   moduleChanges: ModuleChange[];
+  countryMultipliers: Record<string, CountryMultiplierEntry>;
 };

@@ -108,5 +108,6 @@ export function makeInitialState(): QuoteBuilderState {
     selectedContactId: "mahmoud",
     meetingNotes: [],
     moduleChanges: [],
+    countryMultipliers: {},
   };
 }

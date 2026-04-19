@@ -131,6 +131,7 @@ function ModuleCard({ moduleId, categoryId }: { moduleId: string; categoryId: st
   const answers = useBuilderStore((s) => s.moduleAnswers[moduleId] ?? EMPTY_ANSWERS);
   const currency = useBuilderStore((s) => s.meta.currency);
   const country = useBuilderStore((s) => s.client.country);
+  const dbMultipliers = useBuilderStore((s) => s.countryMultipliers);
   const catalog = ODOO_MODULES.find((c) => c.id === categoryId);
   const def = catalog?.modules.find((m) => m.id === moduleId);
   const toggle = useBuilderStore((s) => s.toggleModule);
@@ -143,9 +144,9 @@ function ModuleCard({ moduleId, categoryId }: { moduleId: string; categoryId: st
 
   const hasQuestions = !!MODULE_QUESTIONS[moduleId]?.length;
   const { multiplier, level } = calculateComplexity(moduleId, answers);
-  const countryPricing = getCountryPricing(country);
-  const adjustedPrice = Math.round(basePrice * countryPricing.priceMultiplier * multiplier);
-  const priceChanged = active && (multiplier > 1 || countryPricing.priceMultiplier !== 1);
+  const cm = dbMultipliers?.[country]?.multiplier ?? getCountryPricing(country).priceMultiplier;
+  const adjustedPrice = Math.round(basePrice * cm * multiplier);
+  const priceChanged = active && (multiplier > 1 || cm !== 1);
 
   return (
     <div
@@ -276,7 +277,7 @@ function ModuleCard({ moduleId, categoryId }: { moduleId: string; categoryId: st
 function ComplexitySummary() {
   const state = useBuilderStore();
   const country = state.client.country;
-  const countryPricing = getCountryPricing(country);
+  const cm = state.countryMultipliers?.[country]?.multiplier ?? getCountryPricing(country).priceMultiplier;
   const mods = selectedModules(state);
 
   const modulesWithQuestions = mods.filter((m) => MODULE_QUESTIONS[m.id]?.length);
@@ -286,7 +287,7 @@ function ComplexitySummary() {
     const answers = state.moduleAnswers[m.id] ?? {};
     const { multiplier, level } = calculateComplexity(m.id, answers);
     const base = m.price;
-    const adjusted = Math.round(base * countryPricing.priceMultiplier * multiplier);
+    const adjusted = Math.round(base * cm * multiplier);
     const diff = adjusted - base;
     return { id: m.id, name: m.name, level, multiplier, base, adjusted, diff };
   }).filter((m) => m.multiplier > 1);
@@ -331,8 +332,8 @@ export function SectionModules() {
   const cur = curSymbol(state.meta.currency);
   const separateCount = selection.filter((m) => m.separate).length;
   const country = state.client.country;
-  const countryPricing = getCountryPricing(country);
-  const isNonKuwait = countryPricing.priceMultiplier !== 1;
+  const cm = state.countryMultipliers?.[country]?.multiplier ?? getCountryPricing(country).priceMultiplier;
+  const isNonKuwait = cm !== 1;
 
   return (
     <SectionCard icon="📦" title="موديولات Odoo" subtitle="حدد الموديولات — اضغط أسئلة لتقييم التعقيد — الأسعار تتغير تلقائياً">
@@ -341,8 +342,8 @@ export function SectionModules() {
           <span className="text-sm">🌍</span>
           <span className="text-[10px] text-amber-700">
             <span className="font-bold">{country}</span> — معامل التسعير{" "}
-            <span className="font-black tabular">×{countryPricing.priceMultiplier}</span>
-            {" "}({countryPricing.currencySymbol})
+            <span className="font-black tabular">×{cm}</span>
+            {" "}({curSymbol(state.meta.currency)})
           </span>
         </div>
       )}

@@ -269,19 +269,25 @@ export function selectedBGApps(state: QuoteBuilderState) {
   }));
 }
 
+function getMultiplier(state: QuoteBuilderState): number {
+  const country = state.client?.country || "الكويت";
+  const dbEntry = state.countryMultipliers?.[country];
+  if (dbEntry) return dbEntry.multiplier;
+  return getCountryPricing(country).priceMultiplier;
+}
+
 export function computeTotals(state: QuoteBuilderState) {
   const mods = selectedModules(state);
   const bgApps = selectedBGApps(state);
-  const countryPricing = getCountryPricing(state.client?.country || "الكويت");
+  const cm = getMultiplier(state);
 
-  // Apply country multiplier + complexity multiplier per module
   const modulesRaw = mods.reduce((s, m) => {
     const answers = state.moduleAnswers?.[m.id] ?? {};
     const { multiplier: complexity } = calculateComplexity(m.id, answers);
-    const adjustedPrice = Math.round(m.price * countryPricing.priceMultiplier * complexity);
+    const adjustedPrice = Math.round(m.price * cm * complexity);
     return s + Math.round(adjustedPrice * (1 - (m.discount || 0) / 100));
   }, 0);
-  const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * countryPricing.priceMultiplier), 0);
+  const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * cm), 0);
   const bgMonthly = bgApps.reduce((s, a) => s + a.monthlyPrice, 0);
   const devRaw = modulesRaw + bgImpl;
   const development = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));

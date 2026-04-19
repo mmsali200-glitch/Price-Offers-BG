@@ -50,7 +50,10 @@ function getSelectedBG(state: QuoteBuilderState) {
 }
 
 function getCountryMultiplier(state: QuoteBuilderState) {
-  return getCountryPricing(state.client?.country || "الكويت").priceMultiplier;
+  const country = state.client?.country || "الكويت";
+  const dbEntry = (state as Record<string, unknown>).countryMultipliers as Record<string, { multiplier: number }> | undefined;
+  if (dbEntry?.[country]) return dbEntry[country].multiplier;
+  return getCountryPricing(country).priceMultiplier;
 }
 
 function getModuleAdjustedPrice(state: QuoteBuilderState, moduleId: string, basePrice: number) {

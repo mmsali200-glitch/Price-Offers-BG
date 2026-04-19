@@ -63,28 +63,39 @@ export async function getModulePrices(): Promise<Record<string, number>> {
   return map;
 }
 
-/** Get all builder-relevant prices: modules, BG apps, support packages. */
+/** Get all builder-relevant prices: modules, BG apps, support, country multipliers. */
 export async function getAllBuilderPrices(): Promise<{
   modules: Record<string, number>;
   bgApps: Record<string, number>;
   support: Record<string, number>;
+  countryMultipliers: Record<string, { multiplier: number; currency: string; symbol: string; exchange: number }>;
 }> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("pricing_config")
-    .select("category, key, value")
-    .in("category", ["module_price", "bg_app_price", "support_price"]);
+    .select("category, key, value, metadata")
+    .in("category", ["module_price", "bg_app_price", "support_price", "country_multiplier"]);
 
   const modules: Record<string, number> = {};
   const bgApps: Record<string, number> = {};
   const support: Record<string, number> = {};
+  const countryMultipliers: Record<string, { multiplier: number; currency: string; symbol: string; exchange: number }> = {};
 
   (data ?? []).forEach((r) => {
     const v = Number(r.value);
     if (r.category === "module_price") modules[r.key] = v;
     else if (r.category === "bg_app_price") bgApps[r.key] = v;
     else if (r.category === "support_price") support[r.key] = v;
+    else if (r.category === "country_multiplier") {
+      const meta = (r.metadata ?? {}) as Record<string, unknown>;
+      countryMultipliers[r.key] = {
+        multiplier: v,
+        currency: (meta.currency as string) || "KWD",
+        symbol: (meta.symbol as string) || "",
+        exchange: Number(meta.exchange) || 1,
+      };
+    }
   });
 
-  return { modules, bgApps, support };
+  return { modules, bgApps, support, countryMultipliers };
 }
