@@ -17,7 +17,6 @@ import {
   renderModuleDetailsHtml,
   renderWorkflowsHtml,
   renderPhasesHtml,
-  renderAssessmentHtml,
   renderPricingHtml,
   renderInstallmentsHtml,
 } from "./render-dynamic-sections-2";
@@ -50,7 +49,6 @@ export function renderQuoteHtml(state: QuoteBuilderState): string {
     renderWorkflowsHtml(state, isAr),
     renderPhasesHtml(state, isAr),
     renderRequirementsHtml(state, isAr),
-    renderAssessmentHtml(state, isAr),
     renderPricingHtml(state, isAr),
     renderInstallmentsHtml(state, isAr),
     renderSupportHtml(state, isAr),

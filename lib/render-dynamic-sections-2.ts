@@ -104,8 +104,6 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
     const finalPrice = Math.round(adjustedBase * (1 - (m.discount || 0) / 100));
     const icon = ICONS[m.id] || "📦";
     const isEven = idx % 2 === 0;
-    const answers = state.moduleAnswers?.[m.id] ?? {};
-    const { level: complexityLevel, multiplier: complexityMult } = calculateComplexity(m.id, answers);
 
     html += `
     <div style="border:1.5px solid #e2e8e3;border-radius:12px;overflow:hidden;margin-bottom:16px;page-break-inside:avoid;box-shadow:0 2px 10px rgba(26,92,55,0.05);">
@@ -114,7 +112,7 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="font-size:28px;">${icon}</div>
           <div>
-            <div style="color:#fff;font-size:15px;font-weight:800;">${esc(m.name)}${complexityMult > 1 ? ` <span style="background:rgba(255,255,255,0.2);font-size:9px;padding:1px 6px;border-radius:8px;margin-${isAr ? "right" : "left"}:6px;">${complexityLevel} ×${complexityMult.toFixed(2)}</span>` : ""}</div>
+            <div style="color:#fff;font-size:15px;font-weight:800;">${esc(m.name)}</div>
             <div style="color:rgba(255,255,255,0.65);font-size:10px;">${feats.length} ${isAr ? "ميزة" : "features"}</div>
           </div>
         </div>
