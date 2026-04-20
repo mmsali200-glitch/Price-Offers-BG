@@ -18,9 +18,17 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "auth_required" };
 
+  // Check role — admin/manager can save any quote
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const role = profile?.role ?? "sales";
+
   const totals = computeTotals(state);
 
-  const { error: qErr } = await supabase
+  let query = supabase
     .from("quotes")
     .update({
       title: state.client.nameAr || null,
@@ -34,8 +42,13 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
       support_monthly: totals.supportMonthly,
       user_count: state.license.users,
     })
-    .eq("id", quoteId)
-    .eq("owner_id", user.id);
+    .eq("id", quoteId);
+
+  if (role === "sales") {
+    query = query.eq("owner_id", user.id);
+  }
+
+  const { error: qErr } = await query;
 
   if (qErr) return { ok: false as const, error: qErr.message };
 
@@ -240,11 +253,12 @@ export async function updateQuoteStatus(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false as const, error: "auth_required" };
 
-  const { error: uErr } = await supabase
-    .from("quotes")
-    .update({ status })
-    .eq("id", quoteId)
-    .eq("owner_id", user.id);
+  const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const role = prof?.role ?? "sales";
+
+  let q = supabase.from("quotes").update({ status }).eq("id", quoteId);
+  if (role === "sales") q = q.eq("owner_id", user.id);
+  const { error: uErr } = await q;
   if (uErr) return { ok: false as const, error: uErr.message };
 
   const kind =

@@ -20,12 +20,24 @@ export default async function EditQuotePage({
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) notFound();
 
-    const { data: quote } = await supabase
+    // Check role — admin/manager can edit any quote
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+    const role = profile?.role ?? "sales";
+
+    let query = supabase
       .from("quotes")
       .select("id, ref, title, status, generated_at")
-      .eq("id", id)
-      .eq("owner_id", user.id)
-      .single();
+      .eq("id", id);
+
+    if (role === "sales") {
+      query = query.eq("owner_id", user.id);
+    }
+
+    const { data: quote } = await query.single();
 
     if (!quote) notFound();
 
