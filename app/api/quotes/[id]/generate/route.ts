@@ -27,12 +27,16 @@ export async function POST(
       return NextResponse.json({ error: "يجب تسجيل الدخول" }, { status: 401 });
     }
 
-    const { data: quote, error: qErr } = await supabase
+    const { data: profile } = await supabase
+      .from("profiles").select("role").eq("id", user.id).single();
+    const role = profile?.role ?? "sales";
+
+    let qQuery = supabase
       .from("quotes")
       .select("id, ref, title")
-      .eq("id", id)
-      .eq("owner_id", user.id)
-      .single();
+      .eq("id", id);
+    if (role === "sales") qQuery = qQuery.eq("owner_id", user.id);
+    const { data: quote, error: qErr } = await qQuery.single();
     if (qErr || !quote) {
       return NextResponse.json({ error: "العرض غير موجود" }, { status: 404 });
     }
