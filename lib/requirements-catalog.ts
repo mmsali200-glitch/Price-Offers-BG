@@ -246,6 +246,66 @@ const MODULE_REQS: Record<string, { icon: string; name: string; reqs: Requiremen
       { text: "نماذج نتائج الفحوصات", responsible: "shared" },
     ],
   },
+
+  // ── Fleet ─────────────────────────────────────────────
+  fleet: {
+    icon: "🚗", name: "إدارة الأسطول",
+    reqs: [
+      { text: "قائمة المركبات الكاملة (رقم اللوحة، الموديل، السنة، اللون)", responsible: "client" },
+      { text: "بيانات السائقين وربطهم بالمركبات", responsible: "client" },
+      { text: "تواريخ انتهاء التأمين والترخيص لكل مركبة", responsible: "client" },
+      { text: "سجلات الصيانة التاريخية (آخر صيانة، النوع، التكلفة)", responsible: "client" },
+      { text: "قائمة موردي الوقود والصيانة المعتمدين", responsible: "client" },
+      { text: "سياسة استخدام المركبات (تخصيص دائم/مؤقت، حدود الاستخدام الشخصي)", responsible: "client" },
+      { text: "نُسخ من تراخيص المركبات وبوالص التأمين (PDF)", responsible: "client" },
+      { text: "تهيئة نظام الأسطول وضبط التنبيهات التلقائية", responsible: "bg" },
+      { text: "إعداد قوالب طلبات الصيانة ونماذج تسجيل الوقود", responsible: "bg" },
+      { text: "تدريب مسؤول الأسطول والسائقين على تسجيل البيانات", responsible: "shared" },
+    ],
+  },
+
+  // ── Contracting ───────────────────────────────────────
+  contracting: {
+    icon: "🏗️", name: "إدارة المقاولات",
+    reqs: [
+      { text: "قائمة المشاريع النشطة (الاسم، المالك، القيمة، نسبة الإنجاز)", responsible: "client" },
+      { text: "جداول الكميات BOQ لكل مشروع نشط (Excel أو PDF)", responsible: "client" },
+      { text: "عقود المقاولين الفرعيين النشطة (النطاق، القيمة، شروط الدفع)", responsible: "client" },
+      { text: "سياسة الفوترة المرحلية (آلية حساب نسب الإنجاز، شروط الاحتجاز 5%/10%)", responsible: "client" },
+      { text: "هيكل تصنيف بنود التكلفة (مواد، عمالة، معدات، مقاولين فرعيين)", responsible: "client" },
+      { text: "قوالب أوامر التغيير (Variation Orders) المعتمدة", responsible: "client" },
+      { text: "قائمة الاستشاريين والمالكين لكل مشروع (للاعتمادات)", responsible: "client" },
+      { text: "مدة صرف الاحتجاز بعد التسليم النهائي", responsible: "client" },
+      { text: "تطوير وتخصيص BOQ والربط بالمشتريات والمخزون", responsible: "bg" },
+      { text: "تطوير نظام الفواتير المرحلية مع الاحتجاز التلقائي", responsible: "bg" },
+      { text: "تطوير نظام أوامر التغيير وتحديث BOQ المعتمد", responsible: "bg" },
+      { text: "إعداد تقارير ربحية المشروع ومقارنة BOQ بالتكلفة الفعلية", responsible: "bg" },
+      { text: "تدريب مهندسي المواقع على تسجيل التقدم وطلبات المواد", responsible: "shared" },
+      { text: "اختبار دورة مشروع كاملة (من BOQ حتى الإقفال)", responsible: "shared" },
+    ],
+  },
+
+  // ── Multi-Company ─────────────────────────────────────
+  multicompany: {
+    icon: "🏢", name: "الشركات المتعددة",
+    reqs: [
+      { text: "قائمة الشركات المراد إعدادها (الاسم القانوني، السجل التجاري، الرقم الضريبي)", responsible: "client" },
+      { text: "هيكل علاقة الشركات (أم/فرع، شركات شقيقة، نسب الملكية)", responsible: "client" },
+      { text: "العملة الأساسية لكل شركة والسنة المالية", responsible: "client" },
+      { text: "شجرة الحسابات لكل شركة (موحدة أم مختلفة)", responsible: "client" },
+      { text: "سياسة العمليات بين الشركات (سعر التكلفة أم بهامش؟ شروط الدفع البينية)", responsible: "client" },
+      { text: "قائمة المستخدمين وصلاحيات كل واحد على كل شركة (مصفوفة الوصول)", responsible: "client" },
+      { text: "سياسة العملات الموحدة للتقرير المدمج وآلية اعتماد أسعار الصرف", responsible: "client" },
+      { text: "قوالب التقارير المالية المدمجة المطلوبة (ميزانية، دخل، تدفق نقدي)", responsible: "client" },
+      { text: "إعداد هيكل الشركات وربطها في قاعدة بيانات واحدة", responsible: "bg" },
+      { text: "تهيئة شجرة الحسابات والعملات لكل شركة", responsible: "bg" },
+      { text: "إعداد قواعد العمليات البينية (Inter-Company Rules)", responsible: "bg" },
+      { text: "تطوير التقارير المالية المدمجة مع حذف العمليات البينية", responsible: "bg" },
+      { text: "إعداد صلاحيات الوصول متعددة الشركات", responsible: "bg" },
+      { text: "اختبار عمليات بينية شامل (بيع، شراء، تحويل، مطابقة)", responsible: "shared" },
+      { text: "تدريب المحاسبين على الإقفال الشهري والتقارير المدمجة", responsible: "shared" },
+    ],
+  },
 };
 
 /** Fixed requirements that apply to ALL projects. */
