@@ -109,5 +109,6 @@ export function makeInitialState(): QuoteBuilderState {
     meetingNotes: [],
     moduleChanges: [],
     countryMultipliers: {},
+    countryModulePrices: {},
   };
 }

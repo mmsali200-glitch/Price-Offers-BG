@@ -276,6 +276,14 @@ function getMultiplier(state: QuoteBuilderState): number {
   return getCountryPricing(country).priceMultiplier;
 }
 
+function getModulePrice(state: QuoteBuilderState, moduleId: string, basePrice: number): number {
+  const country = state.client?.country || "الكويت";
+  const countryKey = `${country}:${moduleId}`;
+  const dbPrice = state.countryModulePrices?.[countryKey];
+  if (dbPrice !== undefined) return dbPrice;
+  return Math.round(basePrice * getMultiplier(state));
+}
+
 export function computeTotals(state: QuoteBuilderState) {
   const mods = selectedModules(state);
   const bgApps = selectedBGApps(state);
@@ -284,7 +292,8 @@ export function computeTotals(state: QuoteBuilderState) {
   const modulesRaw = mods.reduce((s, m) => {
     const answers = state.moduleAnswers?.[m.id] ?? {};
     const { multiplier: complexity } = calculateComplexity(m.id, answers);
-    const adjustedPrice = Math.round(m.price * cm * complexity);
+    const countryPrice = getModulePrice(state, m.id, m.price);
+    const adjustedPrice = Math.round(countryPrice * complexity);
     return s + Math.round(adjustedPrice * (1 - (m.discount || 0) / 100));
   }, 0);
   const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * cm), 0);

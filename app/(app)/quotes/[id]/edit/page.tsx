@@ -51,10 +51,13 @@ export default async function EditQuotePage({
 
     // Load DB prices and apply to modules/apps/support that don't have overrides
     try {
-      const { modules: dbModPrices, bgApps: dbBgPrices, support: dbSupportPrices, countryMultipliers } = await getAllBuilderPrices();
+      const { modules: dbModPrices, bgApps: dbBgPrices, support: dbSupportPrices, countryMultipliers, countryModulePrices } = await getAllBuilderPrices();
 
       if (Object.keys(countryMultipliers).length > 0) {
         initial.countryMultipliers = countryMultipliers;
+      }
+      if (Object.keys(countryModulePrices).length > 0) {
+        initial.countryModulePrices = countryModulePrices;
       }
 
       if (initial.modules && Object.keys(dbModPrices).length > 0) {

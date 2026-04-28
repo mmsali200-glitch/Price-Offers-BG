@@ -56,10 +56,19 @@ function getCountryMultiplier(state: QuoteBuilderState) {
   return getCountryPricing(country).priceMultiplier;
 }
 
+function getModuleCountryPrice(state: QuoteBuilderState, moduleId: string, basePrice: number): number {
+  const country = state.client?.country || "الكويت";
+  const countryKey = `${country}:${moduleId}`;
+  const dbPrice = (state as Record<string, unknown>).countryModulePrices as Record<string, number> | undefined;
+  if (dbPrice?.[countryKey] !== undefined) return dbPrice[countryKey];
+  return Math.round(basePrice * getCountryMultiplier(state));
+}
+
 function getModuleAdjustedPrice(state: QuoteBuilderState, moduleId: string, basePrice: number) {
   const answers = state.moduleAnswers?.[moduleId] ?? {};
   const { multiplier } = calculateComplexity(moduleId, answers);
-  return Math.round(basePrice * getCountryMultiplier(state) * multiplier);
+  const countryPrice = getModuleCountryPrice(state, moduleId, basePrice);
+  return Math.round(countryPrice * multiplier);
 }
 
 function computeRenderTotals(state: QuoteBuilderState) {

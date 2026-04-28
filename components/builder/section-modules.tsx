@@ -132,6 +132,7 @@ function ModuleCard({ moduleId, categoryId }: { moduleId: string; categoryId: st
   const currency = useBuilderStore((s) => s.meta.currency);
   const country = useBuilderStore((s) => s.client.country);
   const dbMultipliers = useBuilderStore((s) => s.countryMultipliers);
+  const dbCountryModulePrices = useBuilderStore((s) => s.countryModulePrices);
   const catalog = ODOO_MODULES.find((c) => c.id === categoryId);
   const def = catalog?.modules.find((m) => m.id === moduleId);
   const toggle = useBuilderStore((s) => s.toggleModule);
@@ -145,8 +146,11 @@ function ModuleCard({ moduleId, categoryId }: { moduleId: string; categoryId: st
   const hasQuestions = !!MODULE_QUESTIONS[moduleId]?.length;
   const { multiplier, level } = calculateComplexity(moduleId, answers);
   const cm = dbMultipliers?.[country]?.multiplier ?? getCountryPricing(country).priceMultiplier;
-  const adjustedPrice = Math.round(basePrice * cm * multiplier);
-  const priceChanged = active && (multiplier > 1 || cm !== 1);
+  const countryKey = `${country}:${moduleId}`;
+  const countryModPrice = dbCountryModulePrices?.[countryKey];
+  const countryPrice = countryModPrice !== undefined ? countryModPrice : Math.round(basePrice * cm);
+  const adjustedPrice = Math.round(countryPrice * multiplier);
+  const priceChanged = active && (countryPrice !== basePrice || multiplier > 1);
 
   return (
     <div

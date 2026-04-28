@@ -150,4 +150,5 @@ export type QuoteBuilderState = {
   meetingNotes: MeetingNote[];
   moduleChanges: ModuleChange[];
   countryMultipliers: Record<string, CountryMultiplierEntry>;
+  countryModulePrices: Record<string, number>;
 };

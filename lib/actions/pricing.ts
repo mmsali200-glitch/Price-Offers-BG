@@ -69,12 +69,13 @@ export async function getAllBuilderPrices(): Promise<{
   bgApps: Record<string, number>;
   support: Record<string, number>;
   countryMultipliers: Record<string, { multiplier: number; currency: string; symbol: string; exchange: number }>;
+  countryModulePrices: Record<string, number>;
 }> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("pricing_config")
     .select("category, key, value, metadata")
-    .in("category", ["module_price", "bg_app_price", "support_price", "country_multiplier"]);
+    .in("category", ["module_price", "bg_app_price", "support_price", "country_multiplier", "country_module_price"]);
 
   const modules: Record<string, number> = {};
   const bgApps: Record<string, number> = {};
@@ -97,5 +98,13 @@ export async function getAllBuilderPrices(): Promise<{
     }
   });
 
-  return { modules, bgApps, support, countryMultipliers };
+  // Country-specific module prices: key format "country:module" → price
+  const countryModulePrices: Record<string, number> = {};
+  (data ?? []).forEach((r) => {
+    if (r.category === "country_module_price") {
+      countryModulePrices[r.key] = Number(r.value);
+    }
+  });
+
+  return { modules, bgApps, support, countryMultipliers, countryModulePrices };
 }

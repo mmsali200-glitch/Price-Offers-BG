@@ -2,6 +2,7 @@ import { getCurrentRole } from "@/lib/actions/users";
 import { getPricingConfig } from "@/lib/actions/pricing";
 import { redirect } from "next/navigation";
 import { PricingEditor } from "./pricing-editor";
+import { CountryModulePricing } from "./country-module-pricing";
 
 export const metadata = { title: "جدول التسعير · BG Quotes" };
 export const dynamic = "force-dynamic";
@@ -23,6 +24,16 @@ export default async function PricingPage() {
           تحكم بأسعار الموديولات ومعاملات الدول وباقات الدعم. التغييرات تؤثر على العروض الجديدة فقط.
         </p>
       </header>
+
+      {/* Country × Module price matrix */}
+      {config.module_price && config.country_multiplier && (
+        <CountryModulePricing
+          countryModulePrices={config.country_module_price ?? []}
+          modulePrices={config.module_price}
+          countryMultipliers={config.country_multiplier}
+        />
+      )}
+
       <PricingEditor config={config} />
     </div>
   );
