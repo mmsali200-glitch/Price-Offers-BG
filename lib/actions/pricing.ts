@@ -50,6 +50,38 @@ export async function updatePricingValue(
   return { ok: true };
 }
 
+/** Create or update a country-module price. Admin only. */
+export async function upsertCountryModulePrice(
+  country: string,
+  moduleKey: string,
+  value: number,
+  label?: string
+): Promise<{ ok: boolean; id?: string; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "auth" };
+
+  const key = `${country}:${moduleKey}`;
+
+  const { data, error } = await supabase
+    .from("pricing_config")
+    .upsert({
+      category: "country_module_price",
+      key,
+      value,
+      label: label || moduleKey,
+      metadata: { country, module: moduleKey },
+      updated_by: user.id,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "category,key" })
+    .select("id")
+    .single();
+
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings/pricing");
+  return { ok: true, id: data?.id };
+}
+
 /** Get module prices as a simple map (for use in Builder/Wizard). */
 export async function getModulePrices(): Promise<Record<string, number>> {
   const supabase = await createClient();
