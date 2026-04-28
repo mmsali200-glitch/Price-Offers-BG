@@ -189,7 +189,7 @@ export function renderWorkflowsHtml(state: QuoteBuilderState, isAr: boolean): st
 
   const title = isAr ? "دورات العمل الرئيسية" : "Business Workflows";
   const sub = isAr ? "العمليات المؤتمتة التي ستعمل داخل النظام بناءً على الموديولات المختارة" : "Automated processes running inside the system based on selected modules";
-  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",mrp:"🏭",accounting:"📊",payroll:"💰",hr:"👤",project:"📋",helpdesk:"🎧",website:"🌐",realestate:"🏢",hms:"🏥",fieldservice:"🗺️",subscriptions:"🔁",maintenance:"🛠️",marketing:"📢"};
+  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",mrp:"🏭",accounting:"📊",payroll:"💰",hr:"👤",project:"📋",helpdesk:"🎧",website:"🌐",realestate:"🏢",hms:"🏥",fieldservice:"🗺️",subscriptions:"🔁",maintenance:"🛠️",marketing:"📢",fleet:"🚗",contracting:"🏗️",multicompany:"🏢"};
   const COLORS = ["#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37","#1a5c37"];
 
   let html = `<section id="dyn-workflows" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:linear-gradient(180deg,#f7f9f6 0%,#fff 100%);">

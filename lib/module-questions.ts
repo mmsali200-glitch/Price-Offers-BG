@@ -219,6 +219,56 @@ export const MODULE_QUESTIONS: Record<string, ModuleQuestion[]> = {
     { id: "pay_wps", text: "هل تحتاج ملف تحويل بنكي (WPS/SIF)؟", textEn: "Bank transfer file (WPS)?", type: "yesno", category: "المالية", weight: 0.08 },
     { id: "pay_gosi", text: "هل تحتاج ربط GOSI/تأمينات اجتماعية؟", textEn: "GOSI/social insurance?", type: "yesno", category: "الامتثال", weight: 0.10 },
   ],
+
+  // ═══════════════════════════════════════
+  // 11. FLEET
+  // ═══════════════════════════════════════
+  fleet: [
+    { id: "flt_count", text: "كم عدد المركبات؟", textEn: "Vehicle count?", type: "select", category: "الهيكل", weight: 0.05, options: [
+      { value: "small", label: "3-10 مركبات", multiplier: 0 },
+      { value: "medium", label: "11-30 مركبة", multiplier: 0.08 },
+      { value: "large", label: "30+ مركبة", multiplier: 0.15 },
+    ]},
+    { id: "flt_fuel", text: "هل تحتاج تتبع الوقود تفصيلياً؟", textEn: "Detailed fuel tracking?", type: "yesno", category: "العمليات", weight: 0.08 },
+    { id: "flt_maintenance", text: "هل يوجد جدول صيانة وقائية؟", textEn: "Preventive maintenance schedule?", type: "yesno", category: "العمليات", weight: 0.08 },
+    { id: "flt_insurance", text: "هل تحتاج تتبع التأمين والتراخيص؟", textEn: "Insurance & license tracking?", type: "yesno", category: "العمليات", weight: 0.05 },
+    { id: "flt_drivers", text: "هل السائقين موظفين في الشركة؟", textEn: "Drivers are employees?", type: "yesno", category: "الهيكل", weight: 0.05 },
+    { id: "flt_cost", text: "هل تحتاج تحليل تكلفة لكل مركبة؟", textEn: "Per-vehicle cost analysis?", type: "yesno", category: "التقارير", weight: 0.08 },
+  ],
+
+  // ═══════════════════════════════════════
+  // 12. CONTRACTING
+  // ═══════════════════════════════════════
+  contracting: [
+    { id: "con_projects", text: "كم عدد المشاريع النشطة؟", textEn: "Active projects?", type: "select", category: "الهيكل", weight: 0.05, options: [
+      { value: "few", label: "1-3 مشاريع", multiplier: 0 },
+      { value: "medium", label: "4-10 مشاريع", multiplier: 0.10 },
+      { value: "many", label: "10+ مشاريع", multiplier: 0.15 },
+    ]},
+    { id: "con_boq", text: "هل تستخدم جداول كميات (BOQ)؟", textEn: "BOQ usage?", type: "yesno", category: "العمليات", weight: 0.10 },
+    { id: "con_retention", text: "هل يوجد مبالغ احتجاز (Retention)؟", textEn: "Retention amounts?", type: "yesno", category: "المالية", weight: 0.10 },
+    { id: "con_progress", text: "هل تصدر فواتير مرحلية؟", textEn: "Progress billing?", type: "yesno", category: "المالية", weight: 0.10 },
+    { id: "con_vo", text: "هل يوجد أوامر تغيير (Variation Orders)؟", textEn: "Variation orders?", type: "yesno", category: "العمليات", weight: 0.08 },
+    { id: "con_sub", text: "هل يوجد مقاولين فرعيين؟", textEn: "Subcontractors?", type: "yesno", category: "العمليات", weight: 0.10 },
+    { id: "con_sites", text: "هل يوجد مواقع عمل متعددة؟", textEn: "Multiple work sites?", type: "yesno", category: "الهيكل", weight: 0.08 },
+    { id: "con_profitability", text: "هل تحتاج تقارير ربحية لكل مشروع؟", textEn: "Per-project profitability?", type: "yesno", category: "التقارير", weight: 0.08 },
+  ],
+
+  // ═══════════════════════════════════════
+  // 13. MULTI-COMPANY
+  // ═══════════════════════════════════════
+  multicompany: [
+    { id: "mc_count", text: "كم عدد الشركات؟", textEn: "Number of companies?", type: "select", category: "الهيكل", weight: 0.05, options: [
+      { value: "2", label: "شركتان", multiplier: 0 },
+      { value: "3-5", label: "3-5 شركات", multiplier: 0.10 },
+      { value: "6+", label: "6+ شركات", multiplier: 0.20 },
+    ]},
+    { id: "mc_interco", text: "هل يوجد عمليات بين الشركات؟", textEn: "Inter-company transactions?", type: "yesno", category: "العمليات", weight: 0.12 },
+    { id: "mc_multi_currency", text: "هل تختلف العملات بين الشركات؟", textEn: "Different currencies?", type: "yesno", category: "الهيكل", weight: 0.10 },
+    { id: "mc_consolidated", text: "هل تحتاج تقارير مالية مدمجة؟", textEn: "Consolidated reports?", type: "yesno", category: "التقارير", weight: 0.10 },
+    { id: "mc_diff_coa", text: "هل شجرة الحسابات مختلفة لكل شركة؟", textEn: "Different COA per company?", type: "yesno", category: "الهيكل", weight: 0.10 },
+    { id: "mc_access", text: "هل يوجد موظفين يعملون على أكثر من شركة؟", textEn: "Cross-company users?", type: "yesno", category: "الصلاحيات", weight: 0.05 },
+  ],
 };
 
 /**

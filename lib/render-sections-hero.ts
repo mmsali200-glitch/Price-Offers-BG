@@ -9,7 +9,7 @@ const ICONS: Record<string,string> = {
   crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",barcode:"🔖",
   mrp:"🏭",accounting:"📊",invoicing:"🧾",payroll:"💰",hr:"👤",attendance:"⏰",
   leaves:"🌴",recruitment:"🎯",project:"📋",helpdesk:"🎧",website:"🌐",
-  ecommerce:"🛒",realestate:"🏢",hms:"🏥",lab:"🔬",quality:"✅",
+  ecommerce:"🛒",realestate:"🏢",hms:"🏥",lab:"🔬",quality:"✅",fleet:"🚗",contracting:"🏗️",multicompany:"🏢",
   maintenance:"🛠️",delivery:"🚚",repair:"🔧",timesheets:"⏱️",fieldservice:"🗺️",
   expenses:"💳",subscriptions:"🔁",rental:"📅",plm:"🧬",eam:"🏭",
   livechat:"💬",elearning:"🎓",appraisals:"📈",
