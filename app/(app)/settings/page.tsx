@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, Settings as SettingsIcon, Shield, DollarSign, HardDrive } from "lucide-react";
+import { Users, Settings as SettingsIcon, Shield, DollarSign, HardDrive, Clock } from "lucide-react";
 import { getCurrentRole } from "@/lib/actions/users";
 
 export const metadata = { title: "الإعدادات · BG Quotes" };
@@ -60,6 +60,27 @@ export default async function SettingsPage() {
                 <p className="text-[10px] text-bg-danger mt-2 inline-flex items-center gap-1">
                   <Shield className="size-3" />
                   متاح للمسؤولين فقط
+                </p>
+              )}
+            </div>
+          </div>
+        </Link>
+        <Link
+          href="/settings/activity"
+          className={`card p-5 card-hover block ${!isAdmin && role !== "manager" ? "opacity-50 pointer-events-none" : ""}`}
+        >
+          <div className="flex items-start gap-3">
+            <div className="size-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center">
+              <Clock className="size-5" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-sm font-black text-bg-green">سجل النشاط</h2>
+              <p className="text-xs text-bg-text-3 mt-1 leading-relaxed">
+                من فعل ماذا ومتى — اعتمادات، تعديلات، حذف.
+              </p>
+              {!isAdmin && role !== "manager" && (
+                <p className="text-[10px] text-bg-danger mt-2 inline-flex items-center gap-1">
+                  <Shield className="size-3" /> متاح للمدراء والمسؤولين
                 </p>
               )}
             </div>

@@ -6,8 +6,8 @@ import { redirect } from "next/navigation";
 
 type Result = { ok: true } | { ok: false; error: string };
 
-/** Check if the current user is an admin. */
-async function requireAdmin() {
+/** Check if the current user is admin or manager. */
+async function requireManagerOrAdmin() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
@@ -18,8 +18,8 @@ async function requireAdmin() {
     .eq("id", user.id)
     .single();
 
-  if (profile?.role !== "admin") return null;
-  return { supabase, userId: user.id };
+  if (!profile || !["admin", "manager"].includes(profile.role)) return null;
+  return { supabase, userId: user.id, role: profile.role };
 }
 
 // ═══════════════════════════════════════════════════
@@ -46,8 +46,8 @@ export async function updateClientAction(
     crn?: string;
   }
 ): Promise<Result> {
-  const auth = await requireAdmin();
-  if (!auth) return { ok: false, error: "صلاحية المسؤول مطلوبة" };
+  const auth = await requireManagerOrAdmin();
+  if (!auth) return { ok: false, error: "صلاحية المدير أو المسؤول مطلوبة" };
 
   const { error } = await auth.supabase
     .from("clients")
@@ -63,8 +63,8 @@ export async function updateClientAction(
 
 /** Delete a client and all their quotes. Admin only. */
 export async function deleteClientAction(clientId: string): Promise<Result> {
-  const auth = await requireAdmin();
-  if (!auth) return { ok: false, error: "صلاحية المسؤول مطلوبة" };
+  const auth = await requireManagerOrAdmin();
+  if (!auth) return { ok: false, error: "صلاحية المدير أو المسؤول مطلوبة" };
 
   // Delete all quotes linked to this client first
   const { data: quotes } = await auth.supabase
@@ -102,8 +102,8 @@ export async function deleteClientAction(clientId: string): Promise<Result> {
 
 /** Delete a quote and all its related data. Admin only. */
 export async function deleteQuoteAction(quoteId: string): Promise<Result> {
-  const auth = await requireAdmin();
-  if (!auth) return { ok: false, error: "صلاحية المسؤول مطلوبة" };
+  const auth = await requireManagerOrAdmin();
+  if (!auth) return { ok: false, error: "صلاحية المدير أو المسؤول مطلوبة" };
 
   // Delete related data first
   await auth.supabase.from("quote_sections").delete().eq("quote_id", quoteId);

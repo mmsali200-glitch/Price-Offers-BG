@@ -33,7 +33,7 @@ export default async function ClientDetailPage({
   const { client: c, quotes } = result;
   const totalValue = quotes.reduce((s, q) => s + (q.total_development || 0), 0);
   const role = await getCurrentRole();
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "manager";
 
   return (
     <div className="page-padding space-y-4 sm:space-y-6 max-w-5xl">

@@ -25,7 +25,7 @@ export default async function QuotesPage() {
     console.error("[quotes]", err);
   }
   const role = await getCurrentRole();
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "manager";
 
   return (
     <div className="page-padding space-y-4 sm:space-y-6">
