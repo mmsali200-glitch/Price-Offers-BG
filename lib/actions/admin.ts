@@ -148,3 +148,31 @@ export async function deleteClientFormAction(formData: FormData) {
   revalidatePath("/clients");
   redirect("/clients");
 }
+
+/** Bulk delete multiple clients and all their quotes. Manager/Admin only. */
+export async function bulkDeleteClientsAction(clientIds: string[]): Promise<Result> {
+  const auth = await requireManagerOrAdmin();
+  if (!auth) return { ok: false, error: "صلاحية المدير أو المسؤول مطلوبة" };
+  if (clientIds.length === 0) return { ok: false, error: "لم يتم تحديد أي عميل" };
+
+  for (const clientId of clientIds) {
+    const { data: quotes } = await auth.supabase
+      .from("quotes")
+      .select("id")
+      .eq("client_id", clientId);
+
+    if (quotes && quotes.length > 0) {
+      const ids = quotes.map((q: { id: string }) => q.id);
+      await auth.supabase.from("quote_sections").delete().in("quote_id", ids);
+      await auth.supabase.from("quote_events").delete().in("quote_id", ids);
+      await auth.supabase.from("quotes").delete().in("id", ids);
+    }
+
+    await auth.supabase.from("clients").delete().eq("id", clientId);
+  }
+
+  revalidatePath("/clients");
+  revalidatePath("/quotes");
+  revalidatePath("/dashboard");
+  return { ok: true };
+}
