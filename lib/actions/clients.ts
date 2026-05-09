@@ -20,62 +20,45 @@ export type ClientWithQuotes = {
 
 /**
  * List all clients for the current user with aggregated quote stats.
+ * Aggregation runs in SQL (see migration 0013) — single round-trip.
  */
 export async function listClients(): Promise<ClientWithQuotes[]> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  // Check role — admin/manager see ALL clients
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const role = profile?.role ?? "sales";
+  const { data, error } = await supabase.rpc("list_clients_with_stats");
+  if (error || !data) return [];
 
-  let clientQuery = supabase
-    .from("clients")
-    .select("id, name_ar, name_en, sector, country, city, contact_name, contact_phone, contact_email, created_at")
-    .order("created_at", { ascending: false });
-
-  if (role === "sales") {
-    clientQuery = clientQuery.eq("owner_id", user.id);
-  }
-
-  const { data: clients } = await clientQuery;
-  if (!clients || clients.length === 0) return [];
-
-  // Aggregate quotes per client
-  let quotesQuery = supabase
-    .from("quotes")
-    .select("client_id, total_development, updated_at");
-
-  if (role === "sales") {
-    quotesQuery = quotesQuery.eq("owner_id", user.id);
-  }
-
-  const { data: quotes } = await quotesQuery;
-
-  const agg = new Map<string, { count: number; value: number; lastDate: string | null }>();
-  (quotes ?? []).forEach((q) => {
-    if (!q.client_id) return;
-    const cur = agg.get(q.client_id) ?? { count: 0, value: 0, lastDate: null };
-    cur.count += 1;
-    cur.value += q.total_development || 0;
-    if (!cur.lastDate || q.updated_at > cur.lastDate) cur.lastDate = q.updated_at;
-    agg.set(q.client_id, cur);
-  });
-
-  return clients.map((c) => {
-    const stats = agg.get(c.id) ?? { count: 0, value: 0, lastDate: null };
-    return {
-      ...c,
-      quote_count: stats.count,
-      total_value: stats.value,
-      last_quote_date: stats.lastDate,
-    };
-  });
+  return (data as Array<{
+    id: string;
+    name_ar: string;
+    name_en: string | null;
+    sector: string | null;
+    country: string | null;
+    city: string | null;
+    contact_name: string | null;
+    contact_phone: string | null;
+    contact_email: string | null;
+    created_at: string;
+    quote_count: number | string;
+    total_value: number | string;
+    last_quote_date: string | null;
+  }>).map((row) => ({
+    id: row.id,
+    name_ar: row.name_ar,
+    name_en: row.name_en,
+    sector: row.sector,
+    country: row.country,
+    city: row.city,
+    contact_name: row.contact_name,
+    contact_phone: row.contact_phone,
+    contact_email: row.contact_email,
+    created_at: row.created_at,
+    quote_count: Number(row.quote_count) || 0,
+    total_value: Number(row.total_value) || 0,
+    last_quote_date: row.last_quote_date,
+  }));
 }
 
 export type ClientQuote = {
