@@ -1,20 +1,22 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { SURVEY_DATA, IMPACT_LABELS, getTotalQuestions, computeSurveyProgress } from "@/lib/survey-data";
+import { SURVEY_DATA, IMPACT_LABELS, computeSurveyProgress } from "@/lib/survey-data";
 import type { SurveyQuestion } from "@/lib/survey-data";
+import { getSectorSections, getSectorConfig } from "@/lib/survey-sectors";
 import { saveSurveyResponses, submitSurvey } from "@/lib/actions/surveys";
 import { Check, ChevronLeft, ChevronRight, Loader2, Send, Save } from "lucide-react";
 
 type Props = {
   token: string;
+  sectorId: string;
   initialResponses: Record<string, unknown>;
   initialClientInfo: Record<string, string>;
   initialProgress: number;
   isSubmitted: boolean;
 };
 
-export function SurveyForm({ token, initialResponses, initialClientInfo, initialProgress, isSubmitted }: Props) {
+export function SurveyForm({ token, sectorId, initialResponses, initialClientInfo, initialProgress, isSubmitted }: Props) {
   const [step, setStep] = useState<"setup" | number | "thanks">(isSubmitted ? "thanks" : "setup");
   const [responses, setResponses] = useState<Record<string, unknown>>(initialResponses);
   const [clientInfo, setClientInfo] = useState(initialClientInfo);
@@ -22,7 +24,11 @@ export function SurveyForm({ token, initialResponses, initialClientInfo, initial
   const [saved, setSaved] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const total = getTotalQuestions();
+
+  const sectorConfig = getSectorConfig(sectorId);
+  const activeSectionIds = getSectorSections(sectorId);
+  const filteredSections = SURVEY_DATA.sections.filter((s) => activeSectionIds.includes(s.id));
+  const total = filteredSections.reduce((sum, s) => sum + s.questions.length, 0);
   const progress = computeSurveyProgress(responses);
 
   const doSave = useCallback(async () => {
@@ -51,7 +57,7 @@ export function SurveyForm({ token, initialResponses, initialClientInfo, initial
     setStep("thanks");
   }
 
-  const sections = SURVEY_DATA.sections;
+  const sections = filteredSections;
   const currentSection = typeof step === "number" ? sections[step] : null;
 
   // Setup view
@@ -70,9 +76,9 @@ export function SurveyForm({ token, initialResponses, initialClientInfo, initial
             <h1 className="text-2xl font-black mb-2">{SURVEY_DATA.meta.title}</h1>
             <p className="text-white/80 text-sm leading-relaxed">{SURVEY_DATA.meta.description}</p>
             <div className="flex gap-6 mt-6 pt-4 border-t border-white/20">
-              <div><div className="text-2xl font-black text-[#c9a84c]">15</div><div className="text-xs text-white/60">قسم تشغيلي</div></div>
+              <div><div className="text-2xl font-black text-[#c9a84c]">{sectorConfig.icon}</div><div className="text-xs text-white/60">{sectorConfig.name}</div></div>
+              <div><div className="text-2xl font-black text-[#c9a84c]">{sections.length}</div><div className="text-xs text-white/60">قسم تشغيلي</div></div>
               <div><div className="text-2xl font-black text-[#c9a84c]">{total}</div><div className="text-xs text-white/60">سؤال تفصيلي</div></div>
-              <div><div className="text-2xl font-black text-[#c9a84c]">∞</div><div className="text-xs text-white/60">حفظ تلقائي</div></div>
             </div>
           </div>
 

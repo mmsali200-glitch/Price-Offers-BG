@@ -6,10 +6,13 @@ export const metadata = { title: "استبيان اكتشاف المتطلبات
 
 export default async function SurveyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ sector?: string }>;
 }) {
   const { token } = await params;
+  const { sector } = await searchParams;
   const supabase = await createClient();
 
   const { data: survey } = await supabase
@@ -23,6 +26,7 @@ export default async function SurveyPage({
   return (
     <SurveyForm
       token={survey.token}
+      sectorId={sector || "other"}
       initialResponses={(survey.responses ?? {}) as Record<string, unknown>}
       initialClientInfo={{
         company_name: survey.company_name || "",
