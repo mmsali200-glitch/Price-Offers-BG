@@ -26,11 +26,13 @@ export default async function SurveyDetailPage({ params }: { params: Promise<{ i
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) notFound();
 
-  const { data: survey } = await supabase.from("surveys").select("*").eq("id", id).single();
+  const { data: allSurveys } = await supabase.rpc("get_surveys");
+  type S = { id: string; token: string; company_name: string; contact_name: string; contact_email: string; industry: string; status: string; progress: number; responses: Record<string, unknown>; created_at: string; [k: string]: unknown };
+  const survey = (allSurveys as S[] | null)?.find((s) => s.id === id);
   if (!survey) notFound();
 
   const responses = (survey.responses ?? {}) as Record<string, unknown>;
-  const analysis = analyzeSurvey(responses, { company_name: survey.company_name, industry: survey.industry });
+  const analysis = analyzeSurvey(responses, { company_name: survey.company_name as string, industry: survey.industry as string });
   const cLevel = COMPLEXITY_LABELS[analysis.complexityLevel];
 
   return (
@@ -41,9 +43,9 @@ export default async function SurveyDetailPage({ params }: { params: Promise<{ i
           <Link href="/surveys" className="text-xs text-bg-info hover:underline inline-flex items-center gap-1 mb-2">
             <ArrowRight className="size-3" /> عودة للاستبيانات
           </Link>
-          <h1 className="text-xl font-black text-bg-green">{survey.company_name || "استبيان بدون اسم"}</h1>
+          <h1 className="text-xl font-black text-bg-green">{String(survey.company_name || "استبيان بدون اسم")}</h1>
           <p className="text-xs text-bg-text-3 mt-1">
-            {survey.contact_name} · {survey.industry || "—"} · {fmtDateArabic(survey.created_at)}
+            {String(survey.contact_name || "")} · {String(survey.industry || "—")} · {fmtDateArabic(String(survey.created_at))}
           </p>
         </div>
         <div className="flex items-center gap-2">
