@@ -31,6 +31,7 @@ export async function createSurvey(data: {
     p_company_name: data.companyName || null,
     p_contact_name: data.contactName || null,
     p_contact_email: data.contactEmail || null,
+    p_contact_phone: null,
     p_industry: data.industry || null,
     p_created_by: user.id,
   });
