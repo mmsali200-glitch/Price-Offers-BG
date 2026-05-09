@@ -1,65 +1,42 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { UserPlus, Loader2, Check } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createUserAccount } from "@/lib/actions/users";
 
-/**
- * Admin form to invite/create a new user directly.
- * Creates the auth account + sets role immediately.
- */
 export function InviteUserForm() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [role, setRole] = useState<"sales" | "manager" | "admin">("sales");
-  const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password || password.length < 6) return;
+    if (!email || !password || password.length < 6 || !fullName) return;
     setError(null);
+    setLoading(true);
 
-    startTransition(async () => {
-      try {
-        const supabase = createClient();
+    const result = await createUserAccount({ email, password, fullName, role });
+    setLoading(false);
 
-        // Create the user account
-        const { data, error: signUpErr } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName || email.split("@")[0] },
-          },
-        });
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
 
-        if (signUpErr) throw signUpErr;
-
-        // Update the role (the trigger creates profile with 'sales' by default)
-        if (data?.user && role !== "sales") {
-          // Small delay for the trigger to create the profile
-          await new Promise((r) => setTimeout(r, 1000));
-
-          const { updateUserRole } = await import("@/lib/actions/users");
-          await updateUserRole(data.user.id, role);
-        }
-
-        setSuccess(true);
-        setEmail("");
-        setPassword("");
-        setFullName("");
-        setTimeout(() => {
-          setSuccess(false);
-          setOpen(false);
-          window.location.reload();
-        }, 2000);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "فشل إنشاء الحساب");
-      }
-    });
+    setSuccess(true);
+    setEmail("");
+    setPassword("");
+    setFullName("");
+    setTimeout(() => {
+      setSuccess(false);
+      setOpen(false);
+      window.location.reload();
+    }, 2000);
   }
 
   if (!open) {
@@ -158,10 +135,10 @@ export function InviteUserForm() {
         <div className="flex gap-2">
           <button
             type="submit"
-            disabled={isPending || !email || password.length < 6}
+            disabled={loading || !email || password.length < 6}
             className="btn-primary inline-flex items-center gap-1.5 text-xs"
           >
-            {isPending ? (
+            {loading ? (
               <><Loader2 className="size-3.5 animate-spin" /> جاري الإنشاء...</>
             ) : (
               <><UserPlus className="size-3.5" /> إنشاء الحساب</>
