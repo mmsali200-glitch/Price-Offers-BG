@@ -25,18 +25,28 @@ export function CreateSurveyButton() {
     .filter((s) => sectionIds.includes(s.id))
     .reduce((sum, s) => sum + s.questions.length, 0);
 
+  const [createError, setCreateError] = useState<string | null>(null);
+
   async function handleCreate() {
-    if (!selectedSector) return;
+    if (!selectedSector || !companyName.trim()) return;
     setCreating(true);
-    const r = await createSurvey({
-      companyName, contactName, contactEmail,
-      industry: sector?.name || "",
-    });
-    setCreating(false);
-    if (r.ok) {
-      const url = `${window.location.origin}/survey/${r.token}?sector=${selectedSector}`;
-      setResult({ token: r.token, url });
-      setStep(3);
+    setCreateError(null);
+    try {
+      const r = await createSurvey({
+        companyName, contactName, contactEmail,
+        industry: sector?.name || "",
+      });
+      setCreating(false);
+      if (r.ok) {
+        const url = `${window.location.origin}/survey/${r.token}?sector=${selectedSector}`;
+        setResult({ token: r.token, url });
+        setStep(3);
+      } else {
+        setCreateError(r.error || "فشل إنشاء الاستبيان — تأكد من تطبيق migration 0012");
+      }
+    } catch (err) {
+      setCreating(false);
+      setCreateError(err instanceof Error ? err.message : "خطأ غير متوقع");
     }
   }
 
@@ -180,6 +190,10 @@ export function CreateSurveyButton() {
                 <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)}
                   className="input" dir="ltr" placeholder="ahmed@company.com" />
               </div>
+
+              {createError && (
+                <div className="text-xs text-bg-danger bg-red-50 border border-red-200 rounded-sm2 px-3 py-2">{createError}</div>
+              )}
 
               <div className="flex gap-2 mt-2">
                 <button onClick={() => setStep(1)} className="btn-outline flex-1 h-10 text-xs flex items-center justify-center gap-1">
