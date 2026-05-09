@@ -1,5 +1,6 @@
 "use server";
 
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { computeSurveyProgress } from "@/lib/survey-data";
@@ -27,34 +28,53 @@ export async function createSurvey(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "يجب تسجيل الدخول" };
 
-  const { data: result, error } = await supabase.rpc("create_survey", {
-    p_company_name: data.companyName || null,
-    p_contact_name: data.contactName || null,
-    p_contact_email: data.contactEmail || null,
-    p_contact_phone: null,
-    p_industry: data.industry || null,
-    p_created_by: user.id,
-  });
+  try {
+    const admin = createAdminClient();
+    const { data: row, error } = await admin
+      .from("surveys")
+      .insert({
+        company_name: data.companyName || null,
+        contact_name: data.contactName || null,
+        contact_email: data.contactEmail || null,
+        industry: data.industry || null,
+        created_by: user.id,
+      })
+      .select("id, token")
+      .single();
 
-  if (error) return { ok: false, error: error.message };
-
-  const row = result as { id: string; token: string };
-  revalidatePath("/surveys");
-  return { ok: true, token: row.token, id: row.id };
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/surveys");
+    return { ok: true, token: row.token, id: row.id };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "خطأ غير متوقع" };
+  }
 }
 
 export async function listSurveys(): Promise<SurveyListItem[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_surveys");
-  if (error || !data) return [];
-  return data as SurveyListItem[];
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("surveys")
+      .select("id, token, company_name, contact_name, contact_email, industry, status, progress, created_at, updated_at")
+      .order("created_at", { ascending: false });
+    return (data ?? []) as SurveyListItem[];
+  } catch {
+    return [];
+  }
 }
 
 export async function getSurveyByToken(token: string) {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("get_survey_by_token", { p_token: token });
-  if (error || !data || (data as unknown[]).length === 0) return null;
-  return (data as unknown[])[0];
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("surveys")
+      .select("*")
+      .eq("token", token)
+      .single();
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 export async function saveSurveyResponses(
@@ -62,35 +82,51 @@ export async function saveSurveyResponses(
   responses: Record<string, unknown>,
   clientInfo?: Record<string, string>
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  const progress = computeSurveyProgress(responses);
+  try {
+    const admin = createAdminClient();
+    const progress = computeSurveyProgress(responses);
 
-  const { error } = await supabase.rpc("update_survey_responses", {
-    p_token: token,
-    p_responses: responses,
-    p_progress: progress,
-    p_status: "in_progress",
-    p_company_name: clientInfo?.company_name || null,
-    p_contact_name: clientInfo?.contact_name || null,
-    p_contact_email: clientInfo?.contact_email || null,
-  });
+    const update: Record<string, unknown> = {
+      responses,
+      progress,
+      status: "in_progress",
+      updated_at: new Date().toISOString(),
+    };
 
-  if (error) return { ok: false, error: error.message };
-  return { ok: true };
+    if (clientInfo?.company_name) update.company_name = clientInfo.company_name;
+    if (clientInfo?.contact_name) update.contact_name = clientInfo.contact_name;
+    if (clientInfo?.contact_email) update.contact_email = clientInfo.contact_email;
+
+    const { error } = await admin
+      .from("surveys")
+      .update(update)
+      .eq("token", token);
+
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "خطأ" };
+  }
 }
 
 export async function submitSurvey(
   token: string
 ): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("update_survey_responses", {
-    p_token: token,
-    p_responses: {},
-    p_progress: 100,
-    p_status: "submitted",
-  });
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("surveys")
+      .update({
+        status: "submitted",
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("token", token);
 
-  if (error) return { ok: false, error: error.message };
-  revalidatePath("/surveys");
-  return { ok: true };
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/surveys");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "خطأ" };
+  }
 }

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { SurveyForm } from "./survey-form";
 
@@ -13,12 +13,15 @@ export default async function SurveyPage({
 }) {
   const { token } = await params;
   const { sector } = await searchParams;
-  const supabase = await createClient();
 
-  const { data, error } = await supabase.rpc("get_survey_by_token", { p_token: token });
+  const admin = createAdminClient();
+  const { data: survey } = await admin
+    .from("surveys")
+    .select("*")
+    .eq("token", token)
+    .single();
 
-  const survey = Array.isArray(data) ? data[0] : data;
-  if (!survey || error) notFound();
+  if (!survey) notFound();
 
   return (
     <SurveyForm

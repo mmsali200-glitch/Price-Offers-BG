@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { SURVEY_DATA, IMPACT_LABELS } from "@/lib/survey-data";
 import { analyzeSurvey } from "@/lib/survey-analyzer";
@@ -22,17 +22,13 @@ const COMPLEXITY_LABELS: Record<string, { label: string; color: string }> = {
 
 export default async function SurveyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) notFound();
+  const admin = createAdminClient();
 
-  const { data: allSurveys } = await supabase.rpc("get_surveys");
-  type S = { id: string; token: string; company_name: string; contact_name: string; contact_email: string; industry: string; status: string; progress: number; responses: Record<string, unknown>; created_at: string; [k: string]: unknown };
-  const survey = (allSurveys as S[] | null)?.find((s) => s.id === id);
+  const { data: survey } = await admin.from("surveys").select("*").eq("id", id).single();
   if (!survey) notFound();
 
   const responses = (survey.responses ?? {}) as Record<string, unknown>;
-  const analysis = analyzeSurvey(responses, { company_name: survey.company_name as string, industry: survey.industry as string });
+  const analysis = analyzeSurvey(responses, { company_name: survey.company_name, industry: survey.industry });
   const cLevel = COMPLEXITY_LABELS[analysis.complexityLevel];
 
   return (
