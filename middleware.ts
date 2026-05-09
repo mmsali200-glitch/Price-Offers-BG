@@ -12,6 +12,8 @@ const PROTECTED_PREFIXES = [
   "/clients",
   "/templates",
   "/settings",
+  "/surveys",
+  "/reports",
 ];
 
 export async function middleware(request: NextRequest) {
