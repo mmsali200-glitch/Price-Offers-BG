@@ -72,7 +72,7 @@ export default async function SurveysPage() {
                 return (
                   <tr key={s.id} className="border-t border-bg-line hover:bg-bg-card-alt">
                     <td className="px-4 py-3">
-                      <div className="font-bold text-bg-text-1">{s.company_name || "—"}</div>
+                      <Link href={`/surveys/${s.id}`} className="font-bold text-bg-green hover:underline block">{s.company_name || "—"}</Link>
                       <div className="text-[10px] text-bg-text-3">{s.contact_name} {s.contact_email && `· ${s.contact_email}`}</div>
                     </td>
                     <td className="px-4 py-3 text-bg-text-2">{s.industry || "—"}</td>
