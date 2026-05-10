@@ -6,8 +6,10 @@ import {
 } from "lucide-react";
 import { getClientWithQuotes } from "@/lib/actions/clients";
 import { getCurrentRole } from "@/lib/actions/users";
+import { getClientUser } from "@/lib/actions/client-users";
 import { fmtNum, curSymbol, fmtDateArabic } from "@/lib/utils";
 import { EditClientButton, DeleteClientButton, DeleteQuoteButton } from "./admin-actions";
+import { ClientAccountCard } from "./client-account-card";
 
 export const metadata = { title: "بيانات العميل · BG Quotes" };
 export const dynamic = "force-dynamic";
@@ -34,6 +36,7 @@ export default async function ClientDetailPage({
   const totalValue = quotes.reduce((s, q) => s + (q.total_development || 0), 0);
   const role = await getCurrentRole();
   const isAdmin = role === "admin" || role === "manager";
+  const clientUser = isAdmin ? await getClientUser(c.id) : null;
 
   return (
     <div className="page-padding space-y-4 sm:space-y-6 max-w-5xl">
@@ -113,6 +116,17 @@ export default async function ClientDetailPage({
           />
           <DeleteClientButton clientId={c.id} clientName={c.name_ar} />
         </div>
+      )}
+
+      {/* Client login account (admin/manager only) */}
+      {isAdmin && (
+        <ClientAccountCard
+          clientId={c.id}
+          clientName={c.name_ar}
+          defaultEmail={c.contact_email}
+          defaultContactName={c.contact_name}
+          current={clientUser}
+        />
       )}
 
       {/* Quotes list */}

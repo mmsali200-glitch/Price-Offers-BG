@@ -28,7 +28,19 @@ export default function LoginPage() {
         if (msg.includes("disabled")) throw new Error("تسجيل الدخول معطّل — تواصل مع المسؤول");
         throw err;
       }
-      router.push("/dashboard");
+
+      // Route based on user type — clients go to /client, staff to /dashboard.
+      const { data: { user } } = await supabase.auth.getUser();
+      let dest = "/dashboard";
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("id", user.id)
+          .single();
+        if (profile?.user_type === "client") dest = "/client";
+      }
+      router.push(dest);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "حدث خطأ");
