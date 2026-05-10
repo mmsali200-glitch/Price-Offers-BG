@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getSurveyById } from "@/lib/actions/surveys";
 import { notFound } from "next/navigation";
 import { SURVEY_DATA, IMPACT_LABELS } from "@/lib/survey-data";
 import { analyzeSurvey } from "@/lib/survey-analyzer";
@@ -22,13 +22,14 @@ const COMPLEXITY_LABELS: Record<string, { label: string; color: string }> = {
 
 export default async function SurveyDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const admin = createAdminClient();
-
-  const { data: survey } = await admin.from("surveys").select("*").eq("id", id).single();
+  const survey = await getSurveyById(id);
   if (!survey) notFound();
 
   const responses = (survey.responses ?? {}) as Record<string, unknown>;
-  const analysis = analyzeSurvey(responses, { company_name: survey.company_name, industry: survey.industry });
+  const analysis = analyzeSurvey(responses, {
+    company_name: survey.company_name ?? undefined,
+    industry: survey.industry ?? undefined,
+  });
   const cLevel = COMPLEXITY_LABELS[analysis.complexityLevel];
 
   return (

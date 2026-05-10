@@ -59,6 +59,18 @@ $$;
 
 grant execute on function public.get_survey_by_token(text) to anon, authenticated;
 
+-- ── get_survey_by_id (admin detail page) ───────────────────
+create or replace function public.get_survey_by_id(p_id uuid)
+returns setof public.surveys
+language sql
+security definer
+stable
+as $$
+  select * from public.surveys where id = p_id limit 1;
+$$;
+
+grant execute on function public.get_survey_by_id(uuid) to authenticated;
+
 -- ── list_surveys (admin dashboard) ─────────────────────────
 create or replace function public.list_surveys()
 returns setof public.surveys
