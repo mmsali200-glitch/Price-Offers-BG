@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { computeSurveyProgress } from "@/lib/survey-data";
+import { getSql } from "@/lib/db/postgres";
 
 export type SurveyListItem = {
   id: string;
@@ -37,6 +38,7 @@ export async function createSurvey(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "يجب تسجيل الدخول" };
 
+  // Try Supabase RPC first.
   try {
     const { data: rows, error } = await supabase.rpc("create_survey", {
       p_company_name: data.companyName ?? "",
@@ -44,16 +46,43 @@ export async function createSurvey(data: {
       p_contact_email: data.contactEmail ?? "",
       p_industry: data.industry ?? "",
     });
+    if (!error) {
+      const row = Array.isArray(rows) ? rows[0] : rows;
+      if (row?.id && row?.token) {
+        revalidatePath("/surveys");
+        return { ok: true, token: row.token, id: row.id };
+      }
+    }
+  } catch {
+    // fall through to direct postgres
+  }
 
-    if (error) return { ok: false, error: error.message };
-    const row = Array.isArray(rows) ? rows[0] : rows;
+  // Fallback: direct PostgreSQL (bypasses PostgREST entirely).
+  if (!process.env.DATABASE_URL) {
+    return { ok: false, error: "Supabase RPC failed and DATABASE_URL is not set on Railway" };
+  }
+  try {
+    const sql = getSql();
+    const rows = await sql<Array<{ id: string; token: string }>>`
+      insert into public.surveys (
+        company_name, contact_name, contact_email, industry, created_by
+      ) values (
+        ${data.companyName || null},
+        ${data.contactName || null},
+        ${data.contactEmail || null},
+        ${data.industry || null},
+        ${user.id}
+      )
+      returning id, token
+    `;
+    const row = rows[0];
     if (!row?.id || !row?.token) {
-      return { ok: false, error: "RPC create_survey returned no row — apply migration 0014" };
+      return { ok: false, error: "Direct insert returned no row" };
     }
     revalidatePath("/surveys");
     return { ok: true, token: row.token, id: row.id };
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : "خطأ غير متوقع" };
+    return { ok: false, error: err instanceof Error ? err.message : "فشل الاتصال المباشر بقاعدة البيانات" };
   }
 }
 
