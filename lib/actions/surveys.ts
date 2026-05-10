@@ -29,20 +29,19 @@ export async function createSurvey(data: {
   if (!user) return { ok: false, error: "يجب تسجيل الدخول" };
 
   try {
-    const admin = createAdminClient();
-    const { data: row, error } = await admin
-      .from("surveys")
-      .insert({
-        company_name: data.companyName || null,
-        contact_name: data.contactName || null,
-        contact_email: data.contactEmail || null,
-        industry: data.industry || null,
-        created_by: user.id,
-      })
-      .select("id, token")
-      .single();
+    // Use authenticated client so auth.uid() resolves inside the RPC.
+    const { data: rows, error } = await supabase.rpc("create_survey", {
+      p_company_name: data.companyName ?? "",
+      p_contact_name: data.contactName ?? "",
+      p_contact_email: data.contactEmail ?? "",
+      p_industry: data.industry ?? "",
+    });
 
     if (error) return { ok: false, error: error.message };
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    if (!row?.id || !row?.token) {
+      return { ok: false, error: "RPC create_survey returned no row — apply migration 0014" };
+    }
     revalidatePath("/surveys");
     return { ok: true, token: row.token, id: row.id };
   } catch (err) {
