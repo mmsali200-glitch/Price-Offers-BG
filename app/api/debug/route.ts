@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { readEnv } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
@@ -9,10 +10,15 @@ function mask(value: string | undefined, prefixLen = 12): string {
   return `${value.slice(0, prefixLen)}...${value.slice(-4)} (len=${value.length})`;
 }
 
+function wasSanitized(name: string): boolean {
+  const raw = process.env[name];
+  return raw !== undefined && raw !== readEnv(name);
+}
+
 export async function GET() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = readEnv("NEXT_PUBLIC_SUPABASE_URL");
+  const anon = readEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  const service = readEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   const env = {
     NEXT_PUBLIC_SUPABASE_URL: url ?? "(missing)",
@@ -27,6 +33,11 @@ export async function GET() {
                   : "unknown",
     url_has_rest_v1: url?.includes("/rest/v1") ?? false,
     url_has_trailing_slash: url?.endsWith("/") ?? false,
+    sanitized: {
+      NEXT_PUBLIC_SUPABASE_URL: wasSanitized("NEXT_PUBLIC_SUPABASE_URL"),
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: wasSanitized("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+      SUPABASE_SERVICE_ROLE_KEY: wasSanitized("SUPABASE_SERVICE_ROLE_KEY"),
+    },
   };
 
   const tests: Record<string, unknown> = {};
