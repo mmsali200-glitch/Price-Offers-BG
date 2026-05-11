@@ -26,12 +26,16 @@
 cp .env.example .env.local
 # ثم املأ: Supabase URL + anon key + service_role key
 #          ANTHROPIC_API_KEY + RESEND_API_KEY
+# ⚠ لا تضع علامات اقتباس " " حول القيم — Next.js يحتفظ بها داخل القيمة.
 
 # 2. تثبيت التبعيات
 npm install
 
 # 3. تطبيق مخطط قاعدة البيانات
-# (من Supabase Dashboard → SQL Editor → الصق محتوى supabase/migrations/0001_initial_schema.sql)
+# من Supabase Dashboard → SQL Editor، طبّق كل ملفات supabase/migrations/*.sql
+# بالترتيب الرقمي (0000 → 0001 → ... → 0015).
+# ⚠ مهم: 0014_survey_rpc.sql يُعرّف list_surveys / create_survey وغيرها —
+# بدونه تفشل لوحة الاستبيانات بخطأ PGRST202.
 
 # 4. التشغيل المحلي
 npm run dev
