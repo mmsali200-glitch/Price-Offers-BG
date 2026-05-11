@@ -1,4 +1,4 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getSurveyByToken } from "@/lib/actions/surveys";
 import { notFound } from "next/navigation";
 import { SurveyForm } from "./survey-form";
 
@@ -14,13 +14,7 @@ export default async function SurveyPage({
   const { token } = await params;
   const { sector } = await searchParams;
 
-  const admin = createAdminClient();
-  const { data: survey } = await admin
-    .from("surveys")
-    .select("*")
-    .eq("token", token)
-    .single();
-
+  const survey = await getSurveyByToken(token);
   if (!survey) notFound();
 
   return (

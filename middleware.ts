@@ -6,7 +6,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * and gates /dashboard, /quotes, /clients, /templates, /settings routes.
  * Public routes: /, /login, /auth/callback, /q/[token] (client magic links).
  */
-const PROTECTED_PREFIXES = [
+const STAFF_PREFIXES = [
   "/dashboard",
   "/quotes",
   "/clients",
@@ -15,6 +15,8 @@ const PROTECTED_PREFIXES = [
   "/surveys",
   "/reports",
 ];
+
+const CLIENT_PREFIX = "/client";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -43,13 +45,35 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  const isStaffArea  = STAFF_PREFIXES.some((p) => pathname.startsWith(p));
+  const isClientArea = pathname === CLIENT_PREFIX || pathname.startsWith(`${CLIENT_PREFIX}/`);
 
-  if (isProtected && !user) {
+  if ((isStaffArea || isClientArea) && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
+  }
+
+  // For logged-in users, enforce role-based area separation.
+  if (user && (isStaffArea || isClientArea)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("user_type")
+      .eq("id", user.id)
+      .single();
+    const isClient = profile?.user_type === "client";
+
+    if (isStaffArea && isClient) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/client";
+      return NextResponse.redirect(url);
+    }
+    if (isClientArea && !isClient) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   return response;
