@@ -1,0 +1,56 @@
+"use client";
+
+import { SectionClient, SectionVersion, SectionLanguage } from "./section-client";
+import { SectionModules, SectionBGApps } from "./section-modules";
+import { SectionOptions } from "./section-options";
+import { SectionPhases } from "./section-phases";
+import { SectionPayment } from "./section-payment";
+import { SectionLicense } from "./section-license";
+import { SectionSupport } from "./section-support";
+import { SectionDescription } from "./section-description";
+import { SectionContacts } from "./section-contacts";
+import { SectionMeetingNotes, SectionExtraReqs, SectionDiscount } from "./section-notes";
+import { SectionRequirements } from "./section-requirements";
+import { SummaryBar } from "./summary-bar";
+import { GenerateButton } from "./generate-button";
+
+export function QuoteBuilder({ quoteId }: { quoteId: string }) {
+  return (
+    <div className="max-w-5xl mx-auto px-3 lg:px-6 py-4 lg:py-6 space-y-3 pb-24">
+      <header className="text-center py-4 space-y-1">
+        <h1 className="text-2xl lg:text-3xl font-black text-bg-green">
+          🟢 مُعِد عروض الأسعار
+        </h1>
+        <p className="text-xs text-bg-text-3">
+          <span className="text-bg-gold font-bold">Business Gate Technical Consulting</span>
+          {" — كل عرض في دقائق"}
+        </p>
+      </header>
+
+      <SectionClient />
+      <SectionLanguage />
+      <SectionVersion />
+      <SectionModules />
+      <SectionBGApps />
+      <SectionOptions />
+      <SectionPhases />
+      <SectionPayment />
+      <SectionLicense />
+      <SectionSupport />
+      <SectionRequirements />
+      <SectionDescription />
+      <SectionContacts />
+      <SectionExtraReqs />
+      <SectionMeetingNotes />
+      <SectionDiscount />
+
+      <SummaryBar />
+
+      <div className="flex justify-center">
+        <div className="w-full max-w-md [&_button]:w-full [&_button]:h-12 [&_button]:text-base [&_button]:rounded-card [&_button]:shadow-[0_5px_20px_rgba(26,92,55,0.26)] [&_button]:hover:shadow-[0_9px_28px_rgba(26,92,55,0.36)] [&_button]:hover:-translate-y-0.5 [&_button]:transition-all">
+          <GenerateButton quoteId={quoteId} />
+        </div>
+      </div>
+    </div>
+  );
+}

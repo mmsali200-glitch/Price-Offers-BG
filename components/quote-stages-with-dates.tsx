@@ -1,0 +1,79 @@
+import { FileText, Send, Eye, CheckCircle2, XCircle } from "lucide-react";
+import { cn, fmtDateArabic } from "@/lib/utils";
+
+type Stage = { key: string; label: string; icon: React.ReactNode };
+
+const STAGES: Stage[] = [
+  { key: "draft",    label: "مسودة",  icon: <FileText className="size-3.5" /> },
+  { key: "sent",     label: "مُرسل",  icon: <Send className="size-3.5" /> },
+  { key: "opened",   label: "مفتوح",  icon: <Eye className="size-3.5" /> },
+  { key: "accepted", label: "مقبول",  icon: <CheckCircle2 className="size-3.5" /> },
+];
+
+const ORDER = ["draft", "sent", "opened", "accepted"] as const;
+
+/**
+ * Timeline showing the lifecycle of a quote with the timestamp under
+ * each stage (ar-formatted) when that stage first occurred.
+ */
+export function QuoteStagesWithDates({
+  status,
+  stageHistory,
+}: {
+  status: string;
+  stageHistory: Record<string, string | null>;
+}) {
+  const isRejected = status === "rejected" || status === "expired";
+  const currentIndex = ORDER.indexOf(status as (typeof ORDER)[number]);
+
+  return (
+    <div className="flex items-start gap-0 flex-wrap" aria-label="حالة العرض">
+      {STAGES.map((s, i) => {
+        const reached = !isRejected && currentIndex >= i;
+        const active = !isRejected && currentIndex === i;
+        const when = stageHistory[s.key];
+        return (
+          <div key={s.key} className="flex items-start">
+            <div className="flex flex-col items-center">
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition-colors",
+                  reached
+                    ? active
+                      ? "bg-bg-green text-white"
+                      : "bg-bg-green-lt text-bg-green"
+                    : "bg-bg-line text-bg-text-3"
+                )}
+              >
+                {s.icon}
+                <span>{s.label}</span>
+              </div>
+              <span className="text-[9px] text-bg-text-3 mt-0.5 whitespace-nowrap">
+                {when ? fmtDateArabic(when) : "—"}
+              </span>
+            </div>
+            {i < STAGES.length - 1 && (
+              <div
+                className={cn(
+                  "w-5 h-[2px] mx-0.5 mt-3",
+                  reached && currentIndex > i ? "bg-bg-green" : "bg-bg-line"
+                )}
+              />
+            )}
+          </div>
+        );
+      })}
+      {isRejected && (
+        <div className="flex flex-col items-center mr-3 mt-0">
+          <div className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold bg-red-50 text-bg-danger">
+            <XCircle className="size-3.5" />
+            {status === "rejected" ? "مرفوض" : "منتهٍ"}
+          </div>
+          <span className="text-[9px] text-bg-text-3 mt-0.5">
+            {stageHistory.rejected ? fmtDateArabic(stageHistory.rejected) : "—"}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}

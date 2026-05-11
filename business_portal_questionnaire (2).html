@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بوابة الأعمال — استبيان اكتشاف المتطلبات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+  /* ==================== DESIGN TOKENS ==================== */
+  :root {
+    --navy-900: #0A1F3A;
+    --navy-800: #102A4D;
+    --navy-700: #1A3A66;
+    --navy-600: #2C5282;
+    --navy-500: #4A6FA5;
+    --gold-500: #C9A961;
+    --gold-600: #B08D44;
+    --gold-700: #8C6F32;
+    --gold-100: #F5EDD8;
+    --gold-50:  #FBF7EC;
+    --cream:    #FAF8F2;
+    --paper:    #FFFFFF;
+    --sand:     #F1ECE0;
+    --ink-900:  #0A1F3A;
+    --ink-700:  #2D3E55;
+    --ink-500:  #5C6B82;
+    --ink-300:  #94A0B5;
+    --line:     #E2DDD0;
+    --line-2:   #CDC7B5;
+    --success:  #2D7A4F;
+    --success-bg: #E8F4ED;
+    --warning:  #B5651D;
+    --warning-bg: #FAEFD9;
+    --danger:   #B82828;
+    --danger-bg: #F8E2E2;
+    --info:     #1E5A8C;
+    --info-bg:  #E5EEF8;
+
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    --shadow-sm: 0 1px 2px rgba(10, 31, 58, 0.04);
+    --shadow:    0 4px 14px rgba(10, 31, 58, 0.06), 0 1px 3px rgba(10, 31, 58, 0.04);
+    --shadow-lg: 0 12px 36px rgba(10, 31, 58, 0.10), 0 4px 12px rgba(10, 31, 58, 0.06);
+
+    --font-display: 'Cairo', system-ui, sans-serif;
+    --font-body: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    font-family: var(--font-body);
+    background: var(--cream);
+    color: var(--ink-900);
+    line-height: 1.7;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 800px 600px at 90% -10%, rgba(201, 169, 97, 0.08), transparent),
+      radial-gradient(ellipse 600px 400px at 0% 100%, rgba(10, 31, 58, 0.04), transparent);
+  }
+
+  h1, h2, h3, h4, h5 { font-family: var(--font-display); line-height: 1.3; color: var(--navy-900); }
+  h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+  h2 { font-size: 24px; font-weight: 700; }
+  h3 { font-size: 19px; font-weight: 600; }
+  h4 { font-size: 16px; font-weight: 600; }
+
+  a { color: var(--navy-700); text-decoration: none; }
+  a:hover { color: var(--gold-700); }
+
+  button {
+    font-family: var(--font-body);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-size: 15px;
+  }
+
+  input, textarea, select {
+    font-family: var(--font-body);
+    font-size: 15px;
+  }
+
+  ::placeholder { color: var(--ink-300); }
+
+  /* ==================== LAYOUT PRIMITIVES ==================== */
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+  .container-sm { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+
+  .view { display: none; min-height: 100vh; }
+  .view.active { display: block; }
+
+  /* ==================== TOP BAR / BRAND ==================== */
+  .topbar {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.92);
+  }
+  .topbar-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 48px; height: 48px;
+    background: var(--navy-900);
+    border-radius: var(--radius);
+    display: grid; place-items: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(10, 31, 58, 0.15);
+  }
+  .brand-mark::before {
+    content: ''; position: absolute; inset: 4px;
+    border: 1.5px solid var(--gold-500);
+    border-radius: 6px;
+  }
+  .brand-mark::after {
+    content: 'BP'; color: var(--gold-500);
+    font-family: var(--font-display); font-weight: 800;
+    font-size: 16px; letter-spacing: 0.04em;
+    z-index: 1;
+  }
+  .brand-text { display: flex; flex-direction: column; }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 19px;
+    color: var(--navy-900);
+    line-height: 1.1;
+  }
+  .brand-tagline {
+    font-size: 12px;
+    color: var(--ink-500);
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .nav-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* ==================== BUTTONS ==================== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    border-radius: var(--radius);
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--navy-900);
+    color: var(--paper);
+  }
+  .btn-primary:hover { background: var(--navy-800); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-gold {
+    background: var(--gold-500);
+    color: var(--navy-900);
+    font-weight: 600;
+  }
+  .btn-gold:hover { background: var(--gold-600); color: var(--paper); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-outline {
+    background: transparent;
+    color: var(--navy-900);
+    border: 1px solid var(--line-2);
+  }
+  .btn-outline:hover { border-color: var(--navy-900); background: var(--cream); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-700);
+  }
+  .btn-ghost:hover { background: var(--sand); color: var(--navy-900); }
+  .btn-danger {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid transparent;
+  }
+  .btn-danger:hover { background: var(--danger); color: var(--paper); }
+  .btn-sm { padding: 7px 14px; font-size: 13px; }
+  .btn-lg { padding: 14px 28px; font-size: 15px; }
+
+  /* ==================== WELCOME VIEW ==================== */
+  #welcome-view {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+  #welcome-view.active { display: flex; }
+
+  .welcome-card {
+    max-width: 1080px;
+    width: 100%;
+    background: var(--paper);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .welcome-hero {
+    background: linear-gradient(160deg, var(--navy-900) 0%, var(--navy-700) 100%);
+    color: var(--paper);
+    padding: 56px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .welcome-hero::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(201, 169, 97, 0.18), transparent 60%);
+    pointer-events: none;
+  }
+  .welcome-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -200px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(201, 169, 97, 0.12), transparent 60%);
+    pointer-events: none;
+  }
+  .welcome-hero-content { position: relative; z-index: 1; }
+  .welcome-hero-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    padding: 8px 16px;
+    background: rgba(201, 169, 97, 0.15);
+    border: 1px solid rgba(201, 169, 97, 0.3);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--gold-500);
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .welcome-hero h1 {
+    color: var(--paper);
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .welcome-hero h1 .gold { color: var(--gold-500); }
+  .welcome-hero p {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 32px;
+  }
+  .hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .hero-stat-num {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--gold-500);
+    line-height: 1;
+  }
+  .hero-stat-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.65);
+    margin-top: 6px;
+  }
+
+  .welcome-modes {
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
+  .welcome-modes-title {
+    color: var(--ink-500);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .mode-card {
+    background: var(--cream);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: right;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-card:hover {
+    border-color: var(--navy-900);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+  }
+  .mode-card-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--navy-900);
+    color: var(--paper);
+    border-radius: var(--radius);
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .mode-card.gold .mode-card-icon { background: var(--gold-500); color: var(--navy-900); }
+  .mode-card-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .mode-card-desc { font-size: 13px; color: var(--ink-500); line-height: 1.6; }
+  .mode-card-arrow {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    color: var(--ink-300);
+    font-size: 22px;
+    transition: all 0.2s ease;
+  }
+  .mode-card:hover .mode-card-arrow { color: var(--navy-900); transform: translateX(-4px); }
+
+  /* ==================== CLIENT FORM VIEW ==================== */
+  .form-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    padding: 32px 0;
+  }
+
+  .form-sidebar {
+    position: sticky;
+    top: 88px;
+    align-self: start;
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    padding-left: 8px;
+  }
+  .form-sidebar::-webkit-scrollbar { width: 6px; }
+  .form-sidebar::-webkit-scrollbar-track { background: transparent; }
+  .form-sidebar::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+  .form-progress-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .form-progress-label { font-size: 12px; color: var(--ink-500); margin-bottom: 8px; letter-spacing: 0.04em; font-weight: 500; }
+  .form-progress-value { font-family: var(--font-display); font-size: 28px; font-weight: 800; color: var(--navy-900); }
+  .form-progress-bar { height: 6px; background: var(--sand); border-radius: 3px; margin-top: 12px; overflow: hidden; }
+  .form-progress-fill { height: 100%; background: var(--gold-500); border-radius: 3px; transition: width 0.4s ease; }
+  .form-progress-meta { font-size: 12px; color: var(--ink-500); margin-top: 8px; }
+
+  .form-nav {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 8px;
+  }
+  .form-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+    color: var(--ink-700);
+    text-align: right;
+    width: 100%;
+    line-height: 1.4;
+  }
+  .form-nav-item:hover { background: var(--cream); color: var(--navy-900); }
+  .form-nav-item.active {
+    background: var(--navy-900);
+    color: var(--paper);
+  }
+  .form-nav-item.completed { color: var(--success); }
+  .form-nav-item.active.completed { color: var(--paper); }
+  .form-nav-num {
+    width: 24px; height: 24px;
+    background: var(--sand);
+    color: var(--ink-700);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .form-nav-item.active .form-nav-num { background: var(--gold-500); color: var(--navy-900); }
+  .form-nav-item.completed .form-nav-num { background: var(--success); color: var(--paper); }
+  .form-nav-text { flex: 1; }
+
+  /* Form main area */
+  .form-main {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .form-step-header {
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(135deg, var(--paper) 0%, var(--cream) 100%);
+    position: relative;
+  }
+  .form-step-badge {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gold-700);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .form-step-badge::before {
+    content: '';
+    width: 16px;
+    height: 1.5px;
+    background: var(--gold-500);
+  }
+  .form-step-header h2 { color: var(--navy-900); margin-bottom: 4px; }
+  .form-step-header .subtitle { font-size: 13px; color: var(--ink-500); font-style: italic; margin-bottom: 12px; }
+  .form-step-header .desc { font-size: 14px; color: var(--ink-700); line-height: 1.7; max-width: 720px; }
+
+  .form-step-body { padding: 32px; }
+
+  .form-question {
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .form-question:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+
+  .form-question-num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-300);
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+  .form-question-label {
+    font-weight: 600;
+    color: var(--navy-900);
+    font-size: 15px;
+    margin-bottom: 14px;
+    line-height: 1.6;
+  }
+  .form-question-help {
+    font-size: 13px;
+    color: var(--ink-500);
+    margin-bottom: 14px;
+    padding: 10px 14px;
+    background: var(--info-bg);
+    border-right: 3px solid var(--info);
+    border-radius: var(--radius-sm);
+    line-height: 1.6;
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink-900);
+    font-size: 14px;
+    transition: border-color 0.15s;
+    line-height: 1.6;
+  }
+  .form-input:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--navy-700);
+    box-shadow: 0 0 0 3px rgba(28, 58, 102, 0.08);
+  }
+  .form-textarea { resize: vertical; min-height: 90px; }
+
+  .radio-group, .checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .radio-item, .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--paper);
+  }
+  .radio-item:hover, .checkbox-item:hover { border-color: var(--navy-500); background: var(--cream); }
+  .radio-item.checked, .checkbox-item.checked {
+    border-color: var(--navy-900);
+    background: var(--gold-50);
+  }
+  .radio-item input, .checkbox-item input { display: none; }
+  .radio-marker, .checkbox-marker {
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--line-2);
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .checkbox-marker { border-radius: 4px; }
+  .radio-item.checked .radio-marker {
+    border-color: var(--navy-900);
+    background: var(--navy-900);
+  }
+  .radio-item.checked .radio-marker::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: var(--gold-500);
+  }
+  .checkbox-item.checked .checkbox-marker {
+    border-color: var(--navy-900);
+    background: var(--navy-900);
+  }
+  .checkbox-item.checked .checkbox-marker::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 5px;
+    width: 6px; height: 10px;
+    border: solid var(--gold-500);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .radio-label, .checkbox-label { flex: 1; font-size: 14px; color: var(--ink-700); }
+
+  /* User table styling */
+  .data-table-wrapper {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  .data-table th {
+    background: var(--navy-900);
+    color: var(--paper);
+    padding: 12px 16px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .data-table th:first-child { width: 60%; }
+  .data-table td {
+    padding: 8px 12px;
+    border-top: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  .data-table tr:nth-child(even) td { background: var(--cream); }
+  .data-table input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1.5px solid transparent;
+    background: transparent;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    text-align: center;
+  }
+  .data-table td:first-child { text-align: right; padding-right: 16px; color: var(--ink-700); }
+  .data-table input:focus { outline: none; border-color: var(--navy-700); background: var(--paper); }
+
+  /* Form footer (navigation) */
+  .form-footer {
+    padding: 20px 32px;
+    border-top: 1px solid var(--line);
+    background: var(--cream);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .form-footer-info { font-size: 13px; color: var(--ink-500); }
+  .form-footer-actions { display: flex; gap: 8px; }
+
+  /* ==================== SETUP VIEW (initial client info) ==================== */
+  .setup-card {
+    max-width: 720px;
+    margin: 60px auto;
+    background: var(--paper);
+    border-radius: var(--radius-xl);
+    padding: 48px;
+    box-shadow: var(--shadow-lg);
+  }
+  .setup-card h2 { color: var(--navy-900); margin-bottom: 8px; }
+  .setup-card .desc { color: var(--ink-500); margin-bottom: 32px; line-height: 1.7; }
+
+  .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-field { margin-bottom: 16px; }
+  .form-field label {
+    display: block;
+    font-weight: 500;
+    color: var(--navy-900);
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .form-field label .required { color: var(--danger); }
+
+  /* ==================== ADMIN DASHBOARD ==================== */
+  .admin-header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+  }
+  .admin-header-row { display: flex; justify-content: space-between; align-items: end; flex-wrap: wrap; gap: 16px; }
+  .admin-header h1 { margin-bottom: 6px; }
+  .admin-header .desc { color: var(--ink-500); font-size: 14px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card-icon {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    background: var(--gold-50);
+    color: var(--gold-700);
+    display: grid; place-items: center;
+    font-size: 18px;
+  }
+  .stat-card.success .stat-card-icon { background: var(--success-bg); color: var(--success); }
+  .stat-card.warning .stat-card-icon { background: var(--warning-bg); color: var(--warning); }
+  .stat-card.info .stat-card-icon { background: var(--info-bg); color: var(--info); }
+
+  .stat-card-label {
+    font-size: 12px;
+    color: var(--ink-500);
+    letter-spacing: 0.04em;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .stat-card-value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--navy-900);
+    line-height: 1;
+  }
+  .stat-card-meta {
+    font-size: 12px;
+    color: var(--ink-500);
+    margin-top: 8px;
+  }
+
+  /* Submissions table */
+  .panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .panel-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-title { font-size: 16px; font-weight: 600; color: var(--navy-900); }
+  .panel-body { padding: 0; }
+  .panel-empty {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--ink-500);
+  }
+  .panel-empty-icon { font-size: 56px; color: var(--ink-300); margin-bottom: 12px; }
+  .panel-empty-title { font-weight: 600; color: var(--ink-700); font-size: 15px; margin-bottom: 4px; }
+  .panel-empty-desc { font-size: 13px; max-width: 400px; margin: 0 auto; }
+
+  .submissions-table { width: 100%; border-collapse: collapse; }
+  .submissions-table th {
+    background: var(--cream);
+    padding: 12px 20px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-500);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--line);
+  }
+  .submissions-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+  }
+  .submissions-table tr:last-child td { border-bottom: none; }
+  .submissions-table tr.clickable { cursor: pointer; transition: background 0.1s; }
+  .submissions-table tr.clickable:hover td { background: var(--cream); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .badge-success { background: var(--success-bg); color: var(--success); }
+  .badge-warning { background: var(--warning-bg); color: var(--warning); }
+  .badge-info { background: var(--info-bg); color: var(--info); }
+  .badge-neutral { background: var(--sand); color: var(--ink-700); }
+
+  .progress-mini {
+    width: 80px;
+    height: 6px;
+    background: var(--sand);
+    border-radius: 3px;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  .progress-mini-fill { height: 100%; background: var(--navy-900); border-radius: 3px; transition: width 0.3s; }
+
+  /* Submission detail */
+  .detail-header {
+    background: var(--navy-900);
+    color: var(--paper);
+    padding: 32px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .detail-header::before {
+    content: '';
+    position: absolute;
+    top: -50px; left: -50px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201, 169, 97, 0.15), transparent 60%);
+    pointer-events: none;
+  }
+  .detail-header-content { position: relative; z-index: 1; }
+  .detail-header h2 { color: var(--paper); margin-bottom: 4px; }
+  .detail-header .desc { color: rgba(255, 255, 255, 0.75); font-size: 14px; }
+  .detail-header-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    flex-wrap: wrap;
+  }
+  .detail-header-meta-item { font-size: 13px; color: rgba(255, 255, 255, 0.85); }
+  .detail-header-meta-label { color: var(--gold-500); font-size: 11px; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 4px; }
+
+  .insight-box {
+    background: linear-gradient(135deg, var(--gold-50) 0%, var(--paper) 100%);
+    border: 1px solid var(--gold-500);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .insight-box-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gold-700);
+    margin-bottom: 16px;
+  }
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .insight-item {
+    background: var(--paper);
+    border: 1px solid var(--gold-500);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+  }
+  .insight-item-label { font-size: 12px; color: var(--ink-500); margin-bottom: 4px; }
+  .insight-item-value { font-family: var(--font-display); font-weight: 700; color: var(--navy-900); font-size: 16px; }
+
+  .section-detail {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .section-detail-header {
+    padding: 18px 24px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-detail-header:hover { background: var(--sand); }
+  .section-detail-title-row { display: flex; align-items: center; gap: 12px; }
+  .section-detail-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy-900);
+  }
+  .section-detail-icon {
+    width: 32px; height: 32px;
+    background: var(--navy-900);
+    color: var(--gold-500);
+    border-radius: var(--radius-sm);
+    display: grid; place-items: center;
+    font-size: 16px;
+  }
+  .pricing-impact-pill {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .pricing-impact-pill.critical { background: var(--danger-bg); color: var(--danger); }
+  .pricing-impact-pill.high { background: var(--warning-bg); color: var(--warning); }
+  .pricing-impact-pill.medium { background: var(--info-bg); color: var(--info); }
+  .pricing-impact-pill.low { background: var(--sand); color: var(--ink-700); }
+  .section-detail-toggle { color: var(--ink-500); transition: transform 0.2s; }
+  .section-detail.expanded .section-detail-toggle { transform: rotate(180deg); }
+  .section-detail-body { padding: 0; display: none; }
+  .section-detail.expanded .section-detail-body { display: block; }
+
+  .answer-row {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .answer-row:last-child { border-bottom: none; }
+  .answer-question {
+    font-size: 13px;
+    color: var(--ink-500);
+    margin-bottom: 6px;
+    line-height: 1.6;
+  }
+  .answer-value {
+    color: var(--ink-900);
+    font-weight: 500;
+    line-height: 1.7;
+    white-space: pre-wrap;
+  }
+  .answer-value.empty {
+    color: var(--ink-300);
+    font-style: italic;
+    font-weight: 400;
+  }
+  .answer-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .answer-tag {
+    background: var(--gold-50);
+    color: var(--gold-700);
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid var(--gold-500);
+  }
+
+  .answer-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .answer-table th {
+    background: var(--cream);
+    padding: 8px 12px;
+    text-align: right;
+    font-weight: 600;
+    color: var(--ink-700);
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .answer-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .answer-table tr:last-child td { border-bottom: none; }
+  .answer-table td:first-child { color: var(--ink-700); }
+
+  /* Modals & overlays */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 31, 58, 0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--paper);
+    border-radius: var(--radius-lg);
+    max-width: 480px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-header { padding: 24px 28px 16px; }
+  .modal-header h3 { color: var(--navy-900); }
+  .modal-body { padding: 0 28px 16px; }
+  .modal-footer {
+    padding: 16px 28px;
+    border-top: 1px solid var(--line);
+    background: var(--cream);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: var(--navy-900);
+    color: var(--paper);
+    padding: 14px 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    font-size: 14px;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.danger { background: var(--danger); }
+
+  /* Thank you screen */
+  .thank-you {
+    max-width: 640px;
+    margin: 80px auto;
+    text-align: center;
+    padding: 56px 40px;
+    background: var(--paper);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow);
+  }
+  .thank-you-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: var(--gold-50);
+    color: var(--success);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 40px;
+    border: 2px solid var(--gold-500);
+  }
+  .thank-you h2 { color: var(--navy-900); margin-bottom: 12px; }
+  .thank-you p { color: var(--ink-700); font-size: 15px; line-height: 1.8; margin-bottom: 12px; }
+
+  /* Utilities */
+  .visible-only-mobile { display: none; }
+  .text-muted { color: var(--ink-500); }
+  .text-success { color: var(--success); }
+  .text-warning { color: var(--warning); }
+  .text-danger { color: var(--danger); }
+  .text-gold { color: var(--gold-700); }
+  .mb-1 { margin-bottom: 8px; }
+  .mb-2 { margin-bottom: 16px; }
+  .mb-3 { margin-bottom: 24px; }
+  .mb-4 { margin-bottom: 32px; }
+  .mt-3 { margin-top: 24px; }
+  .gap-2 { gap: 16px; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+
+  @media (max-width: 1024px) {
+    .welcome-card { grid-template-columns: 1fr; }
+    .form-layout { grid-template-columns: 1fr; }
+    .form-sidebar { position: relative; top: 0; height: auto; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .container, .container-sm { padding: 0 16px; }
+    .form-grid-2 { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .welcome-hero, .welcome-modes { padding: 32px 24px; }
+    .form-step-body, .form-step-header { padding: 20px; }
+    .insight-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Print */
+  @media print {
+    .topbar, .form-footer, .btn, .panel-header { display: none !important; }
+    body { background: white; }
+    .section-detail-body { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== TOP BAR ==================== -->
+<div class="topbar" id="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text">
+        <div class="brand-name">بوابة الأعمال</div>
+        <div class="brand-tagline">Business Portal · ERP Advisory</div>
+      </div>
+    </div>
+    <div class="nav-actions" id="nav-actions"></div>
+  </div>
+</div>
+
+<!-- ==================== WELCOME VIEW ==================== -->
+<div id="welcome-view" class="view active">
+  <div class="welcome-card">
+    <div class="welcome-hero">
+      <div class="welcome-hero-content">
+        <div class="welcome-hero-mark">
+          <i class="ti ti-sparkles" aria-hidden="true"></i>
+          <span>أداة استشارية</span>
+        </div>
+        <h1>استبيان <span class="gold">اكتشاف المتطلبات</span> لتنفيذ نظام Odoo</h1>
+        <p>منصة تفاعلية تجمع متطلبات العميل بشكل منظم ومنهجي، مبنية على ممارسات الاستشارات العالمية، لتمكين فريق بوابة الأعمال من تقديم عروض دقيقة ومصممة على القياس.</p>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-num">15</div>
+            <div class="hero-stat-label">قسم تشغيلي</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">122</div>
+            <div class="hero-stat-label">سؤال تفصيلي</div>
+          </div>
+          <div>
+            <div class="hero-stat-num">∞</div>
+            <div class="hero-stat-label">عميل قابل للاستخدام</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="welcome-modes">
+      <div class="welcome-modes-title">اختر وضع الدخول</div>
+
+      <div class="mode-card" onclick="App.startClientFlow()">
+        <div class="mode-card-icon"><i class="ti ti-user-edit" aria-hidden="true"></i></div>
+        <div class="mode-card-title">أنا عميل — أرغب بتعبئة الاستبيان</div>
+        <div class="mode-card-desc">سيقودك الاستبيان عبر 15 قسماً، مع إمكانية حفظ التقدم والعودة لاحقاً.</div>
+        <i class="ti ti-arrow-left mode-card-arrow" aria-hidden="true"></i>
+      </div>
+
+      <div class="mode-card gold" onclick="App.openAdminGate()">
+        <div class="mode-card-icon"><i class="ti ti-chart-pie" aria-hidden="true"></i></div>
+        <div class="mode-card-title">إدارة بوابة الأعمال — لوحة التحكم</div>
+        <div class="mode-card-desc">عرض جميع الردود الواردة، تحليل الإجابات الجوهرية، وتصدير التقارير.</div>
+        <i class="ti ti-arrow-left mode-card-arrow" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SETUP VIEW (client info) ==================== -->
+<div id="setup-view" class="view">
+  <div class="container-sm">
+    <div class="setup-card">
+      <div class="form-step-badge">قبل البدء</div>
+      <h2>معلومات أساسية عن شركتكم</h2>
+      <p class="desc">معلومات بسيطة لنتمكن من تخصيص الاستبيان والمتابعة معكم. كل المعلومات تُحفظ تلقائياً، يمكنكم العودة في أي وقت لاستكمال الإجابات.</p>
+      <form id="setup-form" onsubmit="event.preventDefault(); App.completeSetup();">
+        <div id="setup-fields"></div>
+        <div class="flex justify-between items-center mt-3">
+          <button type="button" class="btn btn-ghost" onclick="App.goWelcome()">
+            <i class="ti ti-arrow-right" aria-hidden="true"></i>
+            عودة
+          </button>
+          <button type="submit" class="btn btn-primary btn-lg">
+            ابدأ الاستبيان
+            <i class="ti ti-arrow-left" aria-hidden="true"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== CLIENT FORM VIEW ==================== -->
+<div id="client-view" class="view">
+  <div class="container">
+    <div class="form-layout">
+      <aside class="form-sidebar">
+        <div class="form-progress-card">
+          <div class="form-progress-label">نسبة الإكمال</div>
+          <div class="form-progress-value" id="progress-value">0%</div>
+          <div class="form-progress-bar">
+            <div class="form-progress-fill" id="progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="form-progress-meta" id="progress-meta">0 من 122 سؤالاً</div>
+        </div>
+        <div class="form-nav" id="form-nav"></div>
+      </aside>
+
+      <main class="form-main" id="form-main">
+        <!-- Dynamic content -->
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== THANK YOU VIEW ==================== -->
+<div id="thanks-view" class="view">
+  <div class="container-sm">
+    <div class="thank-you">
+      <div class="thank-you-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+      <h2>شكراً لكم — تم استلام إجاباتكم</h2>
+      <p>سيتولى فريق بوابة الأعمال مراجعة الإجابات الواردة، وستصلكم خلال أيام مسودة عرض السعر الأولية المبنية على متطلباتكم الفعلية، تليها جلسة عمل تفصيلية لمراجعة العرض.</p>
+      <p style="margin-top: 24px; font-size: 14px; color: var(--ink-500);">في حال كان لديكم أي تعديل أو إضافة، يمكنكم العودة لتعديل الإجابات في أي وقت من خلال نفس الرابط.</p>
+      <div class="flex gap-2 justify-between mt-3" style="max-width: 360px; margin: 24px auto 0;">
+        <button class="btn btn-outline" onclick="App.goWelcome()">العودة للرئيسية</button>
+        <button class="btn btn-primary" onclick="App.continueEditing()">تعديل الإجابات</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== ADMIN VIEW ==================== -->
+<div id="admin-view" class="view">
+  <div class="container">
+    <div class="admin-header">
+      <div class="admin-header-row">
+        <div>
+          <h1>لوحة تحكم الإدارة</h1>
+          <p class="desc">عرض شامل لجميع الردود الواردة من العملاء على استبيان اكتشاف المتطلبات.</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-outline btn-sm" onclick="App.exportAll()">
+            <i class="ti ti-download" aria-hidden="true"></i>
+            تصدير كل البيانات
+          </button>
+          <button class="btn btn-outline btn-sm" onclick="App.importData()">
+            <i class="ti ti-upload" aria-hidden="true"></i>
+            استيراد بيانات
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid" id="stats-grid"></div>
+
+    <div class="panel" id="submissions-panel">
+      <div class="panel-header">
+        <div class="panel-title">قائمة الردود الواردة</div>
+        <div class="text-muted" style="font-size: 13px;" id="submissions-count">0 رد</div>
+      </div>
+      <div class="panel-body" id="submissions-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SUBMISSION DETAIL VIEW ==================== -->
+<div id="detail-view" class="view">
+  <div class="container">
+    <div style="padding: 24px 0;">
+      <button class="btn btn-ghost" onclick="App.goAdmin()">
+        <i class="ti ti-arrow-right" aria-hidden="true"></i>
+        عودة للوحة التحكم
+      </button>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- ==================== MODALS ==================== -->
+<div class="modal-overlay" id="admin-gate-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>دخول لوحة الإدارة</h3>
+      <p class="text-muted" style="font-size: 13px; margin-top: 6px;">أدخل كلمة المرور للوصول إلى لوحة التحكم.</p>
+    </div>
+    <div class="modal-body">
+      <input type="password" class="form-input" id="admin-password" placeholder="كلمة المرور" autocomplete="off">
+      <p class="text-muted" style="font-size: 12px; margin-top: 8px;">
+        كلمة المرور الافتراضية: <code style="background: var(--cream); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono);">admin2026</code> — يمكن تغييرها لاحقاً.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="App.closeModal('admin-gate-modal')">إلغاء</button>
+      <button class="btn btn-primary btn-sm" onclick="App.checkAdminPassword()">دخول</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="confirm-title">تأكيد</h3>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="color: var(--ink-700); line-height: 1.7;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="App.closeModal('confirm-modal')">إلغاء</button>
+      <button class="btn btn-primary btn-sm" id="confirm-action">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// QUESTIONNAIRE DATA
+// ============================================================
+const QUESTIONNAIRE = {"meta":{"title":"استبيان اكتشاف متطلبات نظام Odoo 19","subtitle":"Discovery Questionnaire — Odoo 19 ERP Implementation","description":"استبيان منظَّم وفق دورات العمل الجوهرية في شركتكم لتحديد نطاق العمل وإعداد عرض السعر بدقة."},"client_info_fields":[{"id":"company_name","label":"اسم الشركة / الجهة","type":"text","required":true,"placeholder":"مثال: شركة سديف للتطوير العقاري"},{"id":"industry","label":"النشاط / القطاع","type":"text","required":true,"placeholder":"مثال: تطوير عقاري، مقاولات، تجارة..."},{"id":"contact_name","label":"اسم الشخص المسؤول","type":"text","required":true},{"id":"contact_position","label":"المسمى الوظيفي","type":"text","required":false},{"id":"contact_email","label":"البريد الإلكتروني","type":"email","required":true},{"id":"contact_phone","label":"رقم الجوال","type":"text","required":false}],"sections":[{"id":"s1","icon":"users","title":"الهيكل التنظيمي والمستخدمون","subtitle":"Organizational Structure & Users","description":"هذا القسم يحدد عدد رخص المستخدمين والكيانات القانونية، وهو من أكبر العوامل في تحديد التكلفة السنوية للنظام.","pricing_impact":"high","questions":[{"id":"q1_1","type":"textarea","label":"هل لشركتكم كيان قانوني واحد فقط، أم عدة شركات/كيانات شقيقة؟ يرجى ذكر عدد الكيانات وأسمائها وطبيعة نشاط كل منها."},{"id":"q1_2","type":"radio","label":"هل تحتاجون إلى تفعيل ميزة Multi-Company في Odoo (تقارير موحدة + معاملات بين الشركات)؟","options":["نعم","لا","غير متأكد"]},{"id":"q1_3","type":"textarea","label":"هل لديكم فروع جغرافية متعددة (مكتب رئيسي + مكاتب مشاريع)؟ يرجى ذكر المواقع."},{"id":"q1_4","type":"textarea","label":"هل توجد شركات تابعة أو مستثمَر بها يجب عرض نتائجها بشكل موحَّد (Consolidated Reports)؟"},{"id":"q1_users","type":"user-table","label":"توزيع المستخدمين على الأدوار التشغيلية","help":"يرجى تعبئة العدد المتوقع لكل دور وظيفي. ملاحظة: المستخدم الذي يدخل النظام ولو مرة شهريًا يُعتبر مستخدمًا مرخصًا في Odoo Enterprise.","rows":["الإدارة العليا (CEO + Board members)","المدير المالي / CFO","مدير ومحاسبو الذمم الدائنة (AP)","مدير ومحاسبو الذمم المدينة (AR)","مدير المشتريات + موظفو المشتريات","مدير المشاريع (Project Managers)","مهندسو الموقع (Site Engineers)","مشرفو المواقع (Site Supervisors)","مساحو الكميات (Quantity Surveyors)","أمناء المخازن (Warehouse Keepers)","مدير المبيعات + موظفو المبيعات","موظفو خدمة العملاء (CRM)","الشؤون القانونية","الموارد البشرية","تقنية المعلومات (System Admin)","المدقق الداخلي / Compliance Officer","مستخدمون آخرون"]},{"id":"q1_total_full","type":"number","label":"إجمالي عدد المستخدمين الكامل (Full Users)"},{"id":"q1_total_portal","type":"number","label":"عدد المستخدمين المحدودين (Portal/External Users — مقاولون / موردون / عملاء)"},{"id":"q1_lang","type":"checkbox","label":"اللغة المعتمدة لواجهة النظام","options":["عربية","إنجليزية","كلاهما (مزدوج اللغة)"]},{"id":"q1_mobile","type":"textarea","label":"هل يحتاج المستخدمون الميدانيون إلى استخدام النظام عبر الموبايل؟ كم عددهم تقريبًا؟"},{"id":"q1_external","type":"textarea","label":"هل توجد فئة من المستخدمين تحتاج إلى الوصول من خارج المملكة (روابط فروع، استشاريون خارجيون)؟"}]},{"id":"s2","icon":"scale","title":"الحجم التشغيلي ونطاق الأعمال","subtitle":"Operational Volume & Business Scope","description":"حجم البيانات والمعاملات يُحدد متطلبات الأداء، حجم البيئة، والوقت اللازم للتدريب والترحيل.","pricing_impact":"medium","questions":[{"id":"q2_1","type":"textarea","label":"كم عدد المشاريع العقارية النشطة حاليًا؟ وكم العدد المتوقع خلال 3-5 سنوات؟"},{"id":"q2_2","type":"textarea","label":"ما متوسط عدد العمارات/المباني في المشروع الواحد؟ ومتوسط عدد الوحدات في كل مشروع؟"},{"id":"q2_3","type":"textarea","label":"ما متوسط القيمة الإجمالية لمشروع متوسط الحجم (للمواءمة مع حدود الاعتماد المقترحة)؟"},{"id":"q2_4","type":"number","label":"عدد الموردين النشطين تقريبًا (آخر 12 شهرًا)"},{"id":"q2_5","type":"textarea","label":"كم عدد المقاولين النشطين تقريبًا؟ وعدد المستخلصات الشهرية على المحفظة كاملة؟"},{"id":"q2_6","type":"textarea","label":"كم عدد العملاء (ملاك الوحدات) الحاليين؟ والمتوقع سنويًا للمشاريع القادمة؟"},{"id":"q2_7","type":"number","label":"متوسط عدد طلبات الشراء (PRs) الشهرية"},{"id":"q2_8","type":"number","label":"متوسط عدد فواتير الموردين الشهرية"},{"id":"q2_9","type":"number","label":"متوسط عدد عقود البيع الشهرية في فترة الذروة"},{"id":"q2_10","type":"number","label":"متوسط عدد القيود اليومية الشهرية تقريبًا"}]},{"id":"s3","icon":"layers","title":"التطبيقات والوحدات المطلوبة","subtitle":"Modules in Scope","description":"تأكيد الوحدات المطلوبة في كل موجة من موجات التنفيذ الثلاث.","pricing_impact":"high","questions":[{"id":"q3_wave1","type":"checkbox","label":"الموجة الأولى — الأساس (1 / 8 / 2026)","options":["Accounting + Saudi Localization + ZATCA Phase 2","Analytic Accounting (Plans هرمية)","Budget Management مع Budget Block","Purchase (PR / RFQ / PO / Vendor Bills)","Inventory + GRN + 3-way Matching","Project Management + Tasks + Timesheets","Approvals + Sign + Documents + Knowledge","Expenses (مصاريف الموظفين)","Studio (للتخصيصات بدون كود)","Spreadsheet + Dashboards"]},{"id":"q3_wave2","type":"checkbox","label":"الموجة الثانية — المقاولون (1 / 10 / 2026)","options":["وحدة المقاولين والمستخلصات (Custom)","تقارير المقاولين (Contract Cumulative Reports)","ربط البنوك (للدفعات الكبيرة)"]},{"id":"q3_wave3","type":"checkbox","label":"الموجة الثالثة — العقار (1 / 12 / 2026)","options":["وحدة العقار (Custom): مشروع/مبنى/دور/وحدة","عقد البيع وجدول الأقساط","الاعتراف بالإيراد طبقًا لـ IFRS 15","ربط منصة الإفراغ","CRM للمبيعات العقارية","بوابة العملاء (Customer Portal)"]},{"id":"q3_other","type":"textarea","label":"هل تحتاجون إلى وحدات إضافية لم تُذكَر أعلاه (HR، Payroll، Maintenance، Manufacturing، Helpdesk)؟"}]},{"id":"s4","icon":"shopping-cart","title":"دورة المشتريات والمواد","subtitle":"Procurement Cycle","description":"هذه الدورة هي العمود الفقري لتتبع تكاليف المشاريع، ودقة التكوين فيها تنعكس على كل التقارير الإدارية اللاحقة.","pricing_impact":"medium","questions":[{"id":"q4_1","type":"textarea","label":"هل تستخدمون نموذج طلب الشراء (PR) رسميًا حاليًا، أم يبدأ المسار من PO مباشرة؟"},{"id":"q4_2","type":"textarea","label":"ما هي حدود الصلاحيات المالية الحالية للاعتماد على أوامر الشراء؟ يرجى التفصيل."},{"id":"q4_3","type":"textarea","label":"هل تطبقون قاعدة 3 عروض موردين قبل اعتماد PO؟ وما الحد المالي الذي تنطبق منه؟"},{"id":"q4_4","type":"textarea","label":"هل لديكم قاعدة موردين معتمدة (Approved Vendor List) موثقة بمستندات؟"},{"id":"q4_5","type":"radio","label":"ما طريقة تسعير المخزون المعتمدة لديكم؟","options":["FIFO","Weighted Average","Standard Cost","غير محدد"]},{"id":"q4_6","type":"radio","label":"هل ترغبون بإلزام Three-way Matching بشكل صارم؟","options":["إلزامي صارم (يمنع الترحيل)","تحذيري فقط","غير محدد"]},{"id":"q4_7","type":"radio","label":"هل تحتاجون إلى عقود إطارية (Blanket POs / Purchase Agreements) مع موردين أساسيين؟","options":["نعم","لا","غير محدد"]},{"id":"q4_8","type":"number","label":"كم عدد المستودعات/المواقع التي تحتاج إلى إدارة مخزون مستقلة؟"},{"id":"q4_9","type":"radio","label":"هل توجد مشتريات بعملات أجنبية (موردون من الخارج)؟","options":["نعم","لا"]}]},{"id":"s5","icon":"alert-triangle","title":"دورة المقاولين والمستخلصات","subtitle":"Contractors & Progress Bills","description":"هذه أعقد دورة في النظام بأكمله. الإجابات هنا تُحدد جهد بناء وحدة المستخلصات المخصصة.","pricing_impact":"critical","questions":[{"id":"q5_1","type":"textarea","label":"ما النموذج المعتمد للدفعة المقدمة (Down Payment)؟ ما النسبة الاعتيادية، وكيف تُسترد؟"},{"id":"q5_2","type":"textarea","label":"ما نسبة الضمان (Retention) المعتادة في عقودكم؟ وما فترة الإفراج عنها؟"},{"id":"q5_3","type":"radio","label":"هل ضريبة القيمة المضافة 15% تُحتسب على الصافي بعد الخصومات أم على إجمالي المستخلص؟","options":["على الصافي بعد الخصومات","على الإجمالي","غير محدد"]},{"id":"q5_4","type":"radio","label":"ما متوسط عدد بنود BOQ في عقد المقاول الواحد؟","options":["أقل من 50","50 - 100","100 - 200","أكثر من 200"]},{"id":"q5_5","type":"textarea","label":"من يعتمد المستخلصات تقنيًا (مساح كميات داخلي / استشاري خارجي)؟ وكم مستوى اعتماد؟"},{"id":"q5_6","type":"radio","label":"هل تحتاجون إلى ربط بنود BOQ بأكواد التكلفة الـ 56 الواردة في إطار العمل؟","options":["نعم","لا","غير محدد"]},{"id":"q5_7","type":"radio","label":"هل توجد عقود مقاولين بعملات أجنبية؟","options":["نعم","لا"]},{"id":"q5_8","type":"textarea","label":"هل تتعاملون مع مقاولين من الباطن (Sub-contractors)؟ كيف تُدار محاسبيًا؟"},{"id":"q5_9","type":"textarea","label":"هل توجد غرامات تأخير على المقاولين تُحسب آليًا (LDs)؟ ما القاعدة؟"},{"id":"q5_10","type":"textarea","label":"هل توجد مستخلصات قائمة في عقود نشطة تحتاج إلى ترحيلها مع تاريخها التراكمي؟"}]},{"id":"s6","icon":"home","title":"دورة المبيعات العقارية","subtitle":"Real Estate Sales","description":"هذه الدورة الأكثر تخصيصًا في النظام، حيث لا توفر Odoo وحدة عقارية رسمية.","pricing_impact":"critical","questions":[{"id":"q6_1","type":"checkbox","label":"أنواع الوحدات العقارية التي تبيعها الشركة","options":["شقق","فلل","تاون هاوس","أراضٍ","محلات تجارية","مكاتب"]},{"id":"q6_2","type":"textarea","label":"نسبة المبيعات على الخارطة (Off-plan) مقابل الوحدات الجاهزة؟"},{"id":"q6_3","type":"textarea","label":"ما خطط السداد المعتادة؟ كم نمط مختلف؟"},{"id":"q6_4","type":"textarea","label":"هل توجد عمولات مسوّقين خارجيين أو وكلاء عقاريين؟ ما طريقة احتساب العمولة؟"},{"id":"q6_5","type":"radio","label":"هل تستخدمون منصة الإفراغ حاليًا؟","options":["نعم - مع API","نعم - يدوي فقط","لا"]},{"id":"q6_6","type":"radio","label":"هل تحتاجون إلى بوابة عميل (Customer Portal)؟","options":["نعم","لا","ربما لاحقًا"]},{"id":"q6_7","type":"textarea","label":"هل تتعاملون مع تمويل عقاري بنكي للعملاء؟ كيف تُوثَّق التحويلات في النظام؟"},{"id":"q6_8","type":"radio","label":"هل تحتسب الزكاة على المخزون العقاري؟","options":["نعم","لا","غير محدد"]},{"id":"q6_9","type":"textarea","label":"هل توجد عقود إيجار طويلة الأمد (Lease) لبعض الوحدات بدلاً من البيع؟"},{"id":"q6_10","type":"radio","label":"هل يطبَّق على البيع IFRS 15؟","options":["نعم","لا","غير محدد"]},{"id":"q6_11","type":"textarea","label":"هل يُدار التسويق الرقمي (Leads) من قنوات Meta / Google / منصات عقارية ويحتاج ربط مع CRM؟"}]},{"id":"s7","icon":"calculator","title":"المالية والمحاسبة والامتثال","subtitle":"Finance, Accounting & Compliance","description":"متطلبات الامتثال السعودي والتكامل مع الأنظمة المالية الحالية.","pricing_impact":"medium","questions":[{"id":"q7_1","type":"textarea","label":"هل لديكم دليل حسابات حالي؟ كم عدد الحسابات تقريبًا؟ وهل متوافق مع IFRS / SOCPA؟"},{"id":"q7_2","type":"textarea","label":"هل أنتم مسجلون في ZATCA Phase 2 حاليًا؟ هل لديكم شهادة الربط (CSID)؟"},{"id":"q7_3","type":"textarea","label":"ما النظام المحاسبي المستخدم حاليًا؟"},{"id":"q7_4","type":"radio","label":"ما طبيعة العملات المتعامل بها؟","options":["ريال سعودي فقط","متعددة"]},{"id":"q7_5","type":"textarea","label":"ما البنوك التي تتعاملون معها؟ هل تحتاجون التسويات البنكية الآلية؟"},{"id":"q7_6","type":"textarea","label":"هل تحتاجون إلى إدارة الأصول الثابتة والإهلاك؟ كم عدد الأصول الحالي؟"},{"id":"q7_7","type":"textarea","label":"هل لديكم متطلبات تقارير زكاة وضريبة موسمية تتجاوز ما توفره ZATCA قياسيًا؟"},{"id":"q7_8","type":"textarea","label":"متى تنتهي السنة المالية لديكم؟ ومتى الإغلاق الشهري المعتاد؟"},{"id":"q7_9","type":"radio","label":"هل تحتاجون إلى Cost Allocation تلقائي للمصاريف العامة؟","options":["نعم","لا","غير محدد"]},{"id":"q7_10","type":"textarea","label":"هل تتم مراجعة القوائم المالية من مكتب تدقيق خارجي؟ هل لديهم متطلبات تنسيق محددة؟"}]},{"id":"s8","icon":"chart-bar","title":"المشاريع والموازنات والتقارير","subtitle":"Projects, Budgets & Reports","description":"بنية الأكواد التحليلية ومتطلبات التقارير الإدارية ولوحات القيادة.","pricing_impact":"high","questions":[{"id":"q8_1","type":"radio","label":"هل أكواد التكلفة الـ 56 المرفقة في إطار العمل نهائية ومعتمدة؟","options":["نعم نهائية","تحتاج مراجعة","غير محدد"]},{"id":"q8_2","type":"textarea","label":"هل المراحل الـ 9 ثابتة لكل المشاريع، أم تختلف حسب نوع المشروع؟"},{"id":"q8_3","type":"checkbox","label":"هل تطبقون فحص الموازنة قبل الإنفاق (Budget Block)؟ على أي مستوى؟","options":["المشروع","المرحلة","كود التكلفة","كل ما سبق"]},{"id":"q8_4","type":"radio","label":"ماذا يحدث عند تجاوز الموازنة في الواقع الحالي؟","options":["منع كامل","إنذار + اعتماد إضافي","لا يوجد ضابط آلي"]},{"id":"q8_5","type":"textarea","label":"ما عدد التقارير الإدارية المعتمدة حاليًا؟ هل توجد عينات يمكن مشاركتها؟"},{"id":"q8_6","type":"checkbox","label":"ما لوحات القيادة (Dashboards) المطلوبة؟","options":["الرئيس التنفيذي (CEO Dashboard)","المدير المالي (CFO Dashboard)","مدير المشاريع (PM Dashboard)","مدير المبيعات العقاري","مدير المشتريات","لوحة لكل مشروع منفردًا (Project P&L)"]},{"id":"q8_7","type":"radio","label":"هل تحتاجون تقرير EAC (Estimate at Completion)؟","options":["نعم","لا","غير محدد"]},{"id":"q8_8","type":"textarea","label":"هل توجد تقارير حرجة لا يمكن الإطلاق بدونها؟"},{"id":"q8_9","type":"radio","label":"هل تحتاجون إلى تقارير تتبع الالتزامات المفتوحة (Open POs + مستخلصات قيد الاعتماد)؟","options":["نعم","لا"]}]},{"id":"s9","icon":"shield","title":"الصلاحيات والاعتمادات والحوكمة","subtitle":"Permissions, Approvals & Governance","description":"حوكمة الأدوار وفصل المهام ومسارات الاعتماد الشرطية.","pricing_impact":"medium","questions":[{"id":"q9_1","type":"textarea","label":"هل لديكم Authority Matrix معتمدة (Delegation of Authority — DOA)؟"},{"id":"q9_limits","type":"approval-table","label":"حدود الاعتماد لكل نوع مستند","rows":["طلب شراء (PR)","أمر شراء (PO)","فاتورة مورد (Vendor Bill)","مستخلص مقاول","عقد بيع وحدة","تعديل موازنة","خصم/إعفاء عميل","قيد يومية يدوي"]},{"id":"q9_2","type":"textarea","label":"هل تطبقون مبدأ Segregation of Duties (فصل المهام)؟ ما الازدواجيات المحظورة لديكم؟"},{"id":"q9_3","type":"radio","label":"هل تحتاجون إلى Audit Log موسّع وتقرير شهري للمدقق الداخلي؟","options":["نعم","لا","غير محدد"]},{"id":"q9_4","type":"radio","label":"هل تحتاجون إجراء \"Break Glass\" للحالات الطارئة؟","options":["نعم","لا","غير محدد"]},{"id":"q9_5","type":"radio","label":"هل تريدون إلزام رفع مرفقات داعمة قبل اعتماد بعض المستندات؟","options":["نعم","لا"]},{"id":"q9_6","type":"radio","label":"هل سياسة الإفصاح عن الأسعار تسمح لمشرف الموقع برؤية أسعار المشتريات؟","options":["نعم - يرى الأسعار","لا - تخفى عنه (Field-Level Security)"]}]},{"id":"s10","icon":"plug","title":"التكاملات مع أنظمة خارجية","subtitle":"External Integrations","description":"كل تكامل يضيف وقت تطوير وتكلفة. تحديد التكاملات مبكرًا يساعد في دقة العرض.","pricing_impact":"high","questions":[{"id":"q10_1","type":"textarea","label":"ZATCA Phase 2 — هل تم اختيار شريك توطين معتمد؟"},{"id":"q10_2","type":"textarea","label":"ربط البنوك — أي البنوك تتعاملون معها؟ هل توفر API؟"},{"id":"q10_3","type":"textarea","label":"التوقيع الإلكتروني — هل تستخدمون Sadeq / Odoo Sign / DocuSign / آخر؟"},{"id":"q10_4","type":"radio","label":"منصة الإفراغ — هل سيكون التكامل يدويًا أم عبر API؟","options":["يدوي","API","مختلط","غير محدد"]},{"id":"q10_5","type":"textarea","label":"بوابات الإشعارات — مزود SMS Gateway حالي؟ ومزود البريد؟"},{"id":"q10_6","type":"textarea","label":"هل لديكم نظام HR/Payroll حالي يحتاج ربطًا؟"},{"id":"q10_7","type":"radio","label":"هل تحتاجون ربط CRM مع منصات تسويق رقمية (Meta / Google)؟","options":["نعم","لا","غير محدد"]},{"id":"q10_8","type":"textarea","label":"هل توجد أنظمة أخرى ضرورية للربط (GIS / خرائط / أرشفة سحابية / BI خارجي)؟"},{"id":"q10_9","type":"textarea","label":"هل لديكم نظام محاسبة قائم سيستمر تشغيله بالتوازي ويحتاج إلى تكامل مؤقت؟"}]},{"id":"s11","icon":"database","title":"ترحيل البيانات","subtitle":"Data Migration","description":"ترحيل البيانات بند تكلفة ضخم وغالبًا ما يُغفل في التقدير.","pricing_impact":"high","questions":[{"id":"q11_scope","type":"radio","label":"ما النهج المطلوب لترحيل البيانات؟","options":["الأرصدة الافتتاحية فقط","سنة كاملة + الافتتاحية","تاريخ كامل (3 سنوات أو أكثر)"]},{"id":"q11_data","type":"migration-table","label":"حجم البيانات للترحيل","rows":["دليل الحسابات (Chart of Accounts)","الموردون (Vendors)","العملاء (Customers)","الأصناف والمواد (Products)","أكواد التكلفة الـ 56","الأرصدة الافتتاحية","عقود مقاولين نشطة","مستخلصات سابقة قائمة","وحدات عقارية موجودة","عقود بيع نشطة + جداول الأقساط","أوامر شراء مفتوحة (Open POs)","فواتير قائمة (Open AR/AP)","أصول ثابتة + أرصدة الإهلاك"]},{"id":"q11_format","type":"radio","label":"ما تنسيق البيانات الحالي؟","options":["Excel","SQL Database","CSV","نظام محاسبة سابق","غير ذلك"]},{"id":"q11_clean","type":"radio","label":"هل البيانات نظيفة وموحدة، أم تحتاج إلى Data Cleansing؟","options":["نظيفة","تحتاج تنظيف","غير معلوم"]},{"id":"q11_owner","type":"radio","label":"من يتحمل مسؤولية تجهيز البيانات بالقالب المطلوب؟","options":["فريقنا الداخلي","فريق التطبيق","مشترك"]},{"id":"q11_parallel","type":"radio","label":"هل يُطلب إجراء تشغيل موازٍ (Parallel Run) بين النظام القديم والجديد؟","options":["نعم","لا","غير محدد"]}]},{"id":"s12","icon":"server","title":"الاستضافة والبنية التحتية","subtitle":"Hosting & Infrastructure","description":"خيارات الاستضافة وتأثيرها على التكلفة والامتثال السعودي.","pricing_impact":"medium","questions":[{"id":"q12_1","type":"radio","label":"ما التفضيل المبدئي للاستضافة؟","options":["Odoo.sh (Cloud Managed)","On-Premise (مركز بيانات سعودي)","Hybrid","غير محدد"]},{"id":"q12_2","type":"radio","label":"هل توجد متطلبات PDPL تُلزم باستضافة البيانات داخل المملكة؟","options":["نعم إلزامي","غير إلزامي","غير محدد"]},{"id":"q12_3","type":"radio","label":"ما متطلبات الإتاحة (SLA) المطلوبة؟","options":["99.5%","99.9%","99.99%","غير محدد"]},{"id":"q12_4","type":"checkbox","label":"هل تحتاجون بيئات منفصلة؟","options":["Development","Staging / UAT","Production"]},{"id":"q12_5","type":"textarea","label":"ما متطلبات النسخ الاحتياطي والاستعادة (RPO / RTO)؟"},{"id":"q12_6","type":"checkbox","label":"متطلبات أمنية إضافية","options":["PenTest سنوي","ISO 27001","تشفير البيانات في الراحة","2FA إلزامي","IP Whitelisting"]},{"id":"q12_7","type":"radio","label":"هل لديكم فريق DevOps داخلي؟","options":["نعم","لا - نطلب إدارة كاملة من شريك التنفيذ"]}]},{"id":"s13","icon":"academic-cap","title":"التدريب والدعم","subtitle":"Training & Support","description":"نموذج التدريب والدعم بعد الإطلاق له تأثير مباشر على نجاح المشروع.","pricing_impact":"medium","questions":[{"id":"q13_1","type":"textarea","label":"ما عدد المتدربين المتوقع لكل مجموعة وظيفية؟"},{"id":"q13_2","type":"radio","label":"نمط التدريب","options":["حضوري (في مقركم)","Online","مختلط"]},{"id":"q13_3","type":"radio","label":"هل تحتاجون مواد تدريبية موثقة باللغة العربية؟","options":["نعم - فيديوهات + أدلة","نعم - أدلة فقط","لا"]},{"id":"q13_4","type":"radio","label":"هل تحتاجون \"Train-the-Trainer\"؟","options":["نعم","لا","غير محدد"]},{"id":"q13_5","type":"radio","label":"ما مدة الدعم المكثف (Hyper-care) المطلوبة بعد Go-Live؟","options":["4 أسابيع","8 أسابيع","12 أسبوعًا","غير ذلك"]},{"id":"q13_6","type":"textarea","label":"ما نموذج الدعم المطلوب بعد Hyper-care؟ يرجى تحديد ساعات الاستجابة لكل مستوى أولوية."},{"id":"q13_7","type":"radio","label":"ساعات الدعم المطلوبة","options":["ساعات العمل فقط","24/7","24/5"]},{"id":"q13_8","type":"radio","label":"هل تحتاجون فريقًا داخليًا يضم Power Users (3-5 موظفين)؟","options":["نعم","لا","غير محدد"]}]},{"id":"s14","icon":"calendar","title":"الجدول الزمني والحوكمة","subtitle":"Timeline & Governance","description":"الإطار الزمني للمشروع، آلية اتخاذ القرارات، ونموذج التسعير المفضل.","pricing_impact":"high","questions":[{"id":"q14_1","type":"radio","label":"هل تاريخ Go-Live للموجة الأولى ثابت؟","options":["ثابت تمامًا","قابل للتعديل ضمن نطاق محدود","مفتوح"]},{"id":"q14_2","type":"textarea","label":"هل توجد قيود زمنية أخرى تؤثر على الجدول (نهاية سنة مالية، إغلاق ZATCA، إطلاق مشروع كبير)؟"},{"id":"q14_3","type":"textarea","label":"من Project Sponsor المعيَّن من جانبكم؟ ومن Single Point of Contact؟"},{"id":"q14_4","type":"textarea","label":"هل تم تشكيل لجنة توجيهية (Steering Committee)؟ وما تواتر اجتماعها؟"},{"id":"q14_5","type":"textarea","label":"ما معايير قبول كل موجة (Go/No-Go Criteria)؟ وهل لديكم Acceptance Testing معتمد؟"},{"id":"q14_6","type":"radio","label":"ما نموذج التسعير المفضل؟","options":["Fixed Price (سعر ثابت)","Time & Materials (بالساعة)","Capped T&M (سقف ثابت)","نموذج هجين"]},{"id":"q14_7","type":"textarea","label":"هل لديكم سقف ميزانية مبدئي، أم يُترك السعر مفتوحًا حسب النطاق؟"},{"id":"q14_8","type":"textarea","label":"ما إجراءات التغيير (Change Request) المعتمدة لديكم؟"}]},{"id":"s15","icon":"chat-bubble-bottom","title":"متطلبات إضافية وملاحظات","subtitle":"Additional Requirements & Notes","description":"أي متطلب أو سيناريو لم يُغطَّ في الأقسام السابقة.","pricing_impact":"low","questions":[{"id":"q15_1","type":"textarea","label":"هل توجد متطلبات أو سيناريوهات لم نغطها في الأقسام السابقة وترونها أساسية؟"},{"id":"q15_2","type":"textarea","label":"هل توجد قيود تنظيمية أو سياسية داخلية يجب مراعاتها؟"},{"id":"q15_3","type":"textarea","label":"هل لديكم مخاوف محددة تخشون منها في تطبيق ERP بناءً على تجارب سابقة؟"},{"id":"q15_4","type":"textarea","label":"ما المعايير التي ستحكمون عليها بنجاح المشروع بعد سنة من الإطلاق؟"}]}]};
+
+// ============================================================
+// STORAGE LAYER
+// ============================================================
+const Storage = {
+  KEY_INDEX: 'bp_submissions_index',
+  KEY_PREFIX: 'bp_submission_',
+  KEY_CURRENT: 'bp_current_submission_id',
+  KEY_ADMIN_PASS: 'bp_admin_password',
+
+  isAvailable() {
+    try {
+      localStorage.setItem('__test__', '1');
+      localStorage.removeItem('__test__');
+      return true;
+    } catch (e) { return false; }
+  },
+
+  getIndex() {
+    if (!this.isAvailable()) return [];
+    try { return JSON.parse(localStorage.getItem(this.KEY_INDEX) || '[]'); }
+    catch (e) { return []; }
+  },
+
+  saveIndex(index) {
+    if (!this.isAvailable()) return;
+    localStorage.setItem(this.KEY_INDEX, JSON.stringify(index));
+  },
+
+  getSubmission(id) {
+    if (!this.isAvailable()) return null;
+    try { return JSON.parse(localStorage.getItem(this.KEY_PREFIX + id) || 'null'); }
+    catch (e) { return null; }
+  },
+
+  saveSubmission(id, data) {
+    if (!this.isAvailable()) return;
+    localStorage.setItem(this.KEY_PREFIX + id, JSON.stringify(data));
+    const index = this.getIndex();
+    const existing = index.find(s => s.id === id);
+    const meta = {
+      id,
+      company: data.client_info?.company_name || 'غير محدد',
+      contact: data.client_info?.contact_name || '',
+      email: data.client_info?.contact_email || '',
+      progress: this.computeProgress(data),
+      status: data.submitted ? 'submitted' : 'in_progress',
+      created: data.created || new Date().toISOString(),
+      updated: new Date().toISOString()
+    };
+    if (existing) Object.assign(existing, meta);
+    else index.push(meta);
+    this.saveIndex(index);
+  },
+
+  deleteSubmission(id) {
+    if (!this.isAvailable()) return;
+    localStorage.removeItem(this.KEY_PREFIX + id);
+    const index = this.getIndex().filter(s => s.id !== id);
+    this.saveIndex(index);
+  },
+
+  computeProgress(data) {
+    const total = QUESTIONNAIRE.sections.reduce((sum, s) => sum + s.questions.length, 0);
+    let answered = 0;
+    QUESTIONNAIRE.sections.forEach(s => {
+      s.questions.forEach(q => {
+        const val = data.answers?.[q.id];
+        if (val !== undefined && val !== null && val !== '' &&
+            !(Array.isArray(val) && val.length === 0) &&
+            !(typeof val === 'object' && Object.keys(val).length === 0)) {
+          answered++;
+        }
+      });
+    });
+    return Math.round((answered / total) * 100);
+  },
+
+  getCurrentId() {
+    if (!this.isAvailable()) return null;
+    return localStorage.getItem(this.KEY_CURRENT);
+  },
+
+  setCurrentId(id) {
+    if (!this.isAvailable()) return;
+    if (id) localStorage.setItem(this.KEY_CURRENT, id);
+    else localStorage.removeItem(this.KEY_CURRENT);
+  },
+
+  getAdminPassword() {
+    if (!this.isAvailable()) return 'admin2026';
+    return localStorage.getItem(this.KEY_ADMIN_PASS) || 'admin2026';
+  }
+};
+
+// ============================================================
+// APP STATE & MAIN CONTROLLER
+// ============================================================
+const App = {
+  currentSubmission: null,
+  currentSectionIndex: 0,
+  isAdmin: false,
+
+  init() {
+    this.renderNavActions();
+    this.renderSetupFields();
+    if (!Storage.isAvailable()) {
+      this.toast('تنبيه: التخزين المحلي غير متاح في هذا المتصفح. يُنصح بنشر التطبيق على خادم خارجي.', 'danger', 6000);
+    }
+  },
+
+  renderNavActions() {
+    const el = document.getElementById('nav-actions');
+    el.innerHTML = '';
+    if (this.isAdmin) {
+      el.innerHTML = `
+        <button class="btn btn-ghost btn-sm" onclick="App.goWelcome()">
+          <i class="ti ti-home" aria-hidden="true"></i>
+          الرئيسية
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="App.adminLogout()">
+          <i class="ti ti-logout" aria-hidden="true"></i>
+          خروج
+        </button>
+      `;
+    } else if (this.currentSubmission) {
+      el.innerHTML = `
+        <button class="btn btn-ghost btn-sm" onclick="App.goWelcome()">
+          <i class="ti ti-home" aria-hidden="true"></i>
+          الرئيسية
+        </button>
+      `;
+    }
+  },
+
+  renderSetupFields() {
+    const wrap = document.getElementById('setup-fields');
+    let html = '';
+    QUESTIONNAIRE.client_info_fields.forEach((f, i) => {
+      const isShortField = ['contact_phone', 'contact_email', 'contact_position'].includes(f.id);
+      if (i === 0 || !isShortField) html += '<div class="form-field">';
+      html += `
+        <label for="sf-${f.id}">${f.label} ${f.required ? '<span class="required">*</span>' : ''}</label>
+        <input type="${f.type}" id="sf-${f.id}" class="form-input"
+               ${f.required ? 'required' : ''}
+               placeholder="${f.placeholder || ''}">
+      `;
+      if (i === QUESTIONNAIRE.client_info_fields.length - 1) html += '</div>';
+      else html += '</div>';
+    });
+    // Reformat to use 2-column grid for some fields
+    wrap.innerHTML = `
+      <div class="form-field">
+        <label for="sf-company_name">اسم الشركة / الجهة <span class="required">*</span></label>
+        <input type="text" id="sf-company_name" class="form-input" required placeholder="مثال: شركة سديف للتطوير العقاري">
+      </div>
+      <div class="form-field">
+        <label for="sf-industry">النشاط / القطاع <span class="required">*</span></label>
+        <input type="text" id="sf-industry" class="form-input" required placeholder="مثال: تطوير عقاري، مقاولات، تجارة...">
+      </div>
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label for="sf-contact_name">اسم الشخص المسؤول <span class="required">*</span></label>
+          <input type="text" id="sf-contact_name" class="form-input" required>
+        </div>
+        <div class="form-field">
+          <label for="sf-contact_position">المسمى الوظيفي</label>
+          <input type="text" id="sf-contact_position" class="form-input">
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-field">
+          <label for="sf-contact_email">البريد الإلكتروني <span class="required">*</span></label>
+          <input type="email" id="sf-contact_email" class="form-input" required>
+        </div>
+        <div class="form-field">
+          <label for="sf-contact_phone">رقم الجوال</label>
+          <input type="text" id="sf-contact_phone" class="form-input" placeholder="+966...">
+        </div>
+      </div>
+    `;
+  },
+
+  // -------- Navigation --------
+  showView(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(viewId).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.renderNavActions();
+  },
+
+  goWelcome() {
+    this.currentSubmission = null;
+    this.isAdmin = false;
+    Storage.setCurrentId(null);
+    this.showView('welcome-view');
+  },
+
+  startClientFlow() {
+    // Check if there's an existing in-progress submission for this browser
+    const existingId = Storage.getCurrentId();
+    if (existingId) {
+      const existing = Storage.getSubmission(existingId);
+      if (existing && !existing.submitted) {
+        this.currentSubmission = existing;
+        this.currentSectionIndex = existing.last_section_index || 0;
+        this.renderClientForm();
+        this.showView('client-view');
+        this.toast('تم استئناف الاستبيان من حيث توقفت', 'success');
+        return;
+      }
+    }
+    this.showView('setup-view');
+    setTimeout(() => document.getElementById('sf-company_name').focus(), 200);
+  },
+
+  completeSetup() {
+    const company = document.getElementById('sf-company_name').value.trim();
+    const industry = document.getElementById('sf-industry').value.trim();
+    const contactName = document.getElementById('sf-contact_name').value.trim();
+    const contactEmail = document.getElementById('sf-contact_email').value.trim();
+    if (!company || !industry || !contactName || !contactEmail) {
+      this.toast('يرجى إكمال الحقول الأساسية', 'danger');
+      return;
+    }
+    const id = 'sub_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    this.currentSubmission = {
+      id,
+      created: new Date().toISOString(),
+      submitted: false,
+      last_section_index: 0,
+      client_info: {
+        company_name: company,
+        industry,
+        contact_name: contactName,
+        contact_position: document.getElementById('sf-contact_position').value.trim(),
+        contact_email: contactEmail,
+        contact_phone: document.getElementById('sf-contact_phone').value.trim()
+      },
+      answers: {}
+    };
+    this.currentSectionIndex = 0;
+    Storage.saveSubmission(id, this.currentSubmission);
+    Storage.setCurrentId(id);
+    this.renderClientForm();
+    this.showView('client-view');
+    this.toast('بدأ الاستبيان — سيتم حفظ التقدم تلقائياً', 'success');
+  },
+
+  // -------- Client form rendering --------
+  renderClientForm() {
+    this.renderSidebar();
+    this.renderCurrentStep();
+    this.updateProgress();
+  },
+
+  renderSidebar() {
+    const nav = document.getElementById('form-nav');
+    nav.innerHTML = QUESTIONNAIRE.sections.map((s, i) => {
+      const completed = this.isSectionComplete(s);
+      return `
+        <button class="form-nav-item ${i === this.currentSectionIndex ? 'active' : ''} ${completed ? 'completed' : ''}"
+                onclick="App.goToSection(${i})">
+          <span class="form-nav-num">${completed ? '✓' : (i + 1)}</span>
+          <span class="form-nav-text">${s.title}</span>
+        </button>
+      `;
+    }).join('');
+  },
+
+  isSectionComplete(section) {
+    if (!this.currentSubmission) return false;
+    return section.questions.every(q => {
+      const val = this.currentSubmission.answers[q.id];
+      return val !== undefined && val !== null && val !== '' &&
+             !(Array.isArray(val) && val.length === 0) &&
+             !(typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0);
+    });
+  },
+
+  goToSection(index) {
+    this.saveAnswers();
+    this.currentSectionIndex = index;
+    this.currentSubmission.last_section_index = index;
+    this.persist();
+    this.renderClientForm();
+  },
+
+  renderCurrentStep() {
+    const section = QUESTIONNAIRE.sections[this.currentSectionIndex];
+    const main = document.getElementById('form-main');
+
+    let questionsHtml = '';
+    section.questions.forEach((q, idx) => {
+      const num = `${section.id}.${idx + 1}`;
+      const value = this.currentSubmission.answers[q.id];
+      questionsHtml += `<div class="form-question" data-qid="${q.id}">`;
+      questionsHtml += `<div class="form-question-num">${num}</div>`;
+      questionsHtml += `<div class="form-question-label">${q.label}</div>`;
+      if (q.help) questionsHtml += `<div class="form-question-help">${q.help}</div>`;
+      questionsHtml += this.renderQuestionInput(q, value);
+      questionsHtml += `</div>`;
+    });
+
+    const totalSections = QUESTIONNAIRE.sections.length;
+    const isFirst = this.currentSectionIndex === 0;
+    const isLast = this.currentSectionIndex === totalSections - 1;
+
+    main.innerHTML = `
+      <div class="form-step-header">
+        <div class="form-step-badge">
+          القسم ${this.currentSectionIndex + 1} من ${totalSections}
+        </div>
+        <h2>${section.title}</h2>
+        <div class="subtitle">${section.subtitle}</div>
+        <div class="desc">${section.description}</div>
+      </div>
+      <div class="form-step-body">${questionsHtml}</div>
+      <div class="form-footer">
+        <div class="form-footer-info">
+          <i class="ti ti-device-floppy" aria-hidden="true"></i>
+          الحفظ تلقائي عند الانتقال
+        </div>
+        <div class="form-footer-actions">
+          ${!isFirst ? '<button class="btn btn-outline" onclick="App.prevSection()"><i class="ti ti-arrow-right"></i> السابق</button>' : ''}
+          ${!isLast ? '<button class="btn btn-primary" onclick="App.nextSection()">التالي <i class="ti ti-arrow-left"></i></button>' :
+            '<button class="btn btn-gold btn-lg" onclick="App.submitForm()"><i class="ti ti-send"></i> إرسال الاستبيان</button>'}
+        </div>
+      </div>
+    `;
+    this.attachInputHandlers();
+  },
+
+  renderQuestionInput(q, value) {
+    if (q.type === 'text' || q.type === 'email' || q.type === 'number') {
+      return `<input type="${q.type}" class="form-input" data-qid="${q.id}" data-qtype="${q.type}" value="${value !== undefined ? this.escapeAttr(value) : ''}">`;
+    }
+    if (q.type === 'textarea') {
+      return `<textarea class="form-textarea" data-qid="${q.id}" data-qtype="textarea" rows="3">${value !== undefined ? this.escapeHtml(value) : ''}</textarea>`;
+    }
+    if (q.type === 'radio') {
+      return `<div class="radio-group" data-qid="${q.id}" data-qtype="radio">${
+        q.options.map(opt => {
+          const checked = value === opt;
+          return `
+            <label class="radio-item ${checked ? 'checked' : ''}">
+              <input type="radio" name="${q.id}" value="${this.escapeAttr(opt)}" ${checked ? 'checked' : ''}>
+              <span class="radio-marker"></span>
+              <span class="radio-label">${opt}</span>
+            </label>
+          `;
+        }).join('')
+      }</div>`;
+    }
+    if (q.type === 'checkbox') {
+      const arr = Array.isArray(value) ? value : [];
+      return `<div class="checkbox-group" data-qid="${q.id}" data-qtype="checkbox">${
+        q.options.map(opt => {
+          const checked = arr.includes(opt);
+          return `
+            <label class="checkbox-item ${checked ? 'checked' : ''}">
+              <input type="checkbox" name="${q.id}" value="${this.escapeAttr(opt)}" ${checked ? 'checked' : ''}>
+              <span class="checkbox-marker"></span>
+              <span class="checkbox-label">${opt}</span>
+            </label>
+          `;
+        }).join('')
+      }</div>`;
+    }
+    if (q.type === 'user-table') {
+      const obj = (typeof value === 'object' && value !== null) ? value : {};
+      const rows = q.rows.map((row, i) => `
+        <tr>
+          <td>${row}</td>
+          <td><input type="number" data-tk="${i}" min="0" placeholder="0" value="${obj[i] !== undefined ? this.escapeAttr(obj[i]) : ''}"></td>
+        </tr>
+      `).join('');
+      return `<div class="data-table-wrapper">
+        <table class="data-table" data-qid="${q.id}" data-qtype="user-table">
+          <thead><tr><th>الدور الوظيفي</th><th style="width: 25%;">العدد المتوقع</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }
+    if (q.type === 'migration-table') {
+      const obj = (typeof value === 'object' && value !== null) ? value : {};
+      const rows = q.rows.map((row, i) => `
+        <tr>
+          <td>${row}</td>
+          <td><input type="number" data-tk="${i}_size" min="0" placeholder="—" value="${obj[i + '_size'] !== undefined ? this.escapeAttr(obj[i + '_size']) : ''}"></td>
+          <td><input type="text" data-tk="${i}_years" placeholder="—" value="${obj[i + '_years'] !== undefined ? this.escapeAttr(obj[i + '_years']) : ''}"></td>
+        </tr>
+      `).join('');
+      return `<div class="data-table-wrapper">
+        <table class="data-table" data-qid="${q.id}" data-qtype="migration-table">
+          <thead><tr><th>الكيان</th><th style="width: 22%;">الحجم / العدد</th><th style="width: 22%;">السنوات المطلوبة</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }
+    if (q.type === 'approval-table') {
+      const obj = (typeof value === 'object' && value !== null) ? value : {};
+      const rows = q.rows.map((row, i) => `
+        <tr>
+          <td>${row}</td>
+          <td><input type="text" data-tk="${i}_limit" placeholder="—" value="${obj[i + '_limit'] !== undefined ? this.escapeAttr(obj[i + '_limit']) : ''}"></td>
+          <td><input type="text" data-tk="${i}_first" placeholder="—" value="${obj[i + '_first'] !== undefined ? this.escapeAttr(obj[i + '_first']) : ''}"></td>
+          <td><input type="text" data-tk="${i}_final" placeholder="—" value="${obj[i + '_final'] !== undefined ? this.escapeAttr(obj[i + '_final']) : ''}"></td>
+        </tr>
+      `).join('');
+      return `<div class="data-table-wrapper">
+        <table class="data-table" data-qid="${q.id}" data-qtype="approval-table">
+          <thead><tr>
+            <th>نوع المستند</th>
+            <th style="width: 20%;">الحد المالي (ر.س.)</th>
+            <th style="width: 22%;">الاعتماد الأولي</th>
+            <th style="width: 22%;">الاعتماد النهائي</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }
+    return '';
+  },
+
+  attachInputHandlers() {
+    // Text/textarea/number/email
+    document.querySelectorAll('input.form-input, textarea.form-textarea').forEach(el => {
+      el.addEventListener('input', () => this.onAnswerChange(el.dataset.qid, el.value));
+    });
+    // Radio
+    document.querySelectorAll('.radio-group').forEach(group => {
+      const qid = group.dataset.qid;
+      group.querySelectorAll('input[type="radio"]').forEach(input => {
+        input.addEventListener('change', () => {
+          group.querySelectorAll('.radio-item').forEach(it => it.classList.remove('checked'));
+          input.closest('.radio-item').classList.add('checked');
+          this.onAnswerChange(qid, input.value);
+        });
+      });
+    });
+    // Checkbox
+    document.querySelectorAll('.checkbox-group').forEach(group => {
+      const qid = group.dataset.qid;
+      group.querySelectorAll('input[type="checkbox"]').forEach(input => {
+        input.addEventListener('change', () => {
+          input.closest('.checkbox-item').classList.toggle('checked', input.checked);
+          const checked = Array.from(group.querySelectorAll('input[type="checkbox"]:checked')).map(i => i.value);
+          this.onAnswerChange(qid, checked);
+        });
+      });
+    });
+    // Tables
+    document.querySelectorAll('.data-table').forEach(table => {
+      const qid = table.dataset.qid;
+      table.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', () => {
+          const obj = {};
+          table.querySelectorAll('input').forEach(i => {
+            if (i.value !== '') obj[i.dataset.tk] = i.value;
+          });
+          this.onAnswerChange(qid, obj);
+        });
+      });
+    });
+  },
+
+  onAnswerChange(qid, value) {
+    if (!this.currentSubmission) return;
+    this.currentSubmission.answers[qid] = value;
+    // Debounced save
+    clearTimeout(this._saveTimer);
+    this._saveTimer = setTimeout(() => {
+      this.persist();
+      this.updateProgress();
+      this.renderSidebar();
+    }, 500);
+  },
+
+  saveAnswers() {
+    // Force save current state from DOM (in case debounce hasn't fired)
+    document.querySelectorAll('input.form-input, textarea.form-textarea').forEach(el => {
+      this.currentSubmission.answers[el.dataset.qid] = el.value;
+    });
+    this.persist();
+  },
+
+  persist() {
+    if (this.currentSubmission) {
+      Storage.saveSubmission(this.currentSubmission.id, this.currentSubmission);
+    }
+  },
+
+  updateProgress() {
+    const progress = Storage.computeProgress(this.currentSubmission);
+    document.getElementById('progress-value').textContent = progress + '%';
+    document.getElementById('progress-fill').style.width = progress + '%';
+    const total = QUESTIONNAIRE.sections.reduce((sum, s) => sum + s.questions.length, 0);
+    const answered = Math.round((progress / 100) * total);
+    document.getElementById('progress-meta').textContent = `${answered} من ${total} سؤالاً`;
+  },
+
+  prevSection() {
+    if (this.currentSectionIndex > 0) {
+      this.saveAnswers();
+      this.currentSectionIndex--;
+      this.currentSubmission.last_section_index = this.currentSectionIndex;
+      this.persist();
+      this.renderClientForm();
+    }
+  },
+
+  nextSection() {
+    if (this.currentSectionIndex < QUESTIONNAIRE.sections.length - 1) {
+      this.saveAnswers();
+      this.currentSectionIndex++;
+      this.currentSubmission.last_section_index = this.currentSectionIndex;
+      this.persist();
+      this.renderClientForm();
+    }
+  },
+
+  submitForm() {
+    this.saveAnswers();
+    this.confirm(
+      'تأكيد الإرسال',
+      'بعد الإرسال، يمكن العودة لتعديل الإجابات لاحقاً، لكن الفريق سيُشعر بأن الاستبيان مكتمل. هل ترغب بالمتابعة؟',
+      () => {
+        this.currentSubmission.submitted = true;
+        this.currentSubmission.submitted_at = new Date().toISOString();
+        this.persist();
+        this.showView('thanks-view');
+      }
+    );
+  },
+
+  continueEditing() {
+    if (this.currentSubmission) this.showView('client-view');
+  },
+
+  // -------- Admin --------
+  openAdminGate() {
+    this.showModal('admin-gate-modal');
+    setTimeout(() => document.getElementById('admin-password').focus(), 100);
+    document.getElementById('admin-password').onkeypress = (e) => {
+      if (e.key === 'Enter') this.checkAdminPassword();
+    };
+  },
+
+  checkAdminPassword() {
+    const pw = document.getElementById('admin-password').value;
+    if (pw === Storage.getAdminPassword()) {
+      this.closeModal('admin-gate-modal');
+      this.isAdmin = true;
+      this.goAdmin();
+    } else {
+      this.toast('كلمة المرور غير صحيحة', 'danger');
+    }
+    document.getElementById('admin-password').value = '';
+  },
+
+  adminLogout() {
+    this.isAdmin = false;
+    this.goWelcome();
+  },
+
+  goAdmin() {
+    if (!this.isAdmin) { this.openAdminGate(); return; }
+    this.renderAdminDashboard();
+    this.showView('admin-view');
+  },
+
+  renderAdminDashboard() {
+    const submissions = Storage.getIndex().sort((a, b) => new Date(b.updated) - new Date(a.updated));
+    const total = submissions.length;
+    const submitted = submissions.filter(s => s.status === 'submitted').length;
+    const inProgress = submissions.filter(s => s.status === 'in_progress').length;
+    const recent = submissions.filter(s => {
+      const d = new Date(s.updated);
+      const week = new Date(); week.setDate(week.getDate() - 7);
+      return d >= week;
+    }).length;
+
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-card-icon"><i class="ti ti-files" aria-hidden="true"></i></div>
+        <div class="stat-card-label">إجمالي الردود</div>
+        <div class="stat-card-value">${total}</div>
+        <div class="stat-card-meta">منذ بدء استخدام النظام</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-card-icon"><i class="ti ti-checks" aria-hidden="true"></i></div>
+        <div class="stat-card-label">ردود مكتملة</div>
+        <div class="stat-card-value">${submitted}</div>
+        <div class="stat-card-meta">جاهزة للتسعير</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-card-icon"><i class="ti ti-progress" aria-hidden="true"></i></div>
+        <div class="stat-card-label">قيد التعبئة</div>
+        <div class="stat-card-value">${inProgress}</div>
+        <div class="stat-card-meta">لم يُرسل بعد</div>
+      </div>
+      <div class="stat-card info">
+        <div class="stat-card-icon"><i class="ti ti-clock-hour-3" aria-hidden="true"></i></div>
+        <div class="stat-card-label">نشاط آخر 7 أيام</div>
+        <div class="stat-card-value">${recent}</div>
+        <div class="stat-card-meta">ردود مُحدَّثة</div>
+      </div>
+    `;
+
+    document.getElementById('submissions-count').textContent = `${total} رد`;
+    const body = document.getElementById('submissions-body');
+
+    if (total === 0) {
+      body.innerHTML = `
+        <div class="panel-empty">
+          <div class="panel-empty-icon"><i class="ti ti-inbox" aria-hidden="true"></i></div>
+          <div class="panel-empty-title">لا توجد ردود حتى الآن</div>
+          <div class="panel-empty-desc">عند تعبئة عميل للاستبيان، ستظهر إجاباته هنا تلقائياً.</div>
+        </div>
+      `;
+      return;
+    }
+
+    body.innerHTML = `
+      <table class="submissions-table">
+        <thead>
+          <tr>
+            <th>الشركة</th>
+            <th>المسؤول</th>
+            <th>الحالة</th>
+            <th>الإكمال</th>
+            <th>آخر تحديث</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${submissions.map(s => `
+            <tr class="clickable" onclick="App.viewSubmission('${s.id}')">
+              <td><strong>${this.escapeHtml(s.company)}</strong></td>
+              <td>${this.escapeHtml(s.contact || '-')}<br><span class="text-muted" style="font-size: 12px;">${this.escapeHtml(s.email || '')}</span></td>
+              <td>${s.status === 'submitted'
+                ? '<span class="badge badge-success"><i class="ti ti-check"></i> مكتمل</span>'
+                : '<span class="badge badge-warning"><i class="ti ti-clock"></i> قيد التعبئة</span>'}</td>
+              <td>
+                <strong>${s.progress}%</strong>
+                <span class="progress-mini"><span class="progress-mini-fill" style="width: ${s.progress}%"></span></span>
+              </td>
+              <td><span class="text-muted">${this.formatDate(s.updated)}</span></td>
+              <td>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); App.deleteSubmission('${s.id}')">
+                  <i class="ti ti-trash" aria-hidden="true"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  },
+
+  viewSubmission(id) {
+    const data = Storage.getSubmission(id);
+    if (!data) { this.toast('لم يتم العثور على البيانات', 'danger'); return; }
+
+    const insights = this.computeInsights(data);
+
+    let html = `
+      <div class="detail-header">
+        <div class="detail-header-content">
+          <div style="font-size: 12px; color: var(--gold-500); letter-spacing: 0.08em; font-weight: 600; margin-bottom: 8px;">رد مفصّل</div>
+          <h2>${this.escapeHtml(data.client_info?.company_name || 'بدون اسم')}</h2>
+          <div class="desc">${this.escapeHtml(data.client_info?.industry || '')}</div>
+          <div class="detail-header-meta">
+            <div>
+              <div class="detail-header-meta-label">المسؤول</div>
+              <div>${this.escapeHtml(data.client_info?.contact_name || '-')} · ${this.escapeHtml(data.client_info?.contact_position || '')}</div>
+            </div>
+            <div>
+              <div class="detail-header-meta-label">التواصل</div>
+              <div>${this.escapeHtml(data.client_info?.contact_email || '-')}<br>${this.escapeHtml(data.client_info?.contact_phone || '')}</div>
+            </div>
+            <div>
+              <div class="detail-header-meta-label">الحالة</div>
+              <div>${data.submitted ? 'مرسل بتاريخ ' + this.formatDate(data.submitted_at) : 'قيد التعبئة'} · إكمال ${Storage.computeProgress(data)}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Insights box
+    if (insights.length > 0) {
+      html += `
+        <div class="insight-box">
+          <div class="insight-box-title">
+            <i class="ti ti-bulb" aria-hidden="true"></i>
+            ملخص ذكي للتسعير
+          </div>
+          <div class="insight-grid">
+            ${insights.map(i => `
+              <div class="insight-item">
+                <div class="insight-item-label">${i.label}</div>
+                <div class="insight-item-value">${i.value}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Section details
+    html += `<div class="flex justify-between items-center mb-2" style="padding: 0 4px;">
+      <div class="text-muted" style="font-size: 13px;">انقر على القسم لعرض تفاصيل الإجابات</div>
+      <div class="flex gap-2">
+        <button class="btn btn-gold btn-sm" onclick="App.exportSubmissionAsMD('${id}')">
+          <i class="ti ti-file-text" aria-hidden="true"></i>
+          تصدير كـ MD (لعرض السعر)
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="App.exportSubmission('${id}')">
+          <i class="ti ti-download" aria-hidden="true"></i>
+          تصدير JSON
+        </button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">
+          <i class="ti ti-printer" aria-hidden="true"></i>
+          طباعة
+        </button>
+      </div>
+    </div>`;
+
+    QUESTIONNAIRE.sections.forEach((section, sIdx) => {
+      const answers = section.questions.map(q => this.formatAnswer(q, data.answers?.[q.id])).filter(a => a.value !== null);
+      const filled = answers.length;
+      const total = section.questions.length;
+      const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+
+      html += `
+        <div class="section-detail" data-section="${section.id}">
+          <div class="section-detail-header" onclick="App.toggleSection('${section.id}')">
+            <div class="section-detail-title-row">
+              <div class="section-detail-icon"><i class="ti ti-${this.iconFor(section.icon)}" aria-hidden="true"></i></div>
+              <div>
+                <div class="section-detail-title">${sIdx + 1}. ${section.title}</div>
+                <div style="font-size: 12px; color: var(--ink-500); margin-top: 2px;">
+                  ${filled} من ${total} أجوبة (${pct}%)
+                </div>
+              </div>
+              <span class="pricing-impact-pill ${section.pricing_impact}">${this.impactLabel(section.pricing_impact)}</span>
+            </div>
+            <i class="ti ti-chevron-down section-detail-toggle" aria-hidden="true"></i>
+          </div>
+          <div class="section-detail-body">
+            ${section.questions.map((q, qIdx) => {
+              const ans = data.answers?.[q.id];
+              return `
+                <div class="answer-row">
+                  <div class="answer-question">${section.id}.${qIdx + 1} — ${this.escapeHtml(q.label)}</div>
+                  ${this.renderAnswerValue(q, ans)}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    });
+
+    document.getElementById('detail-content').innerHTML = html;
+    this.showView('detail-view');
+  },
+
+  renderAnswerValue(q, value) {
+    if (value === undefined || value === null || value === '' ||
+        (Array.isArray(value) && value.length === 0) ||
+        (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0)) {
+      return `<div class="answer-value empty">— لم يجب —</div>`;
+    }
+    if (q.type === 'checkbox' && Array.isArray(value)) {
+      return `<div class="answer-tags">${value.map(v => `<span class="answer-tag">${this.escapeHtml(v)}</span>`).join('')}</div>`;
+    }
+    if (q.type === 'radio') {
+      return `<div class="answer-tags"><span class="answer-tag">${this.escapeHtml(value)}</span></div>`;
+    }
+    if (q.type === 'user-table') {
+      const rows = q.rows.map((r, i) => {
+        const v = value[i];
+        if (v === undefined || v === '') return null;
+        return `<tr><td>${this.escapeHtml(r)}</td><td style="text-align: center; font-weight: 600;">${this.escapeHtml(v)}</td></tr>`;
+      }).filter(Boolean).join('');
+      const total = Object.values(value).filter(v => !isNaN(parseFloat(v))).reduce((s, v) => s + parseFloat(v), 0);
+      if (!rows) return `<div class="answer-value empty">— لم يُعبأ —</div>`;
+      return `<table class="answer-table">
+        <thead><tr><th>الدور</th><th style="width: 30%; text-align: center;">العدد</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr style="background: var(--cream); font-weight: 600;"><td>الإجمالي</td><td style="text-align: center;">${total}</td></tr></tfoot>
+      </table>`;
+    }
+    if (q.type === 'migration-table') {
+      const rows = q.rows.map((r, i) => {
+        const sz = value[i + '_size'];
+        const yr = value[i + '_years'];
+        if ((sz === undefined || sz === '') && (yr === undefined || yr === '')) return null;
+        return `<tr><td>${this.escapeHtml(r)}</td><td style="text-align: center;">${this.escapeHtml(sz || '—')}</td><td style="text-align: center;">${this.escapeHtml(yr || '—')}</td></tr>`;
+      }).filter(Boolean).join('');
+      if (!rows) return `<div class="answer-value empty">— لم يُعبأ —</div>`;
+      return `<table class="answer-table">
+        <thead><tr><th>الكيان</th><th style="width: 25%; text-align: center;">الحجم</th><th style="width: 25%; text-align: center;">السنوات</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+    if (q.type === 'approval-table') {
+      const rows = q.rows.map((r, i) => {
+        const lim = value[i + '_limit'];
+        const fst = value[i + '_first'];
+        const fnl = value[i + '_final'];
+        if (!lim && !fst && !fnl) return null;
+        return `<tr><td>${this.escapeHtml(r)}</td><td>${this.escapeHtml(lim || '—')}</td><td>${this.escapeHtml(fst || '—')}</td><td>${this.escapeHtml(fnl || '—')}</td></tr>`;
+      }).filter(Boolean).join('');
+      if (!rows) return `<div class="answer-value empty">— لم يُعبأ —</div>`;
+      return `<table class="answer-table">
+        <thead><tr><th>المستند</th><th>الحد</th><th>الاعتماد الأولي</th><th>الاعتماد النهائي</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    }
+    return `<div class="answer-value">${this.escapeHtml(value)}</div>`;
+  },
+
+  formatAnswer(q, value) {
+    if (value === undefined || value === null || value === '' ||
+        (Array.isArray(value) && value.length === 0)) {
+      return { value: null };
+    }
+    return { value };
+  },
+
+  computeInsights(data) {
+    const insights = [];
+    const a = data.answers || {};
+
+    // User count insight
+    const users = a.q1_users || {};
+    const totalUsers = Object.values(users).filter(v => !isNaN(parseFloat(v))).reduce((s, v) => s + parseFloat(v), 0);
+    if (totalUsers > 0) insights.push({ label: 'إجمالي المستخدمين (من جدول الأدوار)', value: totalUsers + ' مستخدم' });
+
+    if (a.q1_total_full) insights.push({ label: 'الرخص الكاملة المطلوبة', value: a.q1_total_full });
+    if (a.q1_total_portal) insights.push({ label: 'مستخدمي البوابة (Portal)', value: a.q1_total_portal });
+
+    // Multi-company
+    if (a.q1_2 === 'نعم') insights.push({ label: 'Multi-Company', value: 'مطلوب' });
+
+    // Wave 1 modules count
+    const wave1 = Array.isArray(a.q3_wave1) ? a.q3_wave1.length : 0;
+    const wave2 = Array.isArray(a.q3_wave2) ? a.q3_wave2.length : 0;
+    const wave3 = Array.isArray(a.q3_wave3) ? a.q3_wave3.length : 0;
+    if (wave1 + wave2 + wave3 > 0) insights.push({ label: 'تطبيقات النطاق (Wave 1+2+3)', value: `${wave1} / ${wave2} / ${wave3}` });
+
+    // Hosting
+    if (a.q12_1) insights.push({ label: 'الاستضافة المفضلة', value: a.q12_1 });
+
+    // Pricing model
+    if (a.q14_6) insights.push({ label: 'نموذج التسعير المفضل', value: a.q14_6 });
+
+    // Vendors / contractors / customers
+    if (a.q2_4) insights.push({ label: 'عدد الموردين النشطين', value: a.q2_4 });
+
+    // Critical decisions
+    if (a.q5_3) insights.push({ label: 'احتساب VAT على المستخلصات', value: a.q5_3 });
+    if (a.q12_2) insights.push({ label: 'متطلبات PDPL', value: a.q12_2 });
+    if (a.q13_5) insights.push({ label: 'مدة Hyper-care', value: a.q13_5 });
+
+    return insights;
+  },
+
+  toggleSection(id) {
+    document.querySelector(`.section-detail[data-section="${id}"]`).classList.toggle('expanded');
+  },
+
+  deleteSubmission(id) {
+    this.confirm(
+      'حذف الرد',
+      'سيتم حذف هذا الرد نهائياً ولا يمكن استرجاعه. هل أنت متأكد؟',
+      () => {
+        Storage.deleteSubmission(id);
+        this.renderAdminDashboard();
+        this.toast('تم حذف الرد', 'success');
+      }
+    );
+  },
+
+  exportSubmission(id) {
+    const data = Storage.getSubmission(id);
+    if (!data) return;
+    const filename = `submission_${data.client_info?.company_name?.replace(/\\s+/g, '_') || id}_${new Date().toISOString().split('T')[0]}.json`;
+    this.downloadJSON(filename, data);
+    this.toast('تم تصدير الرد', 'success');
+  },
+
+  exportSubmissionAsMD(id) {
+    const data = Storage.getSubmission(id);
+    if (!data) return;
+    const md = this.buildMarkdownReport(data);
+    const company = data.client_info?.company_name?.replace(/\\s+/g, '_') || id;
+    const filename = `report_${company}_${new Date().toISOString().split('T')[0]}.md`;
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+    this.toast('تم تصدير التقرير كـ Markdown', 'success');
+  },
+
+  buildMarkdownReport(data) {
+    const ci = data.client_info || {};
+    const a = data.answers || {};
+    const insights = this.computeInsights(data);
+    const progress = Storage.computeProgress(data);
+    const impactLabels = {
+      critical: 'حرج', high: 'مرتفع', medium: 'متوسط', low: 'منخفض'
+    };
+
+    let md = '';
+    md += `# تقرير اكتشاف متطلبات العميل\n\n`;
+    md += `**العميل:** ${ci.company_name || 'غير محدد'}  \n`;
+    md += `**النشاط:** ${ci.industry || 'غير محدد'}  \n`;
+    md += `**جهة الإعداد:** بوابة الأعمال — Business Portal · ERP Advisory  \n`;
+    md += `**تاريخ التقرير:** ${new Date().toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}  \n`;
+    md += `**حالة الاستبيان:** ${data.submitted ? 'مكتمل ومُرسَل' : 'قيد التعبئة'} (${progress}%)  \n\n`;
+
+    md += `---\n\n`;
+    md += `## معلومات التواصل\n\n`;
+    md += `| الحقل | القيمة |\n|---|---|\n`;
+    md += `| الشخص المسؤول | ${ci.contact_name || '-'} |\n`;
+    md += `| المسمى الوظيفي | ${ci.contact_position || '-'} |\n`;
+    md += `| البريد الإلكتروني | ${ci.contact_email || '-'} |\n`;
+    md += `| رقم الجوال | ${ci.contact_phone || '-'} |\n`;
+    md += `| تاريخ بدء التعبئة | ${data.created ? new Date(data.created).toLocaleDateString('ar-SA') : '-'} |\n`;
+    if (data.submitted_at) md += `| تاريخ الإرسال | ${new Date(data.submitted_at).toLocaleDateString('ar-SA')} |\n`;
+    md += `\n---\n\n`;
+
+    if (insights.length > 0) {
+      md += `## ملخص ذكي للتسعير\n\n`;
+      md += `> المؤشرات الجوهرية المستخرجة تلقائياً من إجابات العميل، وهي الأساس لبناء عرض السعر.\n\n`;
+      md += `| المؤشر | القيمة |\n|---|---|\n`;
+      insights.forEach(i => { md += `| ${i.label} | **${i.value}** |\n`; });
+      md += `\n---\n\n`;
+    }
+
+    md += `## الإجابات التفصيلية حسب القسم\n\n`;
+
+    QUESTIONNAIRE.sections.forEach((section, sIdx) => {
+      const sectionAnswers = section.questions.filter(q => {
+        const v = a[q.id];
+        return v !== undefined && v !== null && v !== '' &&
+               !(Array.isArray(v) && v.length === 0) &&
+               !(typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0);
+      });
+      if (sectionAnswers.length === 0) return; // Skip empty sections
+
+      md += `### ${sIdx + 1}. ${section.title}\n\n`;
+      md += `*${section.subtitle}* — تأثير على التسعير: **${impactLabels[section.pricing_impact]}**\n\n`;
+      md += `${section.description}\n\n`;
+
+      section.questions.forEach((q, qIdx) => {
+        const v = a[q.id];
+        if (v === undefined || v === null || v === '' ||
+            (Array.isArray(v) && v.length === 0) ||
+            (typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0)) return;
+
+        const num = `${section.id}.${qIdx + 1}`;
+        md += `**${num} — ${q.label}**\n\n`;
+
+        if (q.type === 'radio' || q.type === 'text' || q.type === 'email' || q.type === 'number') {
+          md += `> ${v}\n\n`;
+        } else if (q.type === 'textarea') {
+          md += `> ${String(v).split('\\n').join('\\n> ')}\n\n`;
+        } else if (q.type === 'checkbox' && Array.isArray(v)) {
+          v.forEach(opt => { md += `- ✓ ${opt}\n`; });
+          md += `\n`;
+        } else if (q.type === 'user-table') {
+          let totalUsers = 0;
+          md += `| الدور | العدد |\n|---|---:|\n`;
+          q.rows.forEach((row, i) => {
+            const val = v[i];
+            if (val !== undefined && val !== '') {
+              md += `| ${row} | ${val} |\n`;
+              if (!isNaN(parseFloat(val))) totalUsers += parseFloat(val);
+            }
+          });
+          md += `| **الإجمالي** | **${totalUsers}** |\n\n`;
+        } else if (q.type === 'migration-table') {
+          md += `| الكيان | الحجم | السنوات |\n|---|---:|---:|\n`;
+          q.rows.forEach((row, i) => {
+            const sz = v[i + '_size'];
+            const yr = v[i + '_years'];
+            if ((sz !== undefined && sz !== '') || (yr !== undefined && yr !== '')) {
+              md += `| ${row} | ${sz || '—'} | ${yr || '—'} |\n`;
+            }
+          });
+          md += `\n`;
+        } else if (q.type === 'approval-table') {
+          md += `| المستند | الحد المالي | الاعتماد الأولي | الاعتماد النهائي |\n|---|---|---|---|\n`;
+          q.rows.forEach((row, i) => {
+            const lim = v[i + '_limit'], fst = v[i + '_first'], fnl = v[i + '_final'];
+            if (lim || fst || fnl) {
+              md += `| ${row} | ${lim || '—'} | ${fst || '—'} | ${fnl || '—'} |\n`;
+            }
+          });
+          md += `\n`;
+        }
+      });
+
+      md += `---\n\n`;
+    });
+
+    // Pricing analysis framework
+    md += `## إطار تحليل التسعير (للاستخدام الداخلي)\n\n`;
+    md += `> هذا القسم يُملأ من قبل فريق بوابة الأعمال بناءً على الإجابات أعلاه.\n\n`;
+
+    md += `### البنود التي تستلزم تطويراً مخصصاً\n\n`;
+    md += `| البند | المرجع | تقدير الساعات | ملاحظات |\n`;
+    md += `|---|---|---:|---|\n`;
+    md += `| وحدة المستخلصات (sadeef_progress_billing) | قسم 5 | _____ | _____ |\n`;
+    md += `| الوحدة العقارية | قسم 6 | _____ | _____ |\n`;
+    md += `| ربط منصة الإفراغ | س6.5 + س10.4 | _____ | _____ |\n`;
+    md += `| ربط البنوك | س10.2 | _____ | _____ |\n`;
+    md += `| لوحات قيادة وتقارير | س8.5 + س8.6 | _____ | _____ |\n`;
+    md += `| تكاملات أخرى | قسم 10 | _____ | _____ |\n`;
+    md += `| **الإجمالي** | | **_____ ساعة** | |\n\n`;
+
+    md += `### تقدير الجهد لكل مرحلة\n\n`;
+    md += `| المرحلة | تقدير الأيام | تكلفة الساعة | الإجمالي |\n`;
+    md += `|---|---:|---:|---:|\n`;
+    md += `| Discovery & Design | _____ | _____ | _____ |\n`;
+    md += `| Build (Wave 1) | _____ | _____ | _____ |\n`;
+    md += `| Build (Wave 2) | _____ | _____ | _____ |\n`;
+    md += `| Build (Wave 3) | _____ | _____ | _____ |\n`;
+    md += `| Data Migration | _____ | _____ | _____ |\n`;
+    md += `| Testing & UAT | _____ | _____ | _____ |\n`;
+    md += `| Training | _____ | _____ | _____ |\n`;
+    md += `| Go-Live & Hyper-care | _____ | _____ | _____ |\n`;
+    md += `| **مجموع التنفيذ** | **_____** | | **_____ ر.س.** |\n\n`;
+
+    md += `### التكاليف السنوية المتكررة\n\n`;
+    md += `| البند | الكمية | السعر السنوي | الإجمالي |\n`;
+    md += `|---|---:|---:|---:|\n`;
+    md += `| رخص Odoo Enterprise (Full Users) | _____ | _____ | _____ |\n`;
+    md += `| رخص Portal Users | _____ | _____ | _____ |\n`;
+    md += `| استضافة | — | _____ | _____ |\n`;
+    md += `| دعم سنوي | — | _____ | _____ |\n`;
+    md += `| **الإجمالي السنوي المتكرر** | | | **_____ ر.س.** |\n\n`;
+
+    md += `### الافتراضات والاستثناءات والمخاطر\n\n`;
+    md += `**الافتراضات (Assumptions):**\n`;
+    md += `1. _________________________________________\n`;
+    md += `2. _________________________________________\n`;
+    md += `3. _________________________________________\n\n`;
+    md += `**الاستثناءات (Out of Scope):**\n`;
+    md += `1. _________________________________________\n`;
+    md += `2. _________________________________________\n\n`;
+    md += `**المخاطر المرتفعة:**\n`;
+    md += `1. _________________________________________\n`;
+    md += `2. _________________________________________\n\n`;
+
+    md += `### توصية الفريق\n\n`;
+    md += `- **نموذج التسعير المقترح:** _________________\n`;
+    md += `- **القيمة الإجمالية للعرض:** _________ ر.س.\n`;
+    md += `- **الجدول الزمني:** ________ شهر\n`;
+    md += `- **صلاحية العرض:** ____ يوماً\n\n`;
+
+    md += `---\n\n`;
+    md += `*وثيقة داخلية — أُعدَّت آلياً بواسطة منصة بوابة الأعمال للاستبيانات.*\n`;
+    return md;
+  },
+
+  exportAll() {
+    const all = {
+      exported_at: new Date().toISOString(),
+      submissions: Storage.getIndex().map(meta => Storage.getSubmission(meta.id))
+    };
+    this.downloadJSON(`bp_all_submissions_${new Date().toISOString().split('T')[0]}.json`, all);
+    this.toast('تم تصدير جميع البيانات', 'success');
+  },
+
+  importData() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'application/json';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const obj = JSON.parse(ev.target.result);
+          if (obj.submissions && Array.isArray(obj.submissions)) {
+            obj.submissions.forEach(sub => Storage.saveSubmission(sub.id, sub));
+            this.toast(`تم استيراد ${obj.submissions.length} رد`, 'success');
+            this.renderAdminDashboard();
+          } else if (obj.id && obj.answers) {
+            Storage.saveSubmission(obj.id, obj);
+            this.toast('تم استيراد الرد', 'success');
+            this.renderAdminDashboard();
+          } else {
+            this.toast('صيغة الملف غير معروفة', 'danger');
+          }
+        } catch (err) {
+          this.toast('تعذّر قراءة الملف: ' + err.message, 'danger');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  },
+
+  downloadJSON(filename, data) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  // -------- Modals & Toasts --------
+  showModal(id) { document.getElementById(id).classList.add('active'); },
+  closeModal(id) { document.getElementById(id).classList.remove('active'); },
+  confirm(title, message, onConfirm) {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    const btn = document.getElementById('confirm-action');
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', () => {
+      onConfirm();
+      this.closeModal('confirm-modal');
+    });
+    this.showModal('confirm-modal');
+  },
+
+  toast(message, type = 'success', duration = 3000) {
+    const t = document.getElementById('toast');
+    t.className = `toast show ${type}`;
+    t.innerHTML = `<i class="ti ti-${type === 'danger' ? 'alert-circle' : 'check'}"></i> ${this.escapeHtml(message)}`;
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+  },
+
+  // -------- Helpers --------
+  escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  },
+  escapeAttr(s) { return this.escapeHtml(s); },
+
+  formatDate(iso) {
+    if (!iso) return '-';
+    const d = new Date(iso);
+    const now = new Date();
+    const diffH = (now - d) / (1000 * 60 * 60);
+    if (diffH < 1) return 'منذ دقائق';
+    if (diffH < 24) return `منذ ${Math.round(diffH)} ساعة`;
+    if (diffH < 168) return `منذ ${Math.round(diffH / 24)} يوم`;
+    return d.toLocaleDateString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric' });
+  },
+
+  iconFor(name) {
+    const map = {
+      'users': 'users-group', 'scale': 'scale', 'layers': 'stack-2',
+      'shopping-cart': 'shopping-cart', 'alert-triangle': 'alert-triangle',
+      'home': 'building-community', 'calculator': 'calculator',
+      'chart-bar': 'chart-bar', 'shield': 'shield-check',
+      'plug': 'plug', 'database': 'database', 'server': 'server',
+      'academic-cap': 'school', 'calendar': 'calendar-event',
+      'chat-bubble-bottom': 'message-circle'
+    };
+    return map[name] || 'circle';
+  },
+
+  impactLabel(impact) {
+    const map = { critical: 'حرج', high: 'مرتفع', medium: 'متوسط', low: 'منخفض' };
+    return map[impact] || '';
+  }
+};
+
+// Init
+document.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>

@@ -1,0 +1,2823 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الدليل الشامل لموديولات Odoo 18 | Business Gate</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #714B67;
+  --primary-dark: #5a3c52;
+  --accent: #00A09D;
+  --accent-light: #e6f7f6;
+  --gold: #D4AF37;
+  --bg: #f8f9fc;
+  --card: #ffffff;
+  --text: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 20px rgba(113,75,103,0.08);
+  --shadow-lg: 0 10px 40px rgba(113,75,103,0.12);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+body {
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+/* ===== HEADER ===== */
+.hero {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 50%, #3d2940 100%);
+  color: white;
+  padding: 60px 20px 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0,160,157,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: -30%;
+  left: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-content { position: relative; z-index: 2; max-width: 1100px; margin: 0 auto; }
+
+.brand-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.hero h1 {
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 900;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+
+.hero h1 .highlight { color: var(--gold); }
+
+.hero p {
+  font-size: clamp(16px, 2vw, 20px);
+  opacity: 0.95;
+  max-width: 800px;
+  margin: 0 auto 30px;
+  font-weight: 400;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.stat-chip {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 14px 24px;
+  border-radius: 12px;
+  min-width: 140px;
+}
+
+.stat-chip .num {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--gold);
+  display: block;
+}
+
+.stat-chip .lbl { font-size: 13px; opacity: 0.9; }
+
+/* ===== NAVIGATION ===== */
+.nav-sticky {
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  padding: 12px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.nav-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.nav-title {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.nav-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 0;
+  flex: 1;
+  scrollbar-width: thin;
+}
+
+.nav-scroll::-webkit-scrollbar { height: 4px; }
+.nav-scroll::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+.nav-chip {
+  white-space: nowrap;
+  padding: 6px 14px;
+  background: #f3f4f6;
+  color: var(--text);
+  border-radius: 20px;
+  font-size: 13px;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.nav-chip:hover { background: var(--primary); color: white; }
+
+/* ===== CONTAINER ===== */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* ===== TOC CARDS ===== */
+.toc-section {
+  margin: -40px auto 40px;
+  max-width: 1200px;
+  padding: 0 20px;
+  position: relative;
+  z-index: 3;
+}
+
+.toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg);
+}
+
+.toc-item {
+  background: linear-gradient(135deg, #fff 0%, #fafafa 100%);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.25s;
+  cursor: pointer;
+}
+
+.toc-item:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, #fff 0%, #faf5f8 100%);
+}
+
+.toc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+}
+
+.toc-item:nth-child(2n) .toc-icon { background: linear-gradient(135deg, var(--accent), #007e7c); }
+.toc-item:nth-child(3n) .toc-icon { background: linear-gradient(135deg, #e67e22, #d35400); }
+.toc-item:nth-child(4n) .toc-icon { background: linear-gradient(135deg, #3498db, #2874a6); }
+.toc-item:nth-child(5n) .toc-icon { background: linear-gradient(135deg, #9b59b6, #7d3c98); }
+.toc-item:nth-child(6n) .toc-icon { background: linear-gradient(135deg, #16a085, #0e6655); }
+.toc-item:nth-child(7n) .toc-icon { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+.toc-label {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.toc-num {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+/* ===== MODULE SECTIONS ===== */
+.module {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 36px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+  scroll-margin-top: 80px;
+}
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 2px dashed var(--border);
+}
+
+.module-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  flex-shrink: 0;
+  box-shadow: 0 8px 20px rgba(113,75,103,0.25);
+}
+
+.module h2 {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 900;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.module h2 .en {
+  font-size: 16px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-right: 8px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.module-subtitle {
+  color: var(--text-muted);
+  font-size: 15px;
+}
+
+.module-intro {
+  background: linear-gradient(135deg, #faf7f9 0%, #f5f0f3 100%);
+  border-right: 4px solid var(--primary);
+  padding: 18px 22px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+  font-size: 15.5px;
+  line-height: 1.9;
+}
+
+/* ===== FEATURES ===== */
+.section-label {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.section-label.purple { background: var(--primary); }
+.section-label.gold { background: var(--gold); color: #3d2940; }
+.section-label.blue { background: var(--info); }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.feature {
+  background: #fafbfc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 14.5px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  transition: all 0.2s;
+}
+
+.feature:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+}
+
+.feature::before {
+  content: "✓";
+  background: var(--accent);
+  color: white;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* ===== WORKFLOW STEPS ===== */
+.workflow {
+  margin: 24px 0;
+  position: relative;
+}
+
+.step {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 18px;
+  position: relative;
+  padding-bottom: 18px;
+}
+
+.step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  right: 22px;
+  top: 50px;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--primary), transparent);
+}
+
+.step-number {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 17px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(113,75,103,0.3);
+  z-index: 2;
+  position: relative;
+}
+
+.step-content {
+  flex: 1;
+  background: #fafbfc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: all 0.2s;
+}
+
+.step-content:hover {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-title {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 16.5px;
+  margin-bottom: 6px;
+}
+
+.step-desc {
+  color: var(--text);
+  font-size: 14.5px;
+  line-height: 1.8;
+}
+
+.step-path {
+  display: inline-block;
+  background: #fff7ed;
+  color: #9a3412;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  margin-top: 8px;
+  font-family: 'Courier New', monospace;
+  border: 1px solid #fed7aa;
+  direction: ltr;
+}
+
+.step-feat {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--accent-light);
+  border-right: 3px solid var(--accent);
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+
+.step-feat strong { color: var(--accent); }
+
+/* ===== INTEGRATION BOX ===== */
+.integration {
+  background: linear-gradient(135deg, #fff8e1 0%, #fffaed 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-top: 20px;
+}
+
+.integration-title {
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.integration ul {
+  list-style: none;
+  padding: 0;
+}
+
+.integration li {
+  padding: 5px 0;
+  font-size: 14px;
+  position: relative;
+  padding-right: 20px;
+}
+
+.integration li::before {
+  content: "↔";
+  position: absolute;
+  right: 0;
+  color: var(--warning);
+  font-weight: 700;
+}
+
+/* ===== TIPS ===== */
+.tip {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f7ff 100%);
+  border-right: 4px solid var(--info);
+  padding: 14px 20px;
+  border-radius: 10px;
+  margin-top: 16px;
+  font-size: 14.5px;
+}
+
+.tip strong { color: var(--info); }
+
+/* ===== FOOTER ===== */
+.footer {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, #3d2940 100%);
+  color: white;
+  padding: 50px 20px;
+  text-align: center;
+  margin-top: 60px;
+}
+
+.footer h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  color: var(--gold);
+}
+
+.footer p { opacity: 0.9; font-size: 15px; margin: 6px 0; }
+
+.footer .contact {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.footer-brand {
+  font-weight: 900;
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+/* ===== PRINT ===== */
+@media print {
+  .nav-sticky, .toc-section { display: none; }
+  .hero { padding: 30px 20px; page-break-after: avoid; }
+  .module { page-break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+  body { font-size: 13px; }
+}
+
+@media (max-width: 768px) {
+  .module { padding: 22px 18px; }
+  .module-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .step { gap: 12px; }
+  .step-number { width: 36px; height: 36px; font-size: 15px; }
+  .step:not(:last-child)::before { right: 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="brand-badge">🏢 Business Gate | بوابة الأعمال للاستشارات التقنية</div>
+    <h1>الدليل الشامل لـ <span class="highlight">Odoo 18</span></h1>
+    <p>شرح تفصيلي لدورات العمل والمزايا الرئيسية لكل موديولات Odoo 18 — خطوة بخطوة، مع مسارات الاستخدام والتكامل بين الموديولات.</p>
+    <div class="hero-stats">
+      <div class="stat-chip"><span class="num">19</span><span class="lbl">موديول رئيسي</span></div>
+      <div class="stat-chip"><span class="num">150+</span><span class="lbl">خطوة عمل</span></div>
+      <div class="stat-chip"><span class="num">2026</span><span class="lbl">إصدار حديث</span></div>
+      <div class="stat-chip"><span class="num">100%</span><span class="lbl">عربي RTL</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TOC ===== -->
+<section class="toc-section">
+  <div class="toc-grid">
+    <a href="#crm" class="toc-item"><div class="toc-icon">📞</div><div><div class="toc-label">إدارة علاقات العملاء</div><span class="toc-num">01 · CRM</span></div></a>
+    <a href="#sales" class="toc-item"><div class="toc-icon">💼</div><div><div class="toc-label">المبيعات</div><span class="toc-num">02 · Sales</span></div></a>
+    <a href="#purchase" class="toc-item"><div class="toc-icon">🛒</div><div><div class="toc-label">المشتريات</div><span class="toc-num">03 · Purchase</span></div></a>
+    <a href="#inventory" class="toc-item"><div class="toc-icon">📦</div><div><div class="toc-label">المخزون والمستودعات</div><span class="toc-num">04 · Inventory</span></div></a>
+    <a href="#mrp" class="toc-item"><div class="toc-icon">🏭</div><div><div class="toc-label">التصنيع</div><span class="toc-num">05 · Manufacturing</span></div></a>
+    <a href="#accounting" class="toc-item"><div class="toc-icon">💰</div><div><div class="toc-label">المحاسبة</div><span class="toc-num">06 · Accounting</span></div></a>
+    <a href="#hr" class="toc-item"><div class="toc-icon">👥</div><div><div class="toc-label">الموارد البشرية</div><span class="toc-num">07 · HR</span></div></a>
+    <a href="#payroll" class="toc-item"><div class="toc-icon">💵</div><div><div class="toc-label">الرواتب</div><span class="toc-num">08 · Payroll</span></div></a>
+    <a href="#project" class="toc-item"><div class="toc-icon">📋</div><div><div class="toc-label">إدارة المشاريع</div><span class="toc-num">09 · Project</span></div></a>
+    <a href="#helpdesk" class="toc-item"><div class="toc-icon">🎧</div><div><div class="toc-label">الدعم الفني</div><span class="toc-num">10 · Helpdesk</span></div></a>
+    <a href="#pos" class="toc-item"><div class="toc-icon">🛍️</div><div><div class="toc-label">نقاط البيع</div><span class="toc-num">11 · POS</span></div></a>
+    <a href="#ecommerce" class="toc-item"><div class="toc-icon">🌐</div><div><div class="toc-label">الموقع والتجارة</div><span class="toc-num">12 · eCommerce</span></div></a>
+    <a href="#marketing" class="toc-item"><div class="toc-icon">📣</div><div><div class="toc-label">التسويق</div><span class="toc-num">13 · Marketing</span></div></a>
+    <a href="#fsm" class="toc-item"><div class="toc-icon">🔧</div><div><div class="toc-label">الخدمات الميدانية</div><span class="toc-num">14 · Field Service</span></div></a>
+    <a href="#subscription" class="toc-item"><div class="toc-icon">🔄</div><div><div class="toc-label">الاشتراكات</div><span class="toc-num">15 · Subscriptions</span></div></a>
+    <a href="#documents" class="toc-item"><div class="toc-icon">📄</div><div><div class="toc-label">المستندات والتوقيع</div><span class="toc-num">16 · Documents</span></div></a>
+    <a href="#fleet" class="toc-item"><div class="toc-icon">🚗</div><div><div class="toc-label">إدارة الأسطول</div><span class="toc-num">17 · Fleet</span></div></a>
+    <a href="#maintenance" class="toc-item"><div class="toc-icon">🛠️</div><div><div class="toc-label">الصيانة والجودة</div><span class="toc-num">18 · Maintenance</span></div></a>
+    <a href="#studio" class="toc-item"><div class="toc-icon">🎨</div><div><div class="toc-label">Studio والتخصيص</div><span class="toc-num">19 · Studio</span></div></a>
+  </div>
+</section>
+
+<!-- ===== NAV ===== -->
+<nav class="nav-sticky">
+  <div class="nav-inner">
+    <div class="nav-title">📘 دليل Odoo 18</div>
+    <div class="nav-scroll">
+      <a href="#crm" class="nav-chip">CRM</a>
+      <a href="#sales" class="nav-chip">Sales</a>
+      <a href="#purchase" class="nav-chip">Purchase</a>
+      <a href="#inventory" class="nav-chip">Inventory</a>
+      <a href="#mrp" class="nav-chip">Manufacturing</a>
+      <a href="#accounting" class="nav-chip">Accounting</a>
+      <a href="#hr" class="nav-chip">HR</a>
+      <a href="#payroll" class="nav-chip">Payroll</a>
+      <a href="#project" class="nav-chip">Project</a>
+      <a href="#helpdesk" class="nav-chip">Helpdesk</a>
+      <a href="#pos" class="nav-chip">POS</a>
+      <a href="#ecommerce" class="nav-chip">eCommerce</a>
+      <a href="#marketing" class="nav-chip">Marketing</a>
+      <a href="#fsm" class="nav-chip">Field Service</a>
+      <a href="#subscription" class="nav-chip">Subscriptions</a>
+      <a href="#documents" class="nav-chip">Documents</a>
+      <a href="#fleet" class="nav-chip">Fleet</a>
+      <a href="#maintenance" class="nav-chip">Maintenance</a>
+      <a href="#studio" class="nav-chip">Studio</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ==================== 1. CRM ==================== -->
+<section id="crm" class="module">
+  <div class="module-header">
+    <div class="module-icon">📞</div>
+    <div>
+      <h2>1. إدارة علاقات العملاء <span class="en">CRM</span></h2>
+      <div class="module-subtitle">من الفرصة البيعية إلى إغلاق الصفقة</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول CRM هو نقطة البداية لدورة البيع. يتتبع العملاء المحتملين (Leads) من أول تواصل، يحولهم إلى فرص بيعية (Opportunities)، ويديرها عبر خط أنابيب (Pipeline) بصري حتى الإغلاق — مع أتمتة المتابعات، توقّع الإيرادات، وتحليل أداء الفريق.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">خط أنابيب Kanban بصري قابل للسحب والإفلات</div>
+    <div class="feature">التقاط Leads تلقائياً من الموقع / البريد / الحملات</div>
+    <div class="feature">تسجيل نقاط العملاء المحتملين (Lead Scoring)</div>
+    <div class="feature">تعيين تلقائي للفرص حسب القواعد والفرق</div>
+    <div class="feature">تنبؤ الإيرادات المتوقعة (Expected Revenue)</div>
+    <div class="feature">VoIP وتكامل الاتصالات الهاتفية</div>
+    <div class="feature">قوالب بريد إلكتروني جاهزة للمتابعة</div>
+    <div class="feature">تقارير وتحليلات بمؤشرات KPI</div>
+    <div class="feature">إدارة الأنشطة والتذكيرات (Activities)</div>
+    <div class="feature">دمج مع LinkedIn و Partner Finder</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">استقطاب العميل المحتمل (Lead Generation)</div>
+        <div class="step-desc">تُنشأ الـ Leads يدوياً أو تلقائياً عبر: نموذج اتصال الموقع، رسائل البريد الوارد، استيراد CSV، أو الحملات التسويقية.</div>
+        <div class="step-path">CRM → Leads → New</div>
+        <div class="step-feat"><strong>ميزة:</strong> إمكانية شراء Leads من خلال خدمة Odoo Partner Finder.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">تأهيل العميل المحتمل (Qualification)</div>
+        <div class="step-desc">يُقيّم الـ Lead حسب الاهتمام والميزانية والسلطة الشرائية، ثم يُحوّل إلى فرصة بيعية (Opportunity) عند الجاهزية.</div>
+        <div class="step-feat"><strong>ميزة:</strong> نظام Lead Scoring يحسب نقاط تلقائياً بناءً على خصائص العميل وسلوكه.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء فرصة بيعية (Opportunity)</div>
+        <div class="step-desc">تُضاف الفرصة إلى الـ Pipeline مع تحديد: المرحلة، القيمة المتوقعة، تاريخ الإغلاق المتوقع، والمسؤول.</div>
+        <div class="step-path">CRM → Pipeline → New</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">المتابعة عبر الأنشطة (Activities)</div>
+        <div class="step-desc">تُجدول مكالمات، اجتماعات، بريد إلكتروني، مهام متابعة مع تذكيرات آلية. كل نشاط يُسجّل في السجل الزمني.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تكامل Google Calendar + Outlook يعكس الاجتماعات تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">التنقل بين مراحل الـ Pipeline</div>
+        <div class="step-desc">تُسحب الفرصة بين الأعمدة: New → Qualified → Proposition → Negotiation → Won/Lost.</div>
+        <div class="step-feat"><strong>ميزة:</strong> مراحل قابلة للتخصيص بالكامل لكل فريق مبيعات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">إرسال عرض السعر (Quotation)</div>
+        <div class="step-desc">من داخل الفرصة، يُنشأ عرض سعر مباشرة في موديول Sales، ويُرسل للعميل بنقرة واحدة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">الإغلاق (Won / Lost)</div>
+        <div class="step-desc">عند الفوز تُحوّل الفرصة لأمر بيع (Sales Order)، وعند الخسارة يُسجّل سبب الخسارة للتحليل.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تقارير Lost Reasons لتحسين أداء البيع.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">التحليل والتقارير</div>
+        <div class="step-desc">لوحات Dashboard تعرض: معدل التحويل، متوسط قيمة الصفقة، دورة البيع، وأداء كل مندوب.</div>
+        <div class="step-path">CRM → Reporting → Pipeline Analysis</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> تحويل الفرصة إلى عرض سعر/أمر بيع</li>
+      <li><strong>Marketing Automation:</strong> استقبال Leads من الحملات</li>
+      <li><strong>Website:</strong> نموذج الاتصال يولّد Leads تلقائياً</li>
+      <li><strong>VoIP:</strong> اتصالات مباشرة من بطاقة الفرصة</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 2. SALES ==================== -->
+<section id="sales" class="module">
+  <div class="module-header">
+    <div class="module-icon">💼</div>
+    <div>
+      <h2>2. المبيعات <span class="en">Sales</span></h2>
+      <div class="module-subtitle">من عرض السعر إلى الفاتورة</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Sales يدير العروض التجارية وأوامر البيع بالكامل: إنشاء عروض سعر احترافية، إرسالها عبر البريد، التوقيع الإلكتروني من العميل، تحويلها لأوامر بيع، متابعة التسليم، ثم الفوترة — كل ذلك مع قواعد تسعير مرنة ومستويات خصومات.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">عروض سعر احترافية بقوالب PDF قابلة للتخصيص</div>
+    <div class="feature">التوقيع الإلكتروني على العرض (eSign)</div>
+    <div class="feature">دفع إلكتروني مباشر من رابط العرض</div>
+    <div class="feature">قوائم أسعار متعددة (Pricelists) بالعملات والفترات</div>
+    <div class="feature">منتجات اختيارية وبدائل (Optional / Alternative)</div>
+    <div class="feature">خصومات متعددة المستويات</div>
+    <div class="feature">فوترة جزئية / على مراحل / متكررة</div>
+    <div class="feature">إدارة العقود والتجديد التلقائي</div>
+    <div class="feature">قواعد العمولات للمندوبين</div>
+    <div class="feature">تكامل Amazon / Shopify للبيع المتعدد القنوات</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء عرض السعر (Quotation)</div>
+        <div class="step-desc">يُختار العميل، تُضاف المنتجات، تُطبّق قائمة الأسعار المناسبة، ويحدد شروط الدفع والتسليم.</div>
+        <div class="step-path">Sales → Quotations → New</div>
+        <div class="step-feat"><strong>ميزة:</strong> قوالب Quotation Templates جاهزة لتسريع الإنشاء.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إضافة منتجات اختيارية / بدائل</div>
+        <div class="step-desc">تُعرض على العميل منتجات إضافية قد يرغب بها، أو بدائل للمنتج الأساسي، فيختار الأنسب بنفسه.</div>
+        <div class="step-feat"><strong>ميزة:</strong> هذا يرفع متوسط قيمة الطلب (Upsell / Cross-sell).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">إرسال العرض عبر البريد الإلكتروني</div>
+        <div class="step-desc">يُرسل العرض برابط Customer Portal حيث يستطيع العميل الاطلاع، التعليق، التوقيع، والدفع.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تتبع فتح البريد وتحميل المرفقات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تأكيد الطلب (Confirmation)</div>
+        <div class="step-desc">عند موافقة العميل، يتحول العرض إلى أمر بيع (Sales Order) ويُطلق إجراءات التسليم والفوترة تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">توليد أمر التسليم (Delivery Order)</div>
+        <div class="step-desc">يُنشأ Picking تلقائياً في موديول المخزون لتجهيز الشحن، ويربط بعميل الطلب.</div>
+        <div class="step-feat"><strong>ميزة:</strong> قواعد التسليم: من مستودع واحد، متعدد، Drop-shipping، MTO/MTS.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">إصدار الفاتورة (Invoicing)</div>
+        <div class="step-desc">تُصدر الفاتورة حسب سياسة الفوترة: قبل التسليم، بعد التسليم، أو على مراحل / مليستونات.</div>
+        <div class="step-path">Sales Order → Create Invoice</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">تحصيل الدفع</div>
+        <div class="step-desc">العميل يدفع عبر بوابة الدفع أو التحويل البنكي، ويُسجّل الدفع مباشرة على الفاتورة.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تكامل مع Stripe / PayPal / MyFatoorah / Tap / KNET.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">خدمة ما بعد البيع وتقييم الأداء</div>
+        <div class="step-desc">تتبع تقييمات العملاء (NPS)، تقارير المبيعات بحسب المندوب/المنتج/الفترة، وتحليل الهوامش.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Inventory:</strong> توليد أوامر التسليم تلقائياً</li>
+      <li><strong>Accounting:</strong> إصدار الفواتير والقيود المحاسبية</li>
+      <li><strong>Project:</strong> ربط الطلبات بمشاريع الخدمات</li>
+      <li><strong>Manufacturing:</strong> إطلاق أوامر تصنيع MTO</li>
+      <li><strong>Subscriptions:</strong> عقود البيع المتجددة</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 3. PURCHASE ==================== -->
+<section id="purchase" class="module">
+  <div class="module-header">
+    <div class="module-icon">🛒</div>
+    <div>
+      <h2>3. المشتريات <span class="en">Purchase</span></h2>
+      <div class="module-subtitle">من طلب الشراء إلى فاتورة المورد</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Purchase يدير دورة الشراء الكاملة: طلبات الشراء من الأقسام، تقييم عروض الموردين، إصدار أوامر الشراء، استلام البضائع، ومطابقة فواتير الموردين — مع اتفاقيات شراء طويلة الأمد وإعادة طلب تلقائية.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">طلبات عروض أسعار من موردين متعددين (RFQ)</div>
+    <div class="feature">مقارنة عروض الموردين تلقائياً</div>
+    <div class="feature">اتفاقيات شراء طويلة الأمد (Blanket Orders)</div>
+    <div class="feature">إعادة طلب تلقائية عند بلوغ حد المخزون</div>
+    <div class="feature">قواعد الموافقة متعددة المستويات</div>
+    <div class="feature">تقييم أداء الموردين (On-time / Price / Quality)</div>
+    <div class="feature">منتجات الموردين بأسعار وعملات مختلفة</div>
+    <div class="feature">Drop-shipping من المورد مباشرة للعميل</div>
+    <div class="feature">مطابقة ثلاثية: PO + GRN + Invoice</div>
+    <div class="feature">بوابة مورد (Vendor Portal) للتواصل المباشر</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">تحديد الاحتياج (Purchase Requisition)</div>
+        <div class="step-desc">القسم المعني (إنتاج/مبيعات/صيانة) يطلب مواد معينة بكميات محددة.</div>
+        <div class="step-path">Purchase → Requests for Quotation</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إصدار طلب عرض سعر (RFQ)</div>
+        <div class="step-desc">يُرسل طلب عرض إلى عدة موردين للحصول على أفضل سعر وشروط.</div>
+        <div class="step-feat"><strong>ميزة:</strong> إرسال جماعي بنقرة واحدة لكل الموردين المؤهلين.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">مقارنة العروض واختيار المورد</div>
+        <div class="step-desc">Odoo يعرض مقارنة بصرية بين العروض حسب السعر، مدة التسليم، شروط الدفع.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Purchase Agreements لإدارة المناقصات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تأكيد أمر الشراء (PO)</div>
+        <div class="step-desc">بعد اختيار المورد، يُحوّل RFQ إلى Purchase Order ويُرسل للمورد بالتفاصيل النهائية.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">استلام البضائع (Receipts)</div>
+        <div class="step-desc">عند وصول الشحنة، يُسجّل الاستلام في المخزون مع التحقق من الجودة والكمية.</div>
+        <div class="step-path">Inventory → Transfers → Receipts</div>
+        <div class="step-feat"><strong>ميزة:</strong> استلام جزئي مدعوم، مع تتبع Lot/Serial Number.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل فاتورة المورد (Vendor Bill)</div>
+        <div class="step-desc">تُدخل فاتورة المورد يدوياً أو تُستورد من البريد (AI OCR)، ويُطابق Odoo أوتوماتيكياً مع PO و GRN.</div>
+        <div class="step-feat"><strong>ميزة:</strong> في Odoo 18 — استخراج الفواتير بالذكاء الاصطناعي تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">سداد المورد</div>
+        <div class="step-desc">يُجدول الدفع حسب شروط المورد (صافي 30 يوم مثلاً)، ويُنفّذ عبر البنك أو الشيك.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">تقييم أداء المورد</div>
+        <div class="step-desc">تقارير تلقائية: نسبة التسليم في الوقت، دقة الكميات، جودة المنتج، تنافسية السعر.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Inventory:</strong> استلام البضائع وتحديث الكميات</li>
+      <li><strong>Accounting:</strong> تسجيل فواتير الموردين والمدفوعات</li>
+      <li><strong>Manufacturing:</strong> شراء المواد الخام للإنتاج</li>
+      <li><strong>Sales:</strong> Drop-shipping وPO تلقائي عند بيع MTO</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 4. INVENTORY ==================== -->
+<section id="inventory" class="module">
+  <div class="module-header">
+    <div class="module-icon">📦</div>
+    <div>
+      <h2>4. المخزون والمستودعات <span class="en">Inventory</span></h2>
+      <div class="module-subtitle">حركة المواد من الاستلام إلى التسليم</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Inventory هو العمود الفقري للعمليات اللوجستية: إدارة مستودعات متعددة، تتبع المخزون بالـ Barcode و Lot/Serial، قواعد إعادة الطلب، جرد دوري، نقل داخلي، وطرق تقييم متعددة (FIFO / LIFO / Average).
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">مستودعات متعددة ومواقع هرمية (Multi-warehouse)</div>
+    <div class="feature">تتبع بالـ Lot والـ Serial Number</div>
+    <div class="feature">تطبيق Barcode Scanner للموبايل</div>
+    <div class="feature">طرق التقييم: FIFO / LIFO / Average / Standard</div>
+    <div class="feature">قواعد إعادة الطلب التلقائية (Reordering Rules)</div>
+    <div class="feature">Push/Pull Rules لمسارات المواد</div>
+    <div class="feature">جرد دوري وجرد سنوي (Cycle Count)</div>
+    <div class="feature">إدارة الجودة عند الاستلام</div>
+    <div class="feature">Landed Costs لتحميل تكاليف الشحن</div>
+    <div class="feature">صلاحية المنتجات وتواريخ الإنتهاء</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد المستودعات والمواقع</div>
+        <div class="step-desc">تُعرّف المستودعات (رئيسي / فرعي / عبور) والمواقع الداخلية (رفوف، حاويات، مناطق).</div>
+        <div class="step-path">Inventory → Configuration → Warehouses / Locations</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إدخال المنتجات وتصنيفها</div>
+        <div class="step-desc">تُنشأ بطاقات المنتجات مع: SKU، Barcode، وحدة القياس، طريقة التتبع، تكاليف، بدائل.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Product Variants لإدارة الخصائص (لون/حجم/موديل).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">استلام البضائع (Receipts)</div>
+        <div class="step-desc">تُستلم المواد بالـ Barcode Scanner أو يدوياً، مع تسجيل الـ Lot/Serial وتاريخ الصلاحية.</div>
+        <div class="step-feat"><strong>ميزة:</strong> جودة فحص تلقائية (QC Check) قبل الإدخال للمستودع.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">التخزين والتنظيم (Put Away Rules)</div>
+        <div class="step-desc">Odoo يحدد تلقائياً المكان الأنسب لكل منتج حسب القواعد المحددة (مثلاً: المبردات → ثلاجة A).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">النقل الداخلي (Internal Transfers)</div>
+        <div class="step-desc">حركة المواد بين المواقع داخل المستودع أو بين المستودعات، مع تتبع كامل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">الجرد الدوري (Physical Inventory)</div>
+        <div class="step-desc">تُجرى عمليات جرد دورية (أسبوعي/شهري/سنوي)، وتُسجّل الفروقات كـ Stock Adjustments.</div>
+        <div class="step-path">Inventory → Operations → Physical Inventory</div>
+        <div class="step-feat"><strong>ميزة:</strong> جرد مستمر دون إيقاف العمليات (Cycle Counting).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">تجهيز وشحن الطلبات (Picking & Delivery)</div>
+        <div class="step-desc">عند ورود طلب بيع، يُنشأ Picking بطريقة (Wave / Batch / Cluster)، ثم التعبئة ثم الشحن.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تكامل مع شركات الشحن (Aramex, DHL, FedEx).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">إعادة الطلب التلقائية (Reordering Rules)</div>
+        <div class="step-desc">عند بلوغ المخزون الحد الأدنى، يُنشئ Odoo تلقائياً RFQ أو MO حسب نوع المنتج.</div>
+        <div class="step-feat"><strong>ميزة:</strong> خوارزميات التنبؤ بالطلب (Demand Forecasting).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">9</div>
+      <div class="step-content">
+        <div class="step-title">التقارير والتحليل</div>
+        <div class="step-desc">تقارير: قيمة المخزون، حركة المواد، المنتجات البطيئة، تقادم المخزون، ABC Analysis.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> خصم المخزون عند تأكيد البيع</li>
+      <li><strong>Purchase:</strong> زيادة المخزون عند الاستلام</li>
+      <li><strong>Manufacturing:</strong> سحب المواد الخام وإيداع الإنتاج</li>
+      <li><strong>Accounting:</strong> تقييم المخزون والقيود التلقائية</li>
+      <li><strong>Quality:</strong> فحوصات الجودة عند الاستلام/الإنتاج</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 5. MANUFACTURING ==================== -->
+<section id="mrp" class="module">
+  <div class="module-header">
+    <div class="module-icon">🏭</div>
+    <div>
+      <h2>5. التصنيع <span class="en">Manufacturing (MRP)</span></h2>
+      <div class="module-subtitle">من التخطيط إلى المنتج النهائي</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Manufacturing يدير عمليات التصنيع: قوائم المواد (BoM)، مراكز العمل، الروتين (Routing)، أوامر التصنيع، مناولة العمليات الفرعية، وصيانة المعدات — مع تخطيط MRP كامل وPLM لإدارة التغييرات.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">قوائم مواد متعددة المستويات (Multi-level BoM)</div>
+    <div class="feature">مراكز عمل وروتين تصنيع (Work Centers + Routing)</div>
+    <div class="feature">أوامر تصنيع (Manufacturing Orders)</div>
+    <div class="feature">أوامر عمل (Work Orders) للعمال</div>
+    <div class="feature">Shop Floor Terminal (لوحة الإنتاج)</div>
+    <div class="feature">تخطيط MPS / MRP تلقائي</div>
+    <div class="feature">المناولة الفرعية (Subcontracting)</div>
+    <div class="feature">إدارة النفايات والمنتجات الثانوية (By-products)</div>
+    <div class="feature">PLM لإدارة هندسة المنتج</div>
+    <div class="feature">OEE وKPIs الإنتاج اللحظية</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد قائمة المواد (BoM)</div>
+        <div class="step-desc">تُحدد مكونات المنتج النهائي: المواد، الكميات، المنتجات الثانوية، الفاقد المعتاد.</div>
+        <div class="step-path">Manufacturing → Products → Bills of Materials</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إعداد مراكز العمل والروتين</div>
+        <div class="step-desc">تُنشأ مراكز العمل (ماكينات/خطوط)، ويُحدد Routing: الخطوات، المدة، التكلفة، الموارد المطلوبة.</div>
+        <div class="step-feat"><strong>ميزة:</strong> OEE تلقائي لكل مركز عمل (كفاءة، أداء، جودة).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تخطيط الإنتاج (MPS / MRP)</div>
+        <div class="step-desc">MRP يحلل الطلبات والمخزون والتنبؤات، ويقترح أوامر تصنيع وشراء بتوقيت مثالي.</div>
+        <div class="step-path">Manufacturing → Planning → Master Production Schedule</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء أمر التصنيع (MO)</div>
+        <div class="step-desc">يُنشأ MO يدوياً أو تلقائياً من Sales Order / MRP / Reordering Rules.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">سحب المواد الخام</div>
+        <div class="step-desc">يُنشأ Picking لسحب المكونات من المستودع إلى منطقة الإنتاج (WIP).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">تنفيذ أوامر العمل (Work Orders)</div>
+        <div class="step-desc">العمال يسجلون بدء/توقف/إنهاء كل عملية عبر Shop Floor Terminal، مع فحوصات جودة.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Shop Floor في Odoo 18 — واجهة Tablet حديثة للعمال.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">فحوصات الجودة أثناء التصنيع</div>
+        <div class="step-desc">نقاط فحص داخل كل Work Order تضمن الالتزام بالمواصفات قبل المرحلة التالية.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">إنهاء الإنتاج وإيداع المنتج</div>
+        <div class="step-desc">عند إنهاء MO، يُضاف المنتج النهائي للمستودع، وتُحسب التكلفة الفعلية (مواد + عمالة + OH).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">9</div>
+      <div class="step-content">
+        <div class="step-title">التحليل وتحسين الأداء</div>
+        <div class="step-desc">تقارير OEE، الفاقد، التكلفة الفعلية مقابل المعيارية، وقت التوقف، كفاءة العمال.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Inventory:</strong> سحب المواد وإيداع الإنتاج</li>
+      <li><strong>Purchase:</strong> شراء المواد الخام تلقائياً</li>
+      <li><strong>Sales:</strong> MTO مباشرة من أمر البيع</li>
+      <li><strong>Maintenance:</strong> جدولة صيانة مراكز العمل</li>
+      <li><strong>Quality:</strong> نقاط الفحص داخل أوامر العمل</li>
+      <li><strong>PLM:</strong> إدارة تغييرات هندسة المنتج</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 6. ACCOUNTING ==================== -->
+<section id="accounting" class="module">
+  <div class="module-header">
+    <div class="module-icon">💰</div>
+    <div>
+      <h2>6. المحاسبة <span class="en">Accounting</span></h2>
+      <div class="module-subtitle">المحاسبة الكاملة والتقارير المالية</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Accounting في Odoo 18 محاسبة مزدوجة القيد كاملة: دليل حسابات، قيود يومية تلقائية، ذمم مدينة ودائنة، إدارة بنوك ومطابقة، ضرائب متعددة، أصول ثابتة، موازنات، وتقارير مالية IFRS/GAAP — مع ذكاء اصطناعي لاستخراج الفواتير.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">دليل حسابات قابل للتخصيص حسب الدولة</div>
+    <div class="feature">قيود يومية تلقائية من كل الموديولات</div>
+    <div class="feature">مطابقة بنكية ذكية (Bank Reconciliation)</div>
+    <div class="feature">استخراج الفواتير بالذكاء الاصطناعي (OCR)</div>
+    <div class="feature">إدارة الأصول الثابتة والإهلاك</div>
+    <div class="feature">ضرائب متعددة الشرائح (VAT / WHT)</div>
+    <div class="feature">عملات متعددة وفروقات الصرف</div>
+    <div class="feature">مراكز تكلفة وتحليل تحليلي</div>
+    <div class="feature">تقارير مالية كاملة (Balance Sheet, P&L, Cash Flow)</div>
+    <div class="feature">إغلاق مالي شهري/سنوي مع تدقيق</div>
+    <div class="feature">Fatoora / ZATCA Integration للسعودية</div>
+    <div class="feature">موازنات وتوقعات تدفق نقدي</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد دليل الحسابات والعملة</div>
+        <div class="step-desc">تحميل Chart of Accounts حسب الدولة (الكويت/السعودية)، تحديد العملة الرئيسية والعملات الثانوية.</div>
+        <div class="step-path">Accounting → Configuration → Chart of Accounts</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إعداد الضرائب</div>
+        <div class="step-desc">تكوين ضرائب المبيعات/المشتريات، ضرائب القيمة المضافة، الاستقطاع (WHT)، وقواعد الخصم.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تكامل Fatoora (ZATCA) للسعودية و E-invoicing.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">فواتير العملاء (Customer Invoices)</div>
+        <div class="step-desc">تُصدر آلياً من أوامر البيع، أو يدوياً للفواتير الخاصة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">فواتير الموردين (Vendor Bills)</div>
+        <div class="step-desc">تُدخل يدوياً أو تستورد بالـ OCR، ويطابقها Odoo مع PO وGRN.</div>
+        <div class="step-feat"><strong>ميزة:</strong> إرسال الفاتورة كـ PDF/صورة للبريد المخصص، Odoo يستخرج البيانات تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل المدفوعات والتحصيلات</div>
+        <div class="step-desc">يُسجّل كل دفع/تحصيل بربطه بالفاتورة المناسبة ومع طريقة السداد.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">المطابقة البنكية</div>
+        <div class="step-desc">استيراد كشف حساب البنك (CSV / OFX / مباشر API)، ومطابقة كل حركة مع قيدها المناسب.</div>
+        <div class="step-path">Accounting → Banking → Reconciliation</div>
+        <div class="step-feat"><strong>ميزة:</strong> الذكاء الاصطناعي يقترح المطابقات تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">الأصول الثابتة والإهلاك</div>
+        <div class="step-desc">تسجيل الأصول، احتساب الإهلاك تلقائياً شهرياً/سنوياً، متابعة القيمة الدفترية.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">الإقفال الشهري والسنوي</div>
+        <div class="step-desc">مراجعة القيود، تسوية المخصصات، إقفال الفترة، وإصدار التقارير النهائية.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">9</div>
+      <div class="step-content">
+        <div class="step-title">التقارير المالية</div>
+        <div class="step-desc">ميزانية عمومية، قائمة دخل، تدفقات نقدية، أعمار ديون، تحليل تحليلي، مقارنات فترات.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Dynamic Reports — تعديل لحظي وتصدير Excel/PDF.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    💡 <strong>نصيحة Business Gate:</strong> في الكويت والسعودية، فعّل Localization المناسب قبل البدء — يضبط دليل الحسابات، الضرائب، تنسيقات الفواتير، وتقارير ZATCA/KFAS مباشرة.
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> توليد فواتير العملاء تلقائياً</li>
+      <li><strong>Purchase:</strong> استلام فواتير الموردين</li>
+      <li><strong>Inventory:</strong> قيود تقييم المخزون</li>
+      <li><strong>Payroll:</strong> قيود رواتب شهرية</li>
+      <li><strong>Manufacturing:</strong> قيود تكاليف الإنتاج</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 7. HR ==================== -->
+<section id="hr" class="module">
+  <div class="module-header">
+    <div class="module-icon">👥</div>
+    <div>
+      <h2>7. الموارد البشرية <span class="en">HR / Employees</span></h2>
+      <div class="module-subtitle">إدارة الموظفين والتوظيف والحضور والإجازات</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    مجموعة HR في Odoo 18 تغطي رحلة الموظف كاملة: التوظيف (Recruitment)، بيانات الموظفين، الحضور والانصراف، الإجازات، المصاريف، التقييمات، والمهارات — كلها مترابطة مع الرواتب والمحاسبة.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">ملفات موظفين شاملة مع شجرة تنظيمية</div>
+    <div class="feature">توظيف (Recruitment) كامل مع Kanban للمتقدمين</div>
+    <div class="feature">حضور وانصراف عبر البصمة/QR/موبايل</div>
+    <div class="feature">إجازات متعددة الأنواع مع سير اعتماد</div>
+    <div class="feature">تقارير مصاريف (Expenses) مع التوافق الضريبي</div>
+    <div class="feature">تقييم الأداء (Appraisals) دوري</div>
+    <div class="feature">إدارة المهارات (Skills Management)</div>
+    <div class="feature">جداول دوام (Planning / Scheduling)</div>
+    <div class="feature">Referral Program للتوظيف بالتوصية</div>
+    <div class="feature">Employee Self-Service Portal</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد الهيكل التنظيمي</div>
+        <div class="step-desc">تحديد الأقسام، المناصب الوظيفية، المدراء، مواقع العمل، العقود.</div>
+        <div class="step-path">Employees → Configuration → Departments / Job Positions</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">التوظيف (Recruitment)</div>
+        <div class="step-desc">نشر الوظائف على الموقع، استقبال المتقدمين، فرزهم عبر Kanban، مقابلات، تقييم، تعيين.</div>
+        <div class="step-path">Recruitment → By Job Position</div>
+        <div class="step-feat"><strong>ميزة:</strong> نموذج تقديم مدمج في Website يولّد Applicants تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء ملف الموظف</div>
+        <div class="step-desc">عند التعيين، يُحوّل المتقدم إلى موظف بكل بياناته: شخصية، تعليمية، عقد، راتب، مستندات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">إدارة العقود</div>
+        <div class="step-desc">عقود بأنواع متعددة، تتبع تواريخ الانتهاء، تنبيهات التجديد، توقيع إلكتروني.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">الحضور والانصراف (Attendances)</div>
+        <div class="step-desc">تسجيل عبر: Kiosk / Badge RFID / QR Code / GPS Mobile / بصمة. تتبع الساعات والتأخير.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تكامل مع أجهزة البصمة (ZKTeco / Suprema).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">طلبات الإجازات (Time Off)</div>
+        <div class="step-desc">الموظف يطلب إجازة من تطبيقه، المدير يوافق، ترصد في الحضور والراتب تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">تقارير المصاريف (Expenses)</div>
+        <div class="step-desc">الموظف يصور الإيصال → Odoo يستخرج البيانات بالـ OCR → موافقة → تعويض مع الراتب.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">التقييم والمهارات (Appraisals)</div>
+        <div class="step-desc">تقييم دوري (سنوي/نصف سنوي) مع نماذج مخصصة، 360° Feedback، خطط تطوير.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">9</div>
+      <div class="step-content">
+        <div class="step-title">جدول الدوام (Planning)</div>
+        <div class="step-desc">جدولة شفتات الموظفين، تعيين المهام، متابعة التنفيذ، تنبيهات التعارض.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Payroll:</strong> مصدر بيانات الرواتب الكامل</li>
+      <li><strong>Accounting:</strong> قيود المصاريف والمكافآت</li>
+      <li><strong>Project:</strong> تعيين الموظفين على المهام</li>
+      <li><strong>Timesheet:</strong> ساعات العمل الفعلية</li>
+      <li><strong>Fleet:</strong> تخصيص السيارات للموظفين</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 8. PAYROLL ==================== -->
+<section id="payroll" class="module">
+  <div class="module-header">
+    <div class="module-icon">💵</div>
+    <div>
+      <h2>8. الرواتب <span class="en">Payroll</span></h2>
+      <div class="module-subtitle">احتساب وصرف الرواتب بدقة</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Payroll يحسب رواتب الموظفين تلقائياً بناءً على: الحضور، الإجازات، المصاريف، العمل الإضافي، الخصومات، التأمينات، الضرائب — وفق قواعد الراتب (Salary Rules) المخصصة لكل دولة.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">قواعد راتب مرنة وقابلة للتخصيص بالكامل</div>
+    <div class="feature">هياكل رواتب متعددة (Salary Structures)</div>
+    <div class="feature">احتساب تلقائي للإضافات والخصومات</div>
+    <div class="feature">التأمينات الاجتماعية والاستقطاعات</div>
+    <div class="feature">تقارير راتب شهرية وتراكمية</div>
+    <div class="feature">Payslips رقمية على بوابة الموظف</div>
+    <div class="feature">تصدير ملف WPS (نظام حماية الأجور الخليجي)</div>
+    <div class="feature">نهاية الخدمة ومكافآت</div>
+    <div class="feature">عمولات ومكافآت الأداء</div>
+    <div class="feature">قيود محاسبية تلقائية</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد هيكل الراتب (Salary Structure)</div>
+        <div class="step-desc">تعريف مكونات الراتب: أساسي، بدلات، مخصصات، خصومات، تأمينات، ضرائب.</div>
+        <div class="step-path">Payroll → Configuration → Salary Structures</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">ربط كل موظف بعقده وهيكله</div>
+        <div class="step-desc">كل موظف يرتبط بعقد يحدد: الراتب، البدلات، ساعات العمل، نوع الدوام.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تجميع البيانات الشهرية</div>
+        <div class="step-desc">Odoo يسحب تلقائياً: أيام الحضور، الإجازات، المصاريف، العمل الإضافي، العمولات.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Work Entries تظهر كل المدخلات قبل احتساب الراتب.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">توليد Payslips</div>
+        <div class="step-desc">إنشاء payslips لكل موظف دفعة واحدة أو جماعياً (Batch)، مع احتساب تلقائي لكل البنود.</div>
+        <div class="step-path">Payroll → Payslips → Batches</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">المراجعة والاعتماد</div>
+        <div class="step-desc">مراجعة الـ Payslips، تعديل أي عناصر استثنائية (مكافآت، سلف)، ثم اعتمادها.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">الدفع عبر البنك (WPS)</div>
+        <div class="step-desc">تصدير ملف WPS/SIF بصيغة البنك، رفعه للبنك، ليحول الرواتب دفعة واحدة.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تكامل WPS الكويت / السعودية يتوافق مع مسك.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">القيود المحاسبية التلقائية</div>
+        <div class="step-desc">عند اعتماد الراتب، تُنشأ القيود تلقائياً (مصروف رواتب، التأمينات، الضرائب، المستحق).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">إرسال Payslips للموظفين</div>
+        <div class="step-desc">الموظف يفتح Payslip من تطبيقه، يطلع على التفاصيل، يحمّل PDF موقّع رسمياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">9</div>
+      <div class="step-content">
+        <div class="step-title">تقارير ومتطلبات حكومية</div>
+        <div class="step-desc">تقارير: كشف رواتب شهري، تأمينات اجتماعية، مكافأة نهاية خدمة، ضرائب.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    💡 <strong>نصيحة Business Gate:</strong> في الكويت، ربط قاعدة PIFSS (التأمينات) ونظام WPS الكويت يوفر ساعات عمل شهرية. للعملاء السعوديين، استخدم تكامل مدد وGOSI.
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Employees:</strong> العقود وبيانات الموظف</li>
+      <li><strong>Attendances:</strong> ساعات الحضور الفعلية</li>
+      <li><strong>Time Off:</strong> الإجازات والخصومات</li>
+      <li><strong>Expenses:</strong> تعويض المصاريف</li>
+      <li><strong>Accounting:</strong> القيود المحاسبية</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 9. PROJECT ==================== -->
+<section id="project" class="module">
+  <div class="module-header">
+    <div class="module-icon">📋</div>
+    <div>
+      <h2>9. إدارة المشاريع <span class="en">Project</span></h2>
+      <div class="module-subtitle">تخطيط وتنفيذ ومتابعة المشاريع</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Project يدير المشاريع بلوحة Kanban، Gantt، Timeline، مع مهام (Tasks)، Sub-tasks، Timesheets، متابعة الميزانية، وفوترة ساعات العمل للعميل.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">Kanban, Gantt, Timeline, Calendar views</div>
+    <div class="feature">مهام ومهام فرعية غير محدودة العمق</div>
+    <div class="feature">Timesheets لتسجيل ساعات العمل</div>
+    <div class="feature">فوترة المشاريع بالساعة/الثابتة/المرحلية</div>
+    <div class="feature">ميزانية المشروع وربحيته</div>
+    <div class="feature">بوابة عميل لمتابعة المشروع</div>
+    <div class="feature">تعاون فوري عبر Discuss</div>
+    <div class="feature">قوالب مشاريع جاهزة</div>
+    <div class="feature">تبعيات المهام (Dependencies)</div>
+    <div class="feature">أتمتة الحالات والتنبيهات</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء المشروع</div>
+        <div class="step-desc">تعريف المشروع: الاسم، العميل، المدير، الفريق، التواريخ، الميزانية، مراحل المشروع.</div>
+        <div class="step-path">Project → Projects → New</div>
+        <div class="step-feat"><strong>ميزة:</strong> قوالب Project Templates لتسريع الإنشاء (تنفيذ Odoo مثلاً).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">تفكيك العمل لمهام (WBS)</div>
+        <div class="step-desc">تقسيم المشروع إلى مراحل (Stages) ومهام ومهام فرعية، وتحديد المسؤول والمدة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تخطيط الجدول الزمني (Gantt)</div>
+        <div class="step-desc">سحب وإفلات لتحديد التواريخ، التبعيات، المسار الحرج، التعارضات في التخصيص.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تنفيذ المهام ومتابعتها</div>
+        <div class="step-desc">الموظفون يحركون المهام بين مراحل Kanban، يضيفون تعليقات، يرفعون مرفقات، يسجلون ساعات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل ساعات العمل (Timesheets)</div>
+        <div class="step-desc">كل موظف يسجل ساعاته على المهام (يدوياً أو تلقائياً عبر Start Timer).</div>
+        <div class="step-path">Timesheets → My Timesheets</div>
+        <div class="step-feat"><strong>ميزة:</strong> Odoo 18 يوفر Timer ذكي يعمل حتى على الموبايل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">متابعة الميزانية والربحية</div>
+        <div class="step-desc">تتبع لحظي للتكاليف (ساعات العمل × التكلفة) مقابل الإيرادات (العقود/الفواتير).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">فوترة العميل</div>
+        <div class="step-desc">فوترة حسب: المشروع (Fixed)، الساعة (T&M)، النسبة المُنجزة، أو المراحل (Milestones).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">تسليم المشروع والتقييم</div>
+        <div class="step-desc">إقفال المشروع، تقييم أداء الفريق، تحليل الربحية، واستخلاص دروس مستفادة.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> إنشاء المشروع تلقائياً من أمر البيع</li>
+      <li><strong>Timesheet:</strong> ساعات العمل الفعلية</li>
+      <li><strong>Invoicing:</strong> فوترة الساعات والمراحل</li>
+      <li><strong>Helpdesk:</strong> تحويل التذاكر لمهام</li>
+      <li><strong>HR:</strong> توفر الموظفين وتكلفتهم</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 10. HELPDESK ==================== -->
+<section id="helpdesk" class="module">
+  <div class="module-header">
+    <div class="module-icon">🎧</div>
+    <div>
+      <h2>10. الدعم الفني <span class="en">Helpdesk</span></h2>
+      <div class="module-subtitle">إدارة تذاكر الدعم والشكاوى</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Helpdesk يدير تذاكر الدعم الفني والشكاوى بواجهة Kanban سهلة، مع SLA، قواعد التصعيد، قاعدة معرفية، ومتابعة رضا العملاء — مع قنوات متعددة (بريد / Live Chat / Website / Portal).
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">قنوات متعددة (Email, Live Chat, Website, API)</div>
+    <div class="feature">SLA Policies مع تنبيهات التصعيد</div>
+    <div class="feature">قواعد تعيين ذكية (Routing Rules)</div>
+    <div class="feature">قاعدة معرفية (Knowledge Base)</div>
+    <div class="feature">استطلاعات رضا العملاء (CSAT)</div>
+    <div class="feature">بوابة العميل لمتابعة التذكرة</div>
+    <div class="feature">تكامل مع Live Chat للموقع</div>
+    <div class="feature">Ticket Merge و Split</div>
+    <div class="feature">تحويل التذكرة إلى مهمة/مشروع</div>
+    <div class="feature">تقارير الأداء وإحصاءات الفريق</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد فرق الدعم</div>
+        <div class="step-desc">إنشاء فرق (تقني، مبيعات، مالي)، تحديد الأعضاء، قواعد التعيين، قنوات التواصل.</div>
+        <div class="step-path">Helpdesk → Configuration → Teams</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">استقبال التذاكر</div>
+        <div class="step-desc">تصل التذاكر عبر: بريد دعم، نموذج الموقع، Live Chat، API، يدوياً من موظف الدعم.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تصنيف التذكرة وتعيينها</div>
+        <div class="step-desc">تحديد الأولوية، التصنيف، الفريق، المسؤول — يدوياً أو تلقائياً بقواعد.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Auto-assignment بناءً على نوع العميل/الموضوع/التوفر.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تطبيق SLA</div>
+        <div class="step-desc">ربط التذكرة باتفاقية خدمة تحدد: زمن الاستجابة، زمن الحل، تنبيهات التأخر.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">حل المشكلة والتواصل مع العميل</div>
+        <div class="step-desc">الفني يدرس التذكرة، يراسل العميل، يطلب تفاصيل، يقترح حلاً، ينفذه.</div>
+        <div class="step-feat"><strong>ميزة:</strong> قوالب ردود جاهزة + اقتراح مقالات من Knowledge Base.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">إغلاق التذكرة</div>
+        <div class="step-desc">بعد تأكيد الحل، تُغلق التذكرة ويُرسل للعميل استطلاع رضا.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">التحليل والتحسين</div>
+        <div class="step-desc">تقارير: متوسط زمن الحل، نسبة الالتزام بالـ SLA، معدلات الرضا، المشاكل المتكررة.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> ربط التذاكر بأوامر البيع</li>
+      <li><strong>Project:</strong> تحويل التذكرة لمهمة مشروع</li>
+      <li><strong>Field Service:</strong> إرسال فني ميداني</li>
+      <li><strong>Knowledge:</strong> قاعدة المعرفة للحلول</li>
+      <li><strong>Live Chat:</strong> محادثات الموقع</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 11. POS ==================== -->
+<section id="pos" class="module">
+  <div class="module-header">
+    <div class="module-icon">🛍️</div>
+    <div>
+      <h2>11. نقاط البيع <span class="en">Point of Sale (POS)</span></h2>
+      <div class="module-subtitle">البيع المباشر للمحلات والمطاعم</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول POS يوفر نقطة بيع حديثة للمتاجر والمطاعم تعمل Online وOffline، مع دعم أجهزة Barcode/Scale/Printer/Cash Drawer، وتكامل كامل مع المخزون والمحاسبة.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">واجهة سريعة Touch-friendly للـ Tablet/PC</div>
+    <div class="feature">يعمل Offline ويُزامن تلقائياً عند الاتصال</div>
+    <div class="feature">دعم Barcode / Scale / Card Reader / Printer</div>
+    <div class="feature">أوضاع متعددة: متجر / مطعم / ملابس</div>
+    <div class="feature">إدارة طاولات للمطاعم (Floor Plan)</div>
+    <div class="feature">تقسيم الفاتورة Split Bills</div>
+    <div class="feature">برامج ولاء العملاء (Loyalty)</div>
+    <div class="feature">كوبونات وخصومات</div>
+    <div class="feature">إغلاق صندوق يومي آلي (Cash Reconciliation)</div>
+    <div class="feature">ربط بشاشة المطبخ (Kitchen Display)</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد نقطة البيع</div>
+        <div class="step-desc">تعريف المتجر، طرق الدفع، الطابعات، الأجهزة، المنتجات المتاحة، ساعات العمل.</div>
+        <div class="step-path">Point of Sale → Configuration → Point of Sale</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">فتح الجلسة (Open Session)</div>
+        <div class="step-desc">الكاشير يفتح جلسته برصيد نقدي بدء، يتأكد من الأجهزة، ويبدأ البيع.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">بيع منتج</div>
+        <div class="step-desc">مسح Barcode أو اختيار من الواجهة، تعديل الكمية، إضافة خصم، اختيار العميل.</div>
+        <div class="step-feat"><strong>ميزة:</strong> البحث الفوري عن المنتجات + اقتراحات تلقائية.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">اختيار طريقة الدفع</div>
+        <div class="step-desc">نقدي، بطاقة، KNET/مدى، Apple Pay، مختلط. إصدار فاتورة إن طلب العميل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">طباعة/إرسال الإيصال</div>
+        <div class="step-desc">طباعة Receipt ورقي و/أو إرسال بريد/WhatsApp، وفتح درج الكاش إن نقدي.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">إدارة المرتجعات</div>
+        <div class="step-desc">استرجاع منتج من فاتورة سابقة، رد المبلغ، وتحديث المخزون تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">إغلاق الجلسة</div>
+        <div class="step-desc">عدّ النقد الفعلي، مقارنته بالمتوقع، تسجيل الفرق، إقفال الصندوق، توليد تقرير اليوم.</div>
+        <div class="step-feat"><strong>ميزة:</strong> قيود محاسبية تلقائية لكل جلسة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">التحليل والتقارير</div>
+        <div class="step-desc">تقارير مبيعات يومية، أفضل المنتجات، أداء الكاشيرات، متوسط الفاتورة، ساعات الذروة.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Inventory:</strong> خصم فوري من المخزون</li>
+      <li><strong>Accounting:</strong> قيود محاسبية تلقائية</li>
+      <li><strong>eCommerce:</strong> مزامنة المنتجات والأسعار</li>
+      <li><strong>Loyalty:</strong> برامج الولاء والنقاط</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 12. ECOMMERCE ==================== -->
+<section id="ecommerce" class="module">
+  <div class="module-header">
+    <div class="module-icon">🌐</div>
+    <div>
+      <h2>12. الموقع والتجارة الإلكترونية <span class="en">Website & eCommerce</span></h2>
+      <div class="module-subtitle">موقعك الإلكتروني ومتجرك في مكان واحد</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    Odoo 18 يوفر مُنشئ مواقع Drag-and-Drop قوي، متجر إلكتروني كامل، مدونة، منتدى، وظائف، خصوصية، دردشة مباشرة — كلها مترابطة مباشرة مع المخزون والمبيعات والمحاسبة، دون حاجة لشوبيفاي أو ووردبريس.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">Drag-and-Drop Builder بدون برمجة</div>
+    <div class="feature">قوالب مواقع جاهزة بتصاميم حديثة</div>
+    <div class="feature">SEO Tools مدمجة (meta, sitemap, schema)</div>
+    <div class="feature">متجر كامل مع سلة ومفضلة</div>
+    <div class="feature">Product Comparison والفلاتر المتقدمة</div>
+    <div class="feature">بوابات دفع متعددة (Stripe, PayPal, MyFatoorah, Tap)</div>
+    <div class="feature">حسابات عملاء و Portal</div>
+    <div class="feature">متعدد اللغات والعملات</div>
+    <div class="feature">Live Chat و Chatbot</div>
+    <div class="feature">A/B Testing و Analytics مدمجة</div>
+    <div class="feature">Blog, Forum, Events, Jobs, eLearning</div>
+    <div class="feature">ربط مباشر مع Amazon وShopify</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء الموقع وتصميمه</div>
+        <div class="step-desc">اختيار قالب، تخصيص الألوان والخطوط، إضافة الصفحات (رئيسية، من نحن، تواصل).</div>
+        <div class="step-path">Website → Site → Pages</div>
+        <div class="step-feat"><strong>ميزة:</strong> في Odoo 18، AI Website Builder يولد الموقع من وصف نصي.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إدارة المنتجات في المتجر</div>
+        <div class="step-desc">تفعيل "Can be Sold on eCommerce" للمنتجات، إضافة صور وأوصاف وSEO، تصنيفها.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">إعداد بوابات الدفع والشحن</div>
+        <div class="step-desc">ربط Stripe / PayPal / Knet / MyFatoorah، تحديد طرق الشحن ورسومها.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تجربة الشراء للعميل</div>
+        <div class="step-desc">العميل يتصفح، يضيف للسلة، يُنشئ حساب، يختار العنوان، يدفع، يتابع الطلب.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">معالجة الطلب في Backend</div>
+        <div class="step-desc">الطلب يتحول تلقائياً إلى Sales Order → Picking في المخزون → شحن → فاتورة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">التسويق والترويج</div>
+        <div class="step-desc">عروض ترويجية، أكواد خصم، إعلانات إرتباطية، إشعارات مهجورة (Abandoned Cart).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">التحليل والتحسين</div>
+        <div class="step-desc">Google Analytics، معدل التحويل، مسار الشراء، أكثر المنتجات مشاهدة وشراء.</div>
+        <div class="step-feat"><strong>ميزة:</strong> A/B Testing للصفحات والعروض.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> كل طلب أونلاين = Sales Order</li>
+      <li><strong>Inventory:</strong> تحديث فوري للمخزون</li>
+      <li><strong>Marketing Automation:</strong> حملات Email/SMS</li>
+      <li><strong>Accounting:</strong> فواتير وقيود تلقائية</li>
+      <li><strong>Sign:</strong> التوقيع الإلكتروني للعقود</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 13. MARKETING ==================== -->
+<section id="marketing" class="module">
+  <div class="module-header">
+    <div class="module-icon">📣</div>
+    <div>
+      <h2>13. التسويق <span class="en">Marketing Suite</span></h2>
+      <div class="module-subtitle">Email, SMS, Social, Automation, Events, Surveys</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    مجموعة التسويق في Odoo 18 تشمل: Email Marketing، SMS Marketing، Social Marketing، Marketing Automation، Events، Surveys — كلها تستهدف نفس قاعدة البيانات الموحدة (CRM + Sales + Website).
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">Email Marketing مع Drag&Drop Editor</div>
+    <div class="feature">SMS Marketing لأرقام الخليج</div>
+    <div class="feature">إدارة منصات التواصل (LinkedIn, FB, X, IG)</div>
+    <div class="feature">Marketing Automation (تدفقات آلية)</div>
+    <div class="feature">تقسيم الجمهور Segments متقدمة</div>
+    <div class="feature">A/B Testing للرسائل والعناوين</div>
+    <div class="feature">استطلاعات وتصويتات مع منطق شرطي</div>
+    <div class="feature">تنظيم فعاليات ومؤتمرات كاملة</div>
+    <div class="feature">Landing Pages مع تكامل النماذج</div>
+    <div class="feature">تحليلات شاملة ومعدلات التحويل</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">تحديد الجمهور المستهدف</div>
+        <div class="step-desc">فلترة العملاء حسب معايير دقيقة (دولة، صناعة، شريحة، تفاعل سابق، قيمة مشتريات).</div>
+        <div class="step-path">Email Marketing → Mailing Lists / Segments</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">تصميم الحملة</div>
+        <div class="step-desc">اختيار قالب، تخصيص المحتوى بـ Drag-and-Drop، إضافة صور وروابط وCTA.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Content Variables لتخصيص كل بريد باسم المستلم.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">A/B Testing</div>
+        <div class="step-desc">إنشاء نسختين من الحملة (مثلاً عنوانين مختلفين)، إرسالها لعينة، اختيار الأفضل للباقي.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">جدولة الإرسال</div>
+        <div class="step-desc">إرسال فوري أو مجدول، مع تحسين وقت الإرسال لكل مستلم (Send Time Optimization).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">Marketing Automation (التدفقات الآلية)</div>
+        <div class="step-desc">إنشاء سير آلي: عميل يشترك → رحّب به → بعد يومين ابعث محتوى → إن فتح ابعث عرض.</div>
+        <div class="step-path">Marketing Automation → Campaigns</div>
+        <div class="step-feat"><strong>ميزة:</strong> قواعد مبنية على السلوك + شروط منطقية متقدمة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">متابعة التفاعل</div>
+        <div class="step-desc">تتبع معدل الفتح، النقر، التحويل، الشراء، الإلغاء — كل حملة بتقرير مفصّل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">SMS / Social / Events</div>
+        <div class="step-desc">بنفس المنهجية، تنشأ حملات SMS، تُنشر منشورات اجتماعية، وتُنظّم فعاليات عبر الموقع.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">Surveys وقياس الرضا</div>
+        <div class="step-desc">إنشاء استطلاعات تفاعلية، إرسالها للعملاء، تحليل النتائج بيانياً.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>CRM:</strong> Leads من الحملات وتحويلها</li>
+      <li><strong>Sales:</strong> ربط الإيرادات بالحملات</li>
+      <li><strong>Website:</strong> نماذج وLanding pages</li>
+      <li><strong>eCommerce:</strong> حملات مستهدفة للمتسوقين</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 14. FIELD SERVICE ==================== -->
+<section id="fsm" class="module">
+  <div class="module-header">
+    <div class="module-icon">🔧</div>
+    <div>
+      <h2>14. الخدمات الميدانية <span class="en">Field Service</span></h2>
+      <div class="module-subtitle">تنظيم الفنيين وزيارات العملاء</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Field Service يدير زيارات الفنيين الميدانيين: جدولة، تحديد مواقع، مسار محسّن، تسجيل الوقت، استخدام قطع الغيار، توقيع العميل، ثم الفوترة — كل ذلك من تطبيق موبايل يعمل Offline.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">جدولة مهام Map-based للفنيين</div>
+    <div class="feature">تطبيق موبايل يعمل Offline</div>
+    <div class="feature">تتبع GPS للفنيين (اختياري)</div>
+    <div class="feature">Time Tracking تلقائي للزيارة</div>
+    <div class="feature">استخدام قطع الغيار من المخزون</div>
+    <div class="feature">التوقيع الإلكتروني من العميل</div>
+    <div class="feature">صور قبل/بعد الصيانة</div>
+    <div class="feature">قوائم فحص مخصصة لكل زيارة</div>
+    <div class="feature">فوترة فورية بعد الإنجاز</div>
+    <div class="feature">عقود صيانة وزيارات متكررة</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">استلام طلب الخدمة</div>
+        <div class="step-desc">من Helpdesk، عقد صيانة، اتصال عميل، أو طلب بيع — تُنشأ مهمة ميدانية.</div>
+        <div class="step-path">Field Service → Tasks</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">جدولة الفني</div>
+        <div class="step-desc">المسؤول يرى خريطة المهام، فنيين متوفرين، مسارهم، ويوزّع المهمة على الأنسب.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تحسين المسار تلقائياً لتقليل وقت التنقل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">الفني يستلم المهمة على الموبايل</div>
+        <div class="step-desc">إشعار فوري، معلومات الزبون والعنوان والمشكلة، تاريخ سابق، مرفقات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل البدء عند الوصول</div>
+        <div class="step-desc">الفني يضغط Start، يُسجّل الوقت، يفتح قوائم الفحص ويسجل الملاحظات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">تنفيذ الصيانة وتسجيل القطع</div>
+        <div class="step-desc">استخدام قطع غيار من شاحنة الفني (مخزون متحرك)، تسجيلها تلقائياً في المهمة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">توقيع العميل والختم</div>
+        <div class="step-desc">العميل يوقّع على الشاشة، يُرفق تقرير الزيارة، تُلتقط صور بعد الإصلاح.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تقرير PDF احترافي يُرسل للعميل تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">الفوترة الفورية</div>
+        <div class="step-desc">بعد إتمام المهمة، تُصدر فاتورة تلقائياً (أو تُضاف لعقد صيانة)، وتُرسل للعميل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">التحليل والتحسين</div>
+        <div class="step-desc">تقارير: معدل Resolution، وقت الاستجابة، إنتاجية الفنيين، القطع الأكثر استخداماً.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Helpdesk:</strong> تحويل تذاكر لزيارات ميدانية</li>
+      <li><strong>Inventory:</strong> سحب قطع الغيار تلقائياً</li>
+      <li><strong>Sales:</strong> فوترة الخدمة</li>
+      <li><strong>Fleet:</strong> سيارات الفنيين</li>
+      <li><strong>Maintenance:</strong> عقود الصيانة الدورية</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 15. SUBSCRIPTION ==================== -->
+<section id="subscription" class="module">
+  <div class="module-header">
+    <div class="module-icon">🔄</div>
+    <div>
+      <h2>15. الاشتراكات <span class="en">Subscriptions</span></h2>
+      <div class="module-subtitle">الإيرادات المتكررة وعقود الخدمات</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Subscriptions يدير النماذج التجارية القائمة على الاشتراك: SaaS، عقود خدمة، صيانة دورية، عضويات — مع تجديد تلقائي، فوترة مجدولة، متابعة MRR/Churn، وبوابة عميل للإدارة الذاتية.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">قوالب اشتراكات متعددة (شهري/سنوي/مخصص)</div>
+    <div class="feature">تجديد تلقائي مع إشعارات مسبقة</div>
+    <div class="feature">فوترة متكررة تلقائية</div>
+    <div class="feature">Upgrade / Downgrade / Pause / Cancel</div>
+    <div class="feature">سحب تلقائي للبطاقات (Stripe Tokens)</div>
+    <div class="feature">بوابة عميل للإدارة الذاتية</div>
+    <div class="feature">تقارير MRR, ARR, Churn Rate, LTV</div>
+    <div class="feature">توقع الإيرادات المستقبلية</div>
+    <div class="feature">قواعد خصومات الولاء</div>
+    <div class="feature">إشعارات نهاية الاشتراك للمبيعات</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد قوالب الاشتراك</div>
+        <div class="step-desc">تحديد: المدة (شهري/سنوي)، السعر، طريقة الفوترة، فترة الإشعار قبل التجديد.</div>
+        <div class="step-path">Subscriptions → Configuration → Subscription Templates</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء عرض اشتراك للعميل</div>
+        <div class="step-desc">من CRM أو Sales، يُنشأ عرض سعر بمنتج من نوع Subscription، يُرسل للعميل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تفعيل الاشتراك</div>
+        <div class="step-desc">عند توقيع العميل ودفع الدفعة الأولى، ينشأ Subscription نشط.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">الفوترة المتكررة</div>
+        <div class="step-desc">قبل انتهاء الفترة، Odoo يُصدر الفاتورة التالية تلقائياً ويرسلها للعميل.</div>
+        <div class="step-feat"><strong>ميزة:</strong> Auto-charge للبطاقات المسجلة دون تدخل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">إدارة التغييرات</div>
+        <div class="step-desc">العميل يمكنه Upgrade/Downgrade/Pause/Cancel من البوابة، مع حساب الفرق تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">متابعة الدفعات المتأخرة</div>
+        <div class="step-desc">عند فشل الدفع، Odoo يعيد المحاولة، يرسل تذكيرات، يوقف الاشتراك تلقائياً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">التجديد أو الإلغاء</div>
+        <div class="step-desc">قبل انتهاء المدة، يُرسل إشعار للعميل، يختار التجديد أو الإيقاف.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">8</div>
+      <div class="step-content">
+        <div class="step-title">التحليل (MRR / Churn)</div>
+        <div class="step-desc">Dashboard يعرض: MRR (الإيراد الشهري المتكرر)، ARR، Churn، معدل النمو، LTV.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Sales:</strong> عروض الاشتراك وعقودها</li>
+      <li><strong>Invoicing:</strong> فواتير متكررة</li>
+      <li><strong>Accounting:</strong> الاعتراف بالإيراد الشهري</li>
+      <li><strong>Sign:</strong> توقيع العقود</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 16. DOCUMENTS & SIGN ==================== -->
+<section id="documents" class="module">
+  <div class="module-header">
+    <div class="module-icon">📄</div>
+    <div>
+      <h2>16. المستندات والتوقيع الإلكتروني <span class="en">Documents & Sign</span></h2>
+      <div class="module-subtitle">أرشفة وتصنيف وتوقيع رقمي</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    Documents لإدارة المستندات (DMS) مع OCR، تصنيف، وسير اعتماد. Sign للتوقيع الإلكتروني الملزم قانونياً على العقود والاتفاقيات — كلاهما متكامل مع كل موديولات Odoo.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">أرشفة مستندات بذكاء (AI Classification)</div>
+    <div class="feature">OCR لاستخراج بيانات الفواتير والبطاقات</div>
+    <div class="feature">Workspaces مع صلاحيات دقيقة</div>
+    <div class="feature">ربط المستند بأي سجل (فاتورة، عقد، موظف)</div>
+    <div class="feature">Tags ذكية وبحث متقدم</div>
+    <div class="feature">سير اعتماد مخصّص (Approvals)</div>
+    <div class="feature">توقيع إلكتروني ملزم قانونياً</div>
+    <div class="feature">قوالب عقود قابلة للإعادة</div>
+    <div class="feature">تتبع كامل للتوقيع (Audit Trail)</div>
+    <div class="feature">إرسال جماعي للعقود</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">إعداد Workspaces</div>
+        <div class="step-desc">تنظيم المستندات في مساحات: مالية، موارد بشرية، مبيعات... مع صلاحيات لكل فريق.</div>
+        <div class="step-path">Documents → Configuration → Workspaces</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">رفع المستندات</div>
+        <div class="step-desc">سحب وإفلات، مسح ضوئي، إرسال بريد لعنوان خاص، أو مسح QR Code على الموبايل.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">الأرشفة والتصنيف الذكي</div>
+        <div class="step-desc">Odoo يقترح: Workspace، Tags، Partner، النوع — بناءً على محتوى المستند (AI).</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">سير الاعتماد</div>
+        <div class="step-desc">تمرير المستند بين الموظفين للموافقة (مدير → مالية → رئيس تنفيذي) بتسلسل محدد.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">توقيع المستند (Sign)</div>
+        <div class="step-desc">إعداد قالب عقد، تحديد حقول التوقيع، إرساله للأطراف، كل طرف يوقّع بتوقيع إلكتروني.</div>
+        <div class="step-path">Sign → Templates → Send</div>
+        <div class="step-feat"><strong>ميزة:</strong> تحقق بالبريد/SMS + سجل كامل للتعديلات.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">الربط بسجلات Odoo</div>
+        <div class="step-desc">المستند يرتبط تلقائياً بفاتورة/عقد/عميل/موظف، ويظهر في صفحة السجل المعني.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">البحث واسترجاع</div>
+        <div class="step-desc">بحث نصي داخل محتوى المستند (OCR)، فلاتر بالـ Tags، الفترات، الأشخاص، النوع.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Accounting:</strong> فواتير الموردين بالـ OCR</li>
+      <li><strong>HR:</strong> مستندات الموظفين والعقود</li>
+      <li><strong>Sales:</strong> توقيع العقود والعروض</li>
+      <li><strong>Purchase:</strong> توقيع اتفاقيات الموردين</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 17. FLEET ==================== -->
+<section id="fleet" class="module">
+  <div class="module-header">
+    <div class="module-icon">🚗</div>
+    <div>
+      <h2>17. إدارة الأسطول <span class="en">Fleet</span></h2>
+      <div class="module-subtitle">إدارة السيارات والمركبات</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Fleet يدير سيارات الشركة وسائقيها وتكاليفها: الخدمات، الوقود، التأمين، الترخيص، العقود — بالإضافة لحساب امتيازات السيارات للموظفين وتوزيعها.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">سجلات سيارات مفصلة (موديل، لوحة، سائق)</div>
+    <div class="feature">جدولة الصيانة الدورية مع تنبيهات</div>
+    <div class="feature">تتبع تكلفة الوقود والصيانة</div>
+    <div class="feature">إدارة عقود التأمين والترخيص</div>
+    <div class="feature">امتيازات السيارة للموظفين (Car Policy)</div>
+    <div class="feature">تقارير التكلفة الإجمالية للسيارة (TCO)</div>
+    <div class="feature">تتبع الوقود بالـ Liter/Cost</div>
+    <div class="feature">Dashboard بمؤشرات الأسطول</div>
+    <div class="feature">الإيجار والليسينج</div>
+    <div class="feature">تعيين السائقين للسيارات</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل السيارات</div>
+        <div class="step-desc">بيانات كل مركبة: الموديل، اللوحة، VIN، تاريخ الشراء، القيمة، السائق المعيّن.</div>
+        <div class="step-path">Fleet → Vehicles</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل العقود</div>
+        <div class="step-desc">التأمين، الترخيص، الليسينج، الوديعة، قسط شهري، تاريخ انتهاء.</div>
+        <div class="step-feat"><strong>ميزة:</strong> تنبيهات قبل انتهاء التأمين/الترخيص.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تعيين السائقين</div>
+        <div class="step-desc">ربط موظف بسيارة، تسجيل فترة التعيين، التزامات السائق.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل الخدمات والصيانة</div>
+        <div class="step-desc">كل زيارة ورشة: تاريخ، نوع الخدمة، التكلفة، الورشة، العداد.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">تتبع الوقود</div>
+        <div class="step-desc">تسجيل تعبئة الوقود (Liter + Cost + عداد) لحساب معدل الاستهلاك.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">التحليل</div>
+        <div class="step-desc">تكلفة كل سيارة، أسطولية، شهرية، مقارنة بين السائقين، السيارات الأكثر تكلفة.</div>
+        <div class="step-feat"><strong>ميزة:</strong> TCO مخصّص للسيارة لاتخاذ قرار الاستبدال.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>HR:</strong> تعيين السيارات للموظفين</li>
+      <li><strong>Accounting:</strong> قيود الإيجار والصيانة</li>
+      <li><strong>Field Service:</strong> سيارات الفنيين</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 18. MAINTENANCE ==================== -->
+<section id="maintenance" class="module">
+  <div class="module-header">
+    <div class="module-icon">🛠️</div>
+    <div>
+      <h2>18. الصيانة والجودة <span class="en">Maintenance & Quality</span></h2>
+      <div class="module-subtitle">صيانة المعدات وضبط الجودة</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    موديول Maintenance لإدارة صيانة المعدات (وقائية وعلاجية)، مع جدولة، طلبات صيانة، وحساب MTBF وMTTR. موديول Quality لإدارة نقاط الفحص في الاستلام والإنتاج والتسليم، مع Non-Conformances.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">صيانة وقائية مجدولة زمنياً أو بالعداد</div>
+    <div class="feature">صيانة علاجية (طلبات كسر طارئ)</div>
+    <div class="feature">حساب MTBF / MTTR تلقائياً</div>
+    <div class="feature">قطع غيار مرتبطة بالمعدات</div>
+    <div class="feature">نقاط فحص جودة في الاستلام/الإنتاج/التسليم</div>
+    <div class="feature">Quality Alerts و Non-Conformances</div>
+    <div class="feature">قوائم فحص (Checklists) لكل نقطة</div>
+    <div class="feature">تقارير Pareto للمشاكل المتكررة</div>
+    <div class="feature">Kanban لحالات الصيانة</div>
+    <div class="feature">تكامل مع Manufacturing لمراكز العمل</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">تسجيل المعدات (Equipment)</div>
+        <div class="step-desc">كل معدة: النوع، الموديل، تاريخ الشراء، الموقع، المسؤول، بطاقة تقنية، قطع الغيار.</div>
+        <div class="step-path">Maintenance → Equipment</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">جدولة الصيانة الوقائية</div>
+        <div class="step-desc">كل معدة لها جدول: كل X أشهر، أو عند بلوغ Y ساعة تشغيل. تُنشأ طلبات تلقائياً.</div>
+        <div class="step-feat"><strong>ميزة:</strong> التنبيه قبل أيام من موعد الصيانة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">طلب صيانة طارئ</div>
+        <div class="step-desc">عند عطل مفاجئ، يُنشأ طلب صيانة (Corrective)، يُسنَد للفني، يبدأ العمل فوراً.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تنفيذ الصيانة</div>
+        <div class="step-desc">الفني يسجل: الوقت، قطع الغيار المستهلكة، الملاحظات، السبب الجذري.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">نقاط فحص الجودة</div>
+        <div class="step-desc">في الاستلام، بعد كل مرحلة إنتاج، قبل التسليم — فحوصات إلزامية حسب القائمة.</div>
+        <div class="step-path">Quality → Quality Control Points</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">تحليل الأداء</div>
+        <div class="step-desc">MTBF (متوسط الزمن بين الأعطال)، MTTR (متوسط وقت الإصلاح)، الأعطال المتكررة.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع الموديولات الأخرى</div>
+    <ul>
+      <li><strong>Manufacturing:</strong> صيانة مراكز العمل</li>
+      <li><strong>Inventory:</strong> قطع الغيار وسحبها</li>
+      <li><strong>Purchase:</strong> شراء قطع الغيار</li>
+      <li><strong>HR:</strong> تعيين الفنيين</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== 19. STUDIO ==================== -->
+<section id="studio" class="module">
+  <div class="module-header">
+    <div class="module-icon">🎨</div>
+    <div>
+      <h2>19. Studio والتخصيص <span class="en">Studio</span></h2>
+      <div class="module-subtitle">تخصيص Odoo بدون برمجة</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    Studio أداة Low-Code تسمح بتخصيص Odoo دون كتابة كود: إضافة حقول، تعديل شاشات، إنشاء تقارير PDF، بناء موديولات جديدة، تصميم سير أعمال آلي — كلها بواجهة سحب وإفلات.
+  </div>
+
+  <div class="section-label purple">⭐ المزايا الرئيسية</div>
+  <div class="features-grid">
+    <div class="feature">إضافة حقول جديدة Drag-and-Drop</div>
+    <div class="feature">تعديل شاشات العرض (Form / List / Kanban / Graph)</div>
+    <div class="feature">إنشاء تقارير PDF مخصصة</div>
+    <div class="feature">بناء موديولات كاملة جديدة</div>
+    <div class="feature">تصميم Automations (سير أعمال آلي)</div>
+    <div class="feature">إضافة Approvals وWorkflows</div>
+    <div class="feature">أزرار وإجراءات مخصصة</div>
+    <div class="feature">Filters & Dashboards مخصصة</div>
+    <div class="feature">تصدير التعديلات كموديول Python</div>
+    <div class="feature">إضافة Tabs وSections للشاشات</div>
+  </div>
+
+  <div class="section-label">🔄 دورة العمل التفصيلية</div>
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">تفعيل Studio</div>
+        <div class="step-desc">من الإعدادات، تفعيل Studio. يظهر زر مخصص في أعلى كل شاشة.</div>
+        <div class="step-path">Settings → Studio → Enable</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">تعديل الشاشات الحالية</div>
+        <div class="step-desc">سحب حقول جديدة، إخفاء حقول غير مستخدمة، تغيير ترتيب الأقسام، إضافة ألوان شرطية.</div>
+        <div class="step-feat"><strong>ميزة:</strong> معاينة فورية لأي تغيير قبل الحفظ.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">إنشاء موديول جديد</div>
+        <div class="step-desc">بناء تطبيق خاص من الصفر: نموذج، شاشات، قوائم، أذونات — بدون برمجة.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">تصميم تقارير PDF</div>
+        <div class="step-desc">تخصيص فاتورة/عرض سعر/تقرير بسحب حقول وإضافة شعار ونصوص وجداول.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">Automations (أتمتة)</div>
+        <div class="step-desc">قاعدة: عند حدوث X، نفّذ Y — مثلاً: عند تأكيد عرض سعر > 10,000 KWD، أرسل إشعار للمدير.</div>
+        <div class="step-feat"><strong>ميزة:</strong> أكثر من 20 نوع Trigger/Action.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">Approvals (سير الاعتماد)</div>
+        <div class="step-desc">إضافة خطوات اعتماد متعددة: مثلاً طلب خصم > 20% يحتاج موافقة المدير التجاري.</div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">التصدير كموديول</div>
+        <div class="step-desc">كل التعديلات تُصدَّر كموديول .zip للتثبيت في بيئات أخرى (Test → Production).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    💡 <strong>نصيحة Business Gate:</strong> لا تبالغ في التخصيص بـ Studio في Odoo Online. التخصيصات الكثيرة قد تُعقّد الترقيات المستقبلية. للتعديلات الكبيرة، يفضَّل Odoo.sh أو On-Premise مع موديولات Python مكتوبة.
+  </div>
+
+  <div class="integration">
+    <div class="integration-title">🔗 التكامل مع كل الموديولات</div>
+    <ul>
+      <li><strong>كل الموديولات:</strong> تخصيص شاشاتها وحقولها وتقاريرها</li>
+      <li><strong>Automation:</strong> ربط أحداث بين موديولات مختلفة</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ==================== SUMMARY ==================== -->
+<section class="module" style="background: linear-gradient(135deg, #faf7f9 0%, #fff 100%);">
+  <div class="module-header">
+    <div class="module-icon" style="background: linear-gradient(135deg, var(--gold), #b8941f);">⚡</div>
+    <div>
+      <h2>خلاصة: كيف تعمل الموديولات معاً؟</h2>
+      <div class="module-subtitle">الدورة المتكاملة في Odoo 18</div>
+    </div>
+  </div>
+
+  <div class="module-intro">
+    قوة Odoo الحقيقية ليست في الموديولات المنفردة، بل في تكاملها التلقائي. هذه نظرة على سيناريو حقيقي يشمل عدة موديولات:
+  </div>
+
+  <div class="workflow">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <div class="step-title">عميل محتمل يزور الموقع</div>
+        <div class="step-desc"><strong>Website</strong> يلتقط بياناته في نموذج → <strong>CRM</strong> ينشئ Lead.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <div class="step-title">المندوب يحوّله لفرصة</div>
+        <div class="step-desc"><strong>CRM</strong> → <strong>Sales</strong>: يُنشئ عرض سعر، يرسله بـ <strong>Sign</strong>، العميل يوقّع.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <div class="step-title">تنفيذ الطلب</div>
+        <div class="step-desc"><strong>Sales</strong> → <strong>Manufacturing</strong> (إنتاج) + <strong>Purchase</strong> (مواد خام) + <strong>Inventory</strong> (سحب).</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <div class="step-title">التسليم والتركيب</div>
+        <div class="step-desc"><strong>Inventory</strong> يشحن → <strong>Field Service</strong> يرسل فني للتركيب، يسجل وقت الخدمة.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">5</div>
+      <div class="step-content">
+        <div class="step-title">الفوترة والتحصيل</div>
+        <div class="step-desc"><strong>Accounting</strong> يُصدر الفاتورة → العميل يدفع عبر <strong>Payment Gateway</strong> → القيد تلقائي.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">6</div>
+      <div class="step-content">
+        <div class="step-title">الدعم ما بعد البيع</div>
+        <div class="step-desc"><strong>Helpdesk</strong> للاستفسارات → <strong>Subscriptions</strong> لعقد الصيانة المتجدد → <strong>Maintenance</strong> للصيانة الدورية.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">7</div>
+      <div class="step-content">
+        <div class="step-title">التحليل والقرار</div>
+        <div class="step-desc">كل هذه البيانات تصبّ في <strong>Dashboard</strong> واحد لاتخاذ قرارات مدعومة بالأرقام.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    💡 <strong>الفكرة الجوهرية:</strong> في Odoo 18، كل موديول يغذّي الآخر. بيان واحد يُدخل في مكان واحد يظهر في كل المكان الذي يهمّ. هذا ما يفرق Odoo عن مجموعة برامج مستقلة (SAP + Salesforce + Shopify + QuickBooks...).
+  </div>
+</section>
+
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="footer-brand">Business Gate | بوابة الأعمال للاستشارات التقنية</div>
+  <h3>جاهزون لتنفيذ Odoo 18 لعملك</h3>
+  <p>شريك Odoo معتمد في الكويت والسعودية — دراسة، تنفيذ، تدريب، ودعم فني مستمر.</p>
+  <p style="opacity: 0.8; font-size: 13px; margin-top: 20px;">© 2026 Business Gate Technical Consulting — جميع الحقوق محفوظة</p>
+</footer>
+
+</body>
+</html>
