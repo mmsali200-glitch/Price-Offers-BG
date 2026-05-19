@@ -149,7 +149,7 @@ export const useBuilderStore = create<QuoteBuilderState & Actions>()(
     set((s) => ({
       options: [
         ...s.options,
-        { id: genId(), name: "مكون جديد", price: 300, selected: false },
+        { id: genId(), name: "مكون جديد", price: 300, selected: true },
       ],
     })),
   updateOption: (id, patch) =>
@@ -298,7 +298,10 @@ export function computeTotals(state: QuoteBuilderState) {
   }, 0);
   const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * cm), 0);
   const bgMonthly = bgApps.reduce((s, a) => s + a.monthlyPrice, 0);
-  const devRaw = modulesRaw + bgImpl;
+  const optionsTotal = state.options
+    .filter((o) => o.selected)
+    .reduce((s, o) => s + Math.round((o.price || 0) * cm), 0);
+  const devRaw = modulesRaw + bgImpl + optionsTotal;
   const development = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));
 
   const srv = state.license.serverMonthly || 0;
