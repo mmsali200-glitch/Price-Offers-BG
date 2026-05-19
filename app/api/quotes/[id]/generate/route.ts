@@ -88,7 +88,7 @@ export async function POST(
       html = renderQuoteHtml(payload);
     } catch (err) {
       console.error("[generate] render error:", err);
-      return NextResponse.json({ error: `فشل التوليد: ${err instanceof Error ? err.message : "unknown"}` }, { status: 500 });
+      return NextResponse.json({ error: `فشل الإنشاء: ${err instanceof Error ? err.message : "unknown"}` }, { status: 500 });
     }
 
     // ── Save HTML ───────────────────────────────────────────

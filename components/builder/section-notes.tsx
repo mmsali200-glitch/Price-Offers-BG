@@ -19,7 +19,7 @@ export function SectionMeetingNotes() {
   return (
     <SectionCard icon="💬" tone="gold" title="ملاحظات الاجتماع والتعديلات" subtitle="سجّل ما طرحه العميل أثناء العرض">
       <div className="bg-bg-info-lt border-r-[3px] border-bg-info rounded-sm2 px-3 py-2 text-[11px] text-[#1d4ed8] mb-3">
-        📌 التقاط التعديلات والطلبات الجديدة من الاجتماع قبل توليد العرض
+        📌 التقاط التعديلات والطلبات الجديدة من الاجتماع قبل إنشاء العرض
       </div>
 
       <div className="text-[10px] font-black text-bg-text-3 uppercase tracking-wide mb-2">
