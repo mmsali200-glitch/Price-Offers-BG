@@ -269,6 +269,59 @@ export const MODULE_QUESTIONS: Record<string, ModuleQuestion[]> = {
     { id: "mc_diff_coa", text: "هل شجرة الحسابات مختلفة لكل شركة؟", textEn: "Different COA per company?", type: "yesno", category: "الهيكل", weight: 0.10 },
     { id: "mc_access", text: "هل يوجد موظفين يعملون على أكثر من شركة؟", textEn: "Cross-company users?", type: "yesno", category: "الصلاحيات", weight: 0.05 },
   ],
+
+  // ═══════════════════════════════════════
+  // 14. DMS (Document Archive)
+  // ═══════════════════════════════════════
+  dms: [
+    { id: "dms_volume", text: "كم حجم المستندات المتوقع؟", textEn: "Expected document volume?", type: "select", category: "الحجم", weight: 0.05, options: [
+      { value: "small", label: "أقل من 5,000 مستند", multiplier: 0 },
+      { value: "medium", label: "5,000-50,000", multiplier: 0.08 },
+      { value: "large", label: "50,000-500,000", multiplier: 0.15 },
+      { value: "xlarge", label: "أكثر من 500,000", multiplier: 0.25 },
+    ]},
+    { id: "dms_users", text: "كم عدد المستخدمين؟", textEn: "Number of users?", type: "select", category: "الحجم", weight: 0.05, options: [
+      { value: "small", label: "أقل من 20", multiplier: 0 },
+      { value: "medium", label: "20-100", multiplier: 0.05 },
+      { value: "large", label: "100+", multiplier: 0.10 },
+    ]},
+    { id: "dms_ocr", text: "هل تحتاج OCR (بحث داخل الصور وPDF)؟", textEn: "OCR for image/PDF search?", type: "yesno", category: "العمليات", weight: 0.10 },
+    { id: "dms_ocr_ar", text: "هل تحتاج OCR للنصوص العربية؟", textEn: "Arabic OCR?", type: "yesno", category: "العمليات", weight: 0.08 },
+    { id: "dms_versioning", text: "هل تحتاج إدارة إصدارات المستندات؟", textEn: "Document versioning?", type: "yesno", category: "العمليات", weight: 0.05 },
+    { id: "dms_retention", text: "هل توجد سياسات احتفاظ وأرشفة دورية؟", textEn: "Retention policies?", type: "yesno", category: "الحوكمة", weight: 0.08 },
+    { id: "dms_audit", text: "هل تحتاج سجل تدقيق كامل للوصول؟", textEn: "Full access audit log?", type: "yesno", category: "الحوكمة", weight: 0.08 },
+    { id: "dms_esign", text: "هل تحتاج توقيع إلكتروني على المستندات؟", textEn: "E-signature on documents?", type: "yesno", category: "العمليات", weight: 0.10 },
+    { id: "dms_integration", text: "هل تحتاج ربط مع البريد/الماسح الضوئي؟", textEn: "Email/scanner integration?", type: "yesno", category: "التكاملات", weight: 0.08 },
+    { id: "dms_external", text: "هل تحتاج مشاركة آمنة مع جهات خارجية؟", textEn: "Secure external sharing?", type: "yesno", category: "التكاملات", weight: 0.05 },
+  ],
+
+  // ═══════════════════════════════════════
+  // 15. E-APPROVALS
+  // ═══════════════════════════════════════
+  eapprovals: [
+    { id: "eap_types", text: "كم نوع طلبات تحتاج مسارات موافقة لها؟", textEn: "Approval request types?", type: "select", category: "الهيكل", weight: 0.05, options: [
+      { value: "few", label: "1-3 أنواع", multiplier: 0 },
+      { value: "medium", label: "4-8 أنواع", multiplier: 0.08 },
+      { value: "many", label: "9+ أنواع", multiplier: 0.15 },
+    ]},
+    { id: "eap_levels", text: "كم عدد مستويات الموافقة الأقصى؟", textEn: "Max approval levels?", type: "select", category: "الهيكل", weight: 0.05, options: [
+      { value: "1-2", label: "1-2 مستوى", multiplier: 0 },
+      { value: "3-4", label: "3-4 مستويات", multiplier: 0.08 },
+      { value: "5+", label: "5+ مستويات", multiplier: 0.15 },
+    ]},
+    { id: "eap_conditional", text: "هل تحتاج قواعد شرطية (حسب القيمة/القسم)؟", textEn: "Conditional rules?", type: "yesno", category: "القواعد", weight: 0.10 },
+    { id: "eap_budget", text: "هل ترتبط الموافقات بالميزانية؟", textEn: "Budget-linked approvals?", type: "yesno", category: "القواعد", weight: 0.10 },
+    { id: "eap_delegation", text: "هل تحتاج تفويض تلقائي عند الغياب؟", textEn: "Auto-delegation on absence?", type: "yesno", category: "العملية", weight: 0.08 },
+    { id: "eap_sla", text: "هل تحتاج SLA وتصعيد تلقائي؟", textEn: "SLA & escalation?", type: "yesno", category: "العملية", weight: 0.08 },
+    { id: "eap_mobile", text: "هل تحتاج اعتماد من الجوال؟", textEn: "Mobile approvals?", type: "yesno", category: "التكاملات", weight: 0.05 },
+    { id: "eap_modules", text: "كم موديول سيتكامل مع نظام الموافقات؟", textEn: "Integrated modules?", type: "select", category: "التكاملات", weight: 0.05, options: [
+      { value: "few", label: "1-2 موديول", multiplier: 0 },
+      { value: "medium", label: "3-5 موديولات", multiplier: 0.08 },
+      { value: "many", label: "6+ موديولات", multiplier: 0.15 },
+    ]},
+    { id: "eap_custom_forms", text: "هل تحتاج نماذج طلبات مخصصة؟", textEn: "Custom request forms?", type: "yesno", category: "العملية", weight: 0.08 },
+    { id: "eap_reports", text: "هل تحتاج تقارير أداء المعتمدين؟", textEn: "Approver performance reports?", type: "yesno", category: "التقارير", weight: 0.05 },
+  ],
 };
 
 /**
