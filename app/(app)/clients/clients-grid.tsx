@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Building, Phone, MapPin, FileText, Trash2, Loader2, X, CheckSquare, Square } from "lucide-react";
 import { bulkDeleteClientsAction } from "@/lib/actions/admin";
 import { fmtNum, fmtDateArabic } from "@/lib/utils";
+import { ClientQuotesSidebar } from "./client-quotes-sidebar";
 
 type Client = {
   id: string;
@@ -32,6 +32,7 @@ export function ClientsGrid({ clients, canDelete }: { clients: Client[]; canDele
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sidebar, setSidebar] = useState<{ id: string; name: string } | null>(null);
 
   const selectionMode = selected.size > 0;
   const allSelected = selected.size === clients.length && clients.length > 0;
@@ -126,7 +127,10 @@ export function ClientsGrid({ clients, canDelete }: { clients: Client[]; canDele
                 </button>
               )}
 
-              <Link href={`/clients/${c.id}`} className="block">
+              <button
+                onClick={() => setSidebar({ id: c.id, name: c.name_ar })}
+                className="block w-full text-right"
+              >
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="size-10 rounded-xl bg-bg-green-lt text-bg-green flex items-center justify-center">
@@ -179,11 +183,18 @@ export function ClientsGrid({ clients, canDelete }: { clients: Client[]; canDele
                     </div>
                   )}
                 </div>
-              </Link>
+              </button>
             </div>
           );
         })}
       </div>
+
+      <ClientQuotesSidebar
+        clientId={sidebar?.id ?? null}
+        clientName={sidebar?.name ?? null}
+        open={!!sidebar}
+        onClose={() => setSidebar(null)}
+      />
 
       {/* Confirm modal */}
       {confirmDelete && (

@@ -114,3 +114,33 @@ export async function getClientWithQuotes(clientId: string) {
 
   return { client, quotes: (quotes ?? []) as ClientQuote[] };
 }
+
+/**
+ * List only the quotes for a given client (respects role).
+ * Used by the sidebar quick-view in /clients.
+ */
+export async function listQuotesForClient(clientId: string): Promise<ClientQuote[]> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+  const role = profile?.role ?? "sales";
+
+  let query = supabase
+    .from("quotes")
+    .select("id, ref, title, status, currency, total_development, created_at, updated_at")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false });
+
+  if (role === "sales") {
+    query = query.eq("owner_id", user.id);
+  }
+
+  const { data: quotes } = await query;
+  return (quotes ?? []) as ClientQuote[];
+}
