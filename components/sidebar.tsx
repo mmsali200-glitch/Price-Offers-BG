@@ -10,7 +10,6 @@ import {
   HelpCircle,
   Sparkles,
   BarChart3,
-  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +23,6 @@ const NAV: NavItem[] = [
   { href: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/quotes", label: "عروض الأسعار", icon: FileText },
   { href: "/clients", label: "العملاء", icon: Users },
-  { href: "/surveys", label: "الاستبيانات", icon: ClipboardList },
   { href: "/templates", label: "القوالب الجاهزة", icon: Sparkles },
   { href: "/reports", label: "التقارير والتحليلات", icon: BarChart3 },
   { href: "/settings", label: "الإعدادات", icon: Settings },
