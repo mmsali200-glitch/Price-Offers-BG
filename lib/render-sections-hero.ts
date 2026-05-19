@@ -13,6 +13,7 @@ const ICONS: Record<string,string> = {
   maintenance:"🛠️",delivery:"🚚",repair:"🔧",timesheets:"⏱️",fieldservice:"🗺️",
   expenses:"💳",subscriptions:"🔁",rental:"📅",plm:"🧬",eam:"🏭",
   livechat:"💬",elearning:"🎓",appraisals:"📈",
+  dms:"📂",eapprovals:"✅",
 };
 
 const SECTOR_AR: Record<string,string> = {trading:"تجارة وتوزيع",manufacturing:"تصنيع",services:"خدمات",healthcare:"رعاية صحية",construction:"مقاولات",realestate:"عقارات",logistics:"لوجستيات",retail:"تجزئة",food:"أغذية",education:"تعليم",government:"حكومي",other:"أعمال"};

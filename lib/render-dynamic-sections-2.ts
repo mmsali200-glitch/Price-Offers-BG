@@ -105,7 +105,7 @@ export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean)
   const cur = curSymbol(state.meta.currency);
   const title = isAr ? "تفاصيل الموديولات" : "Module Details";
   const sub = isAr ? `وصف تفصيلي لكل موديول ومميزاته الرئيسية — ${mods.length + bgApps.length} موديول` : `Detailed breakdown — ${mods.length + bgApps.length} modules`;
-  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",barcode:"🔖",mrp:"🏭",accounting:"📊",invoicing:"🧾",payroll:"💰",hr:"👤",attendance:"⏰",leaves:"🌴",recruitment:"🎯",project:"📋",helpdesk:"🎧",website:"🌐",ecommerce:"🛒",realestate:"🏢",hms:"🏥",lab:"🔬",quality:"✅",maintenance:"🛠️",delivery:"🚚",repair:"🔧",timesheets:"⏱️",fieldservice:"🗺️",expenses:"💳",subscriptions:"🔁",plm:"🧬",eam:"🏭",livechat:"💬",elearning:"🎓",appraisals:"📈",rental:"📅",marketing:"📢",documents:"📄",fleet:"🚗",studio:"🎨"};
+  const ICONS: Record<string,string> = {crm:"🤝",sales:"💼",pos:"🛍️",inventory:"📦",purchase:"🛒",barcode:"🔖",mrp:"🏭",accounting:"📊",invoicing:"🧾",payroll:"💰",hr:"👤",attendance:"⏰",leaves:"🌴",recruitment:"🎯",project:"📋",helpdesk:"🎧",website:"🌐",ecommerce:"🛒",realestate:"🏢",hms:"🏥",lab:"🔬",quality:"✅",maintenance:"🛠️",delivery:"🚚",repair:"🔧",timesheets:"⏱️",fieldservice:"🗺️",expenses:"💳",subscriptions:"🔁",plm:"🧬",eam:"🏭",livechat:"💬",elearning:"🎓",appraisals:"📈",rental:"📅",marketing:"📢",documents:"📄",fleet:"🚗",studio:"🎨",dms:"📂",eapprovals:"✅"};
 
   let html = `<section id="dyn-modules" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#fff;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
