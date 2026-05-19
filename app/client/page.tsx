@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ClipboardList, FileText, Lock, ArrowLeft } from "lucide-react";
+import { FileText, Lock, ArrowLeft } from "lucide-react";
 import { getMyAccess } from "@/lib/actions/client-users";
 
 export const dynamic = "force-dynamic";
@@ -9,29 +9,16 @@ export default async function ClientHomePage() {
   const access = await getMyAccess();
   if (!access || access.userType !== "client") redirect("/login");
 
-  const canSurvey = access.accessLevel === "survey" || access.accessLevel === "both";
-  const canQuote  = access.accessLevel === "quote"  || access.accessLevel === "both";
+  const canQuote = access.accessLevel === "quote" || access.accessLevel === "both";
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-black text-bg-green">مرحباً بك</h1>
-        <p className="text-xs text-bg-text-3 mt-1">اختر ما تريد إكماله</p>
+        <p className="text-xs text-bg-text-3 mt-1">اطّلع على عرض السعر الخاص بك</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <PortalCard
-          title="استبيان اكتشاف المتطلبات"
-          subtitle={
-            access.surveyStatus === "submitted" ? "تم الإرسال — شكراً لك"
-            : access.surveyStatus === "in_progress" ? "ابدأ من حيث توقفت"
-            : "ابدأ الآن"
-          }
-          icon={<ClipboardList className="size-6" />}
-          href={canSurvey && access.surveyToken ? `/survey/${access.surveyToken}` : null}
-          locked={!canSurvey}
-          done={access.surveyStatus === "submitted"}
-        />
         <PortalCard
           title="عرض السعر"
           subtitle={

@@ -18,9 +18,9 @@ type Props = {
 
 const LEVEL_LABEL: Record<ClientAccessLevel, string> = {
   none: "بدون صلاحية",
-  survey: "استبيان فقط",
+  survey: "استبيان فقط (معطّل)",
   quote: "عرض سعر فقط",
-  both: "استبيان + عرض",
+  both: "استبيان + عرض (معطّل)",
 };
 
 export function ClientAccountCard({ clientId, clientName, defaultEmail, defaultContactName, current }: Props) {
@@ -44,7 +44,7 @@ function CreateAccount({ clientId, clientName, defaultEmail, defaultContactName 
   const [email, setEmail] = useState(defaultEmail);
   const [fullName, setFullName] = useState(defaultContactName);
   const [password, setPassword] = useState("");
-  const [accessLevel, setAccessLevel] = useState<ClientAccessLevel>("survey");
+  const [accessLevel, setAccessLevel] = useState<ClientAccessLevel>("quote");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
@@ -67,7 +67,7 @@ function CreateAccount({ clientId, clientName, defaultEmail, defaultContactName 
           <div className="text-sm font-bold text-bg-text-1 flex items-center gap-2">
             <UserPlus className="size-4 text-bg-green" /> حساب دخول للعميل
           </div>
-          <div className="text-xs text-bg-text-3 mt-1">ينشئ حساب login للعميل بصلاحية استبيان أو عرض سعر</div>
+          <div className="text-xs text-bg-text-3 mt-1">ينشئ حساب login للعميل لعرض عرض السعر</div>
         </div>
         <button onClick={() => setOpen(true)} className="btn-primary text-xs">إنشاء حساب</button>
       </div>
@@ -103,9 +103,7 @@ function CreateAccount({ clientId, clientName, defaultEmail, defaultContactName 
             <Field label="الصلاحية الأولية">
               <select value={accessLevel} onChange={(e) => setAccessLevel(e.target.value as ClientAccessLevel)}
                 className="input">
-                <option value="survey">استبيان فقط</option>
                 <option value="quote">عرض سعر فقط</option>
-                <option value="both">استبيان + عرض</option>
                 <option value="none">بدون صلاحية (مغلق)</option>
               </select>
             </Field>
@@ -186,9 +184,7 @@ function ExistingAccount({ clientId, info }: { clientId: string; info: ClientUse
           <div className="flex gap-2">
             <select value={accessLevel} onChange={(e) => setAccessLevel(e.target.value as ClientAccessLevel)}
               className="input flex-1">
-              <option value="survey">استبيان فقط</option>
               <option value="quote">عرض سعر فقط</option>
-              <option value="both">استبيان + عرض</option>
               <option value="none">بدون صلاحية</option>
             </select>
             <button onClick={saveLevel} disabled={pending || accessLevel === info.accessLevel}

@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
 import { readEnv } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
@@ -65,38 +64,6 @@ export async function GET() {
     };
   } catch (err) {
     tests.rest_ping = { error: err instanceof Error ? err.message : String(err) };
-  }
-
-  // Test 3: try calling list_surveys RPC directly via fetch
-  try {
-    const r = await fetch(`${url}/rest/v1/rpc/list_surveys`, {
-      method: "POST",
-      headers: {
-        apikey: anon ?? "",
-        Authorization: `Bearer ${anon ?? ""}`,
-        "Content-Type": "application/json",
-      },
-      body: "{}",
-    });
-    const body = await r.text();
-    tests.rpc_list_surveys = {
-      status: r.status,
-      ok: r.ok,
-      body: body.slice(0, 300),
-    };
-  } catch (err) {
-    tests.rpc_list_surveys = { error: err instanceof Error ? err.message : String(err) };
-  }
-
-  // Test 4: try via the supabase JS client
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.rpc("list_surveys");
-    tests.supabase_js_rpc = error
-      ? { error: error.message, code: error.code, details: error.details }
-      : { ok: true, count: Array.isArray(data) ? data.length : 0 };
-  } catch (err) {
-    tests.supabase_js_rpc = { error: err instanceof Error ? err.message : String(err) };
   }
 
   return NextResponse.json({ env, tests }, { status: 200 });

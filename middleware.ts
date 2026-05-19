@@ -12,7 +12,6 @@ const STAFF_PREFIXES = [
   "/clients",
   "/templates",
   "/settings",
-  "/surveys",
   "/reports",
 ];
 
