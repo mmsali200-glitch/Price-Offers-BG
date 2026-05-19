@@ -66,5 +66,8 @@ export async function GET() {
     tests.rest_ping = { error: err instanceof Error ? err.message : String(err) };
   }
 
-  return NextResponse.json({ env, tests }, { status: 200 });
+  return NextResponse.json(
+    { env, tests },
+    { status: 200, headers: { "Cache-Control": "no-store" } }
+  );
 }

@@ -4,6 +4,7 @@ import { QuoteBuilder } from "@/components/builder/quote-builder";
 import { AutosaveInit } from "@/components/builder/autosave-init";
 import { BuilderToolbar } from "@/components/builder/toolbar";
 import { getAllBuilderPrices } from "@/lib/actions/pricing";
+import { getUserContext } from "@/lib/auth/user-context";
 import type { QuoteBuilderState } from "@/lib/builder/types";
 
 export const metadata = { title: "تعديل العرض · BG Quotes" };
@@ -16,25 +17,17 @@ export default async function EditQuotePage({
   const { id } = await params;
 
   try {
+    const ctx = await getUserContext();
+    if (!ctx.signedIn) notFound();
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) notFound();
-
-    // Check role — admin/manager can edit any quote
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    const role = profile?.role ?? "sales";
 
     let query = supabase
       .from("quotes")
       .select("id, ref, title, status, generated_at")
       .eq("id", id);
 
-    if (role === "sales") {
-      query = query.eq("owner_id", user.id);
+    if (ctx.role === "sales") {
+      query = query.eq("owner_id", ctx.userId);
     }
 
     const { data: quote } = await query.single();

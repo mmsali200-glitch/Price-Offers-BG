@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getUserContext } from "@/lib/auth/user-context";
 
 export default async function QuoteIndexPage({
   params,
@@ -8,24 +9,17 @@ export default async function QuoteIndexPage({
 }) {
   const { id } = await params;
 
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) notFound();
+
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) notFound();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const role = profile?.role ?? "sales";
-
   let query = supabase
     .from("quotes")
-    .select("id, generated_html")
+    .select("generated_html")
     .eq("id", id);
 
-  if (role === "sales") {
-    query = query.eq("owner_id", user.id);
+  if (ctx.role === "sales") {
+    query = query.eq("owner_id", ctx.userId);
   }
 
   const { data: quote } = await query.single();
