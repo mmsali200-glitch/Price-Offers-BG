@@ -179,6 +179,35 @@ export type MyAccess = {
   quoteStatus: string | null;
 };
 
+export type ClientPortalQuote = {
+  id: string;
+  ref: string;
+  title: string | null;
+  status: string;
+  currency: string;
+  total_development: number | null;
+  generated_at: string | null;
+  created_at: string;
+};
+
+/**
+ * List all quotes accessible to the current client user.
+ * RLS policy `quotes_client_read` (migration 0015) already restricts
+ * rows to those where the signed-in profile's client_id matches.
+ */
+export async function listMyQuotes(): Promise<ClientPortalQuote[]> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from("quotes")
+    .select("id, ref, title, status, currency, total_development, generated_at, created_at")
+    .order("created_at", { ascending: false });
+
+  return (data ?? []) as ClientPortalQuote[];
+}
+
 export async function getMyAccess(): Promise<MyAccess | null> {
   try {
     const supabase = await createClient();
