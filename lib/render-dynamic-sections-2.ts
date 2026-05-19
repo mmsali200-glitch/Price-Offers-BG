@@ -81,7 +81,10 @@ function computeRenderTotals(state: QuoteBuilderState) {
     return s + Math.round(adjusted * (1 - (m.discount || 0) / 100));
   }, 0);
   const bgImpl = bgApps.reduce((s, a) => s + Math.round(a.implementationPrice * cm), 0);
-  const devRaw = modsTotal + bgImpl;
+  const optsTotal = state.options
+    .filter((o) => o.selected)
+    .reduce((s, o) => s + Math.round((o.price || 0) * cm), 0);
+  const devRaw = modsTotal + bgImpl + optsTotal;
   const dev = Math.round(devRaw * (1 - (state.totalDiscount || 0) / 100));
   const licM = Math.round(state.license.serverMonthly + state.license.perUserMonthly * state.license.users);
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
@@ -91,7 +94,7 @@ function computeRenderTotals(state: QuoteBuilderState) {
   const grandY1 = dev + (includeOdoo ? annualLic : 0);
   const firstPay = Math.round(grandY1 * (state.payment.firstPaymentPct || 30) / 100);
 
-  return { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo };
+  return { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo };
 }
 
 /** §5 — Module details — creative card design */
@@ -375,7 +378,8 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   const cur = curSymbol(state.meta.currency);
-  const { modsTotal, bgImpl, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo } = computeRenderTotals(state);
+  const { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo } = computeRenderTotals(state);
+  const selectedOpts = state.options.filter((o) => o.selected);
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
 
   const title = isAr ? "الملخص المالي" : "Financial Summary";
@@ -412,10 +416,17 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
       </tr></thead><tbody>`;
 
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
-    <td style="padding:6px 10px;font-weight:700;color:#1a5c37;">${isAr ? "تطوير وتطبيق" : "Development"} — ${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}</td>
+    <td style="padding:6px 10px;font-weight:700;color:#1a5c37;">${isAr ? "تطوير وتطبيق" : "Development"} — ${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}${selectedOpts.length ? ` + ${selectedOpts.length} ${isAr ? "مكون اختياري" : "optional"}` : ""}</td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "مرة واحدة" : "One-time"}</span></td>
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(dev)}</td>
   </tr>`;
+  if (optsTotal > 0) {
+    html += `<tr style="border-bottom:1px solid #e2e8e3;background:#fff9ed;">
+      <td style="padding:6px 10px;color:#8a6010;padding-${isAr ? "right" : "left"}:24px;">↳ ${isAr ? "منها مكونات اختيارية" : "incl. optional components"}: ${selectedOpts.map((o) => esc(o.name)).join("، ")}</td>
+      <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "ضمن التطوير" : "in dev"}</span></td>
+      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#8a6010;">${fmtNum(optsTotal)}</td>
+    </tr>`;
+  }
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
     <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type})${!includeOdoo ? ` <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span>` : ""}</td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>

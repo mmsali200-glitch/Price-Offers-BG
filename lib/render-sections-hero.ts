@@ -58,6 +58,7 @@ export function renderHeroHtml(state: QuoteBuilderState, isAr: boolean): string 
 export function renderScopeHtml(state: QuoteBuilderState, isAr: boolean): string {
   const mods = getMods(state);
   const bgApps = getBG(state);
+  const opts = state.options.filter((o) => o.selected);
   const cur = curSymbol(state.meta.currency);
   const total = mods.length + bgApps.length;
   const title = isAr ? "نطاق المشروع" : "Project Scope";
@@ -99,6 +100,20 @@ export function renderScopeHtml(state: QuoteBuilderState, isAr: boolean): string
   });
 
   html += `</div>`;
+
+  // المكونات الاختيارية المختارة
+  if (opts.length > 0) {
+    html += `<div style="font-size:11px;font-weight:700;color:#7a8e80;text-transform:uppercase;letter-spacing:0.8px;margin:18px 0 10px;">${isAr ? "مكونات اختيارية مشمولة" : "Optional Components"}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">`;
+    opts.forEach((o) => {
+      html += `<div style="background:#f7f9f6;border:1px dashed #1a5c37;border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:16px;margin-bottom:4px;">➕</div>
+        <div style="font-size:11px;font-weight:700;color:#1a5c37;">${esc(o.name)}</div>
+        <div style="font-size:10px;color:#8a6010;font-weight:700;margin-top:4px;">${fmtNum(o.price)} ${cur}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  }
 
   // شروط خاصة (إن وجدت)
   if (state.extraNotes?.trim()) {
