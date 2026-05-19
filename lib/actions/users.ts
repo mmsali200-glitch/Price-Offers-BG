@@ -3,8 +3,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
+import { getUserContext, type UserRole as CtxRole } from "@/lib/auth/user-context";
 
-export type UserRole = "sales" | "manager" | "admin";
+export type UserRole = CtxRole;
 
 export type UserProfile = {
   id: string;
@@ -20,15 +21,8 @@ export type UserProfile = {
  * Get the current signed-in user's role. Returns null if unauthenticated.
  */
 export async function getCurrentRole(): Promise<UserRole | null> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  return (data?.role as UserRole) ?? "sales";
+  const ctx = await getUserContext();
+  return ctx.signedIn ? ctx.role : null;
 }
 
 /**
@@ -40,21 +34,21 @@ export async function listUsers(): Promise<UserProfile[]> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return [];
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, role, phone, created_at")
-    .order("created_at", { ascending: true });
+  const [profilesRes, countsRes] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("id, full_name, email, role, phone, created_at")
+      .order("created_at", { ascending: true }),
+    // Aggregated count via the user_quote_counts view (created in migration).
+    supabase.from("user_quote_counts").select("owner_id, quote_count"),
+  ]);
 
+  const profiles = profilesRes.data;
   if (!profiles) return [];
 
-  // Count quotes per user
-  const { data: quotes } = await supabase
-    .from("quotes")
-    .select("owner_id");
-
   const quoteCounter = new Map<string, number>();
-  (quotes ?? []).forEach((q) => {
-    quoteCounter.set(q.owner_id, (quoteCounter.get(q.owner_id) ?? 0) + 1);
+  (countsRes.data ?? []).forEach((row: { owner_id: string; quote_count: number }) => {
+    quoteCounter.set(row.owner_id, row.quote_count);
   });
 
   return profiles.map((p) => ({

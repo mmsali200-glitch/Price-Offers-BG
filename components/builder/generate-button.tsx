@@ -41,7 +41,7 @@ export function GenerateButton({ quoteId }: { quoteId: string }) {
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `فشل التوليد (${res.status})`);
+        throw new Error(body.error || `فشل الإنشاء (${res.status})`);
       }
 
       startTransition(() => router.push(`/quotes/${quoteId}/preview`));
@@ -60,9 +60,9 @@ export function GenerateButton({ quoteId }: { quoteId: string }) {
         className="btn-primary inline-flex items-center gap-1.5 h-8 text-xs"
       >
         {loading ? (
-          <><Loader2 className="size-3.5 animate-spin" /> جاري التوليد...</>
+          <><Loader2 className="size-3.5 animate-spin" /> جاري الإنشاء...</>
         ) : (
-          <><Sparkles className="size-3.5" /> توليد العرض <ArrowRight className="size-3.5" /></>
+          <><Sparkles className="size-3.5" /> إنشاء العرض <ArrowRight className="size-3.5" /></>
         )}
       </button>
       {warnings.length > 0 && (

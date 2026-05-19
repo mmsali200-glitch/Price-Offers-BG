@@ -1,7 +1,7 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { SectionClient, SectionVersion, SectionLanguage } from "./section-client";
-import { SectionModules, SectionBGApps } from "./section-modules";
 import { SectionOptions } from "./section-options";
 import { SectionPhases } from "./section-phases";
 import { SectionPayment } from "./section-payment";
@@ -13,6 +13,23 @@ import { SectionMeetingNotes, SectionExtraReqs, SectionDiscount } from "./sectio
 import { SectionRequirements } from "./section-requirements";
 import { SummaryBar } from "./summary-bar";
 import { GenerateButton } from "./generate-button";
+
+// The modules catalog (~30 KB) and BG-apps section are heavy; lazy-load
+// them so the rest of the builder paints first.
+const SectionModules = dynamic(
+  () => import("./section-modules").then((m) => ({ default: m.SectionModules })),
+  { ssr: false, loading: () => <SectionPlaceholder label="جاري تحميل الموديولات..." /> }
+);
+const SectionBGApps = dynamic(
+  () => import("./section-modules").then((m) => ({ default: m.SectionBGApps })),
+  { ssr: false, loading: () => null }
+);
+
+function SectionPlaceholder({ label }: { label: string }) {
+  return (
+    <div className="card p-6 text-center text-xs text-bg-text-3 animate-pulse">{label}</div>
+  );
+}
 
 export function QuoteBuilder({ quoteId }: { quoteId: string }) {
   return (

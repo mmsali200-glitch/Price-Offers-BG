@@ -18,13 +18,14 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 };
 
 export default async function QuotesPage() {
-  let quotes: Awaited<ReturnType<typeof listQuotes>> = [];
-  try {
-    quotes = await listQuotes();
-  } catch (err) {
-    console.error("[quotes]", err);
-  }
-  const role = await getCurrentRole();
+  const [quotesResult, role] = await Promise.all([
+    listQuotes().catch((err) => {
+      console.error("[quotes]", err);
+      return [] as Awaited<ReturnType<typeof listQuotes>>;
+    }),
+    getCurrentRole(),
+  ]);
+  const quotes = quotesResult;
   const isAdmin = role === "admin" || role === "manager";
 
   return (

@@ -29,12 +29,14 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const result = await getClientWithQuotes(id);
+  const [result, role] = await Promise.all([
+    getClientWithQuotes(id),
+    getCurrentRole(),
+  ]);
   if (!result) notFound();
 
   const { client: c, quotes } = result;
   const totalValue = quotes.reduce((s, q) => s + (q.total_development || 0), 0);
-  const role = await getCurrentRole();
   const isAdmin = role === "admin" || role === "manager";
   const clientUser = isAdmin ? await getClientUser(c.id) : null;
 

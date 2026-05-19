@@ -7,6 +7,12 @@ import { generateQuoteRef } from "./ref-generator";
 import { ODOO_MODULES } from "@/lib/modules-catalog";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getUserContext } from "@/lib/auth/user-context";
+
+function selectedModuleIds(state: QuoteBuilderState): string[] {
+  const mods = (state.modules ?? {}) as Record<string, { selected?: boolean }>;
+  return Object.entries(mods).filter(([, m]) => m?.selected).map(([id]) => id);
+}
 
 /**
  * Persist the builder state for a quote. Upserts both `quotes` (summary) and
@@ -14,17 +20,9 @@ import { revalidatePath } from "next/cache";
  * autosave and by the explicit "Save" button.
  */
 export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) return { ok: false as const, error: "auth_required" };
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false as const, error: "auth_required" };
-
-  // Check role — admin/manager can save any quote
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const role = profile?.role ?? "sales";
 
   const totals = computeTotals(state);
 
@@ -44,18 +42,20 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
     })
     .eq("id", quoteId);
 
-  if (role === "sales") {
-    query = query.eq("owner_id", user.id);
+  if (ctx.role === "sales") {
+    query = query.eq("owner_id", ctx.userId);
   }
 
-  const { error: qErr } = await query;
+  const [{ error: qErr }, { error: sErr }] = await Promise.all([
+    query,
+    supabase.from("quote_sections").upsert({
+      quote_id: quoteId,
+      payload: state,
+      selected_module_ids: selectedModuleIds(state),
+    }),
+  ]);
 
   if (qErr) return { ok: false as const, error: qErr.message };
-
-  const { error: sErr } = await supabase
-    .from("quote_sections")
-    .upsert({ quote_id: quoteId, payload: state });
-
   if (sErr) return { ok: false as const, error: sErr.message };
 
   revalidatePath(`/quotes/${quoteId}/edit`);
@@ -249,15 +249,12 @@ export async function updateQuoteStatus(
   quoteId: string,
   status: "draft" | "sent" | "opened" | "accepted" | "rejected" | "expired"
 ) {
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) return { ok: false as const, error: "auth_required" };
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { ok: false as const, error: "auth_required" };
-
-  const { data: prof } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-  const role = prof?.role ?? "sales";
 
   let q = supabase.from("quotes").update({ status }).eq("id", quoteId);
-  if (role === "sales") q = q.eq("owner_id", user.id);
+  if (ctx.role === "sales") q = q.eq("owner_id", ctx.userId);
   const { error: uErr } = await q;
   if (uErr) return { ok: false as const, error: uErr.message };
 
@@ -278,7 +275,7 @@ export async function updateQuoteStatus(
     quote_id: quoteId,
     kind,
     actor_type: "user",
-    actor_id: user.id,
+    actor_id: ctx.userId,
     metadata: { status },
   }).then(null, (e: unknown) => console.warn("[updateStatus] event:", e));
 
@@ -342,17 +339,9 @@ export type QuoteWithOwner = {
  * List quotes for the current user, joined with the owner profile.
  */
 export async function listQuotes(): Promise<QuoteWithOwner[]> {
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) return [];
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  // Check role — admin/manager see ALL quotes, sales sees own only.
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const role = profile?.role ?? "sales";
 
   let query = supabase
     .from("quotes")
@@ -365,8 +354,8 @@ export async function listQuotes(): Promise<QuoteWithOwner[]> {
     .limit(200);
 
   // Sales users only see their own quotes.
-  if (role === "sales") {
-    query = query.eq("owner_id", user.id);
+  if (ctx.role === "sales") {
+    query = query.eq("owner_id", ctx.userId);
   }
   // Admin + Manager see all (RLS policy already allows this).
 
@@ -421,15 +410,15 @@ export type DashboardStats = {
  * Compute dashboard statistics for the current user.
  */
 export async function getDashboardStats(): Promise<DashboardStats> {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const ctx = await getUserContext();
   const empty: DashboardStats = {
     totalQuotes: 0, monthlyQuotes: 0, totalValue: 0,
     acceptedValue: 0, acceptedCount: 0, acceptanceRate: 0,
     avgQuoteValue: 0, currency: "KWD",
     byStatus: {}, topModules: [], recentActivity: [], ownersBreakdown: [],
   };
-  if (!user) return empty;
+  if (!ctx.signedIn) return empty;
+  const supabase = await createClient();
 
   const { data: quotes } = await supabase
     .from("quotes")
@@ -437,7 +426,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       id, ref, title, status, currency, total_development, created_at,
       updated_at, owner_id, profiles:owner_id ( full_name )
     `)
-    .eq("owner_id", user.id)
+    .eq("owner_id", ctx.userId)
     .order("updated_at", { ascending: false })
     .limit(500);
 
@@ -470,24 +459,21 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     return acc;
   }, {});
 
-  // Top modules across the user's sections
+  // Top modules — pull only the denormalized ID array, never the full payload.
   const { data: sections } = await supabase
     .from("quote_sections")
-    .select("payload")
+    .select("selected_module_ids")
     .in("quote_id", quotes.map((q) => q.id));
 
   const moduleCounter = new Map<string, { id: string; name: string; count: number }>();
   (sections ?? []).forEach((s) => {
-    const modules = (s.payload?.modules ?? {}) as Record<string, { selected?: boolean }>;
-    Object.entries(modules).forEach(([id, st]) => {
-      if (st?.selected) {
-        const cur = moduleCounter.get(id) ?? { id, name: id, count: 0 };
-        cur.count += 1;
-        moduleCounter.set(id, cur);
-      }
+    const ids = (s.selected_module_ids ?? []) as string[];
+    ids.forEach((id) => {
+      const cur = moduleCounter.get(id) ?? { id, name: id, count: 0 };
+      cur.count += 1;
+      moduleCounter.set(id, cur);
     });
   });
-  const { ODOO_MODULES } = await import("@/lib/modules-catalog");
   const nameMap = new Map<string, string>();
   ODOO_MODULES.forEach((c) => c.modules.forEach((m) => nameMap.set(m.id, m.name)));
   const topModules = Array.from(moduleCounter.values())

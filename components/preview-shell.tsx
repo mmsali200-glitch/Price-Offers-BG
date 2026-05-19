@@ -50,9 +50,9 @@ export function PreviewShell({
       <div className="p-6">
         <div className="card p-10 text-center space-y-3">
           <div className="text-4xl">✨</div>
-          <h2 className="text-lg font-bold text-bg-green">لم يُولَّد العرض بعد</h2>
+          <h2 className="text-lg font-bold text-bg-green">لم يُنشأ العرض بعد</h2>
           <p className="text-sm text-bg-text-3 max-w-md mx-auto">
-            ارجع إلى تحرير العرض واضغط على &quot;توليد العرض&quot; لإنتاج نسخة HTML جاهزة للإرسال.
+            ارجع إلى تحرير العرض واضغط على &quot;إنشاء العرض&quot; لإنتاج نسخة HTML جاهزة للإرسال.
           </p>
           <Link href={`/quotes/${quoteId}/edit`} className="btn-primary inline-flex items-center gap-1.5">
             <Edit3 className="size-4" />

@@ -8,14 +8,14 @@ export const metadata = { title: "العملاء · BG Quotes" };
 export const dynamic = "force-dynamic";
 
 export default async function ClientsPage() {
-  let clients: Awaited<ReturnType<typeof listClients>> = [];
-  try {
-    clients = await listClients();
-  } catch (err) {
-    console.error("[clients]", err);
-  }
-
-  const role = await getCurrentRole();
+  const [clientsResult, role] = await Promise.all([
+    listClients().catch((err) => {
+      console.error("[clients]", err);
+      return [] as Awaited<ReturnType<typeof listClients>>;
+    }),
+    getCurrentRole(),
+  ]);
+  const clients = clientsResult;
   const canDelete = role === "admin" || role === "manager";
 
   return (
