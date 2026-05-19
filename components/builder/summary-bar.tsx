@@ -1,19 +1,34 @@
 "use client";
 
+import { useShallow } from "zustand/react/shallow";
 import { useBuilderStore, computeTotals } from "@/lib/builder/store";
 import { fmtNum, curSymbol } from "@/lib/utils";
 
 export function SummaryBar() {
-  const state = useBuilderStore();
-  const totals = computeTotals(state);
-  const cur = curSymbol(state.meta.currency);
+  // Subscribe with shallow equality on derived values — only re-render
+  // when one of the displayed numbers actually changes, not on every
+  // unrelated keystroke (notes, contact name, etc.).
+  const view = useBuilderStore(
+    useShallow((s) => {
+      const t = computeTotals(s);
+      return {
+        development: t.development,
+        licenseMonthly: t.licenseMonthly,
+        supportMonthly: t.supportMonthly,
+        installments: t.installments,
+        currency: s.meta.currency,
+        userCount: s.license.users,
+      };
+    })
+  );
+  const cur = curSymbol(view.currency);
 
   const items = [
-    { label: "تطوير وتطبيق", value: fmtNum(totals.development), sub: cur, gold: false },
-    { label: "ترخيص/شهر", value: totals.licenseMonthly > 0 ? fmtNum(totals.licenseMonthly) : "—", sub: "إرشادي", gold: true },
-    { label: "دعم/شهر", value: totals.supportMonthly > 0 ? fmtNum(totals.supportMonthly) : "—", sub: `${cur}/شهر`, gold: true },
-    { label: "قسط شهري", value: totals.installments > 0 ? fmtNum(totals.installments) : "—", sub: `${cur}/شهر`, gold: true },
-    { label: "مستخدمون", value: String(state.license.users), sub: "مستخدم", gold: false },
+    { label: "تطوير وتطبيق", value: fmtNum(view.development), sub: cur, gold: false },
+    { label: "ترخيص/شهر", value: view.licenseMonthly > 0 ? fmtNum(view.licenseMonthly) : "—", sub: "إرشادي", gold: true },
+    { label: "دعم/شهر", value: view.supportMonthly > 0 ? fmtNum(view.supportMonthly) : "—", sub: `${cur}/شهر`, gold: true },
+    { label: "قسط شهري", value: view.installments > 0 ? fmtNum(view.installments) : "—", sub: `${cur}/شهر`, gold: true },
+    { label: "مستخدمون", value: String(view.userCount), sub: "مستخدم", gold: false },
   ];
 
   return (
