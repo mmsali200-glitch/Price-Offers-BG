@@ -384,7 +384,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   const cur = curSymbol(state.meta.currency);
-  const { optsTotal, devRaw, dev, licM, supM, vatRate, vat, devWithVat, firstPay } = computeRenderTotals(state);
+  const { optsTotal, devRaw, dev, licM, supM, annualLic, vatRate, vat, devWithVat, firstPay } = computeRenderTotals(state);
   const hasVat = vatRate > 0;
   const vatPct = Math.round(vatRate * 100);
   const selectedOpts = state.options.filter((o) => o.selected);
@@ -409,6 +409,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
         <div style="font-size:10px;opacity:0.8;margin-bottom:6px;">${isAr ? "متكرر شهرياً" : "Monthly Recurring"}</div>
         <div style="font-size:26px;font-weight:800;">${fmtNum(licM + supM)}</div>
         <div style="font-size:10px;opacity:0.7;">${cur}/${isAr ? "شهر" : "mo"} (${isAr ? "ترخيص" : "License"} ${fmtNum(licM)} + ${isAr ? "دعم" : "Support"} ${fmtNum(supM)})</div>
+        <div style="font-size:10px;opacity:0.9;margin-top:4px;border-top:1px solid rgba(255,255,255,0.25);padding-top:4px;">${isAr ? "التجديد السنوي (Odoo.sh)" : "Annual renewal (Odoo.sh)"}: <strong>${fmtNum(annualLic)} ${cur}</strong></div>
       </div>
       <div style="background:#fff;border:1.5px solid #e2e8e3;border-radius:10px;padding:18px;text-align:center;">
         <div style="font-size:10px;color:#7a8e80;margin-bottom:6px;">${isAr ? "الدفعة الأولى" : "First Payment"} (${state.payment.firstPaymentPct}%)</div>
@@ -440,9 +441,15 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
     </tr>`;
   }
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
-    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type}) <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span></td>
+    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (Odoo.sh — ${state.license.type}) <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span></td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(licM)}</td>
+    ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
+  </tr>`;
+  html += `<tr style="border-bottom:1px solid #e2e8e3;background:#fdf9ef;">
+    <td style="padding:6px 10px;color:#8a6010;padding-${isAr ? "right" : "left"}:24px;">↳ ${isAr ? "الإجمالي السنوي — تجديد الترخيص والاستضافة (Odoo.sh)" : "Annual total — license & hosting renewal (Odoo.sh)"}</td>
+    <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "سنوي" : "Annual"}</span></td>
+    <td style="padding:6px 10px;text-align:center;font-weight:800;color:#c9a84c;">${fmtNum(annualLic)}</td>
     ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
   </tr>`;
   if (supM > 0) {
