@@ -90,16 +90,17 @@ function computeRenderTotals(state: QuoteBuilderState) {
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
   const supM = state.support.packageId === "none" ? 0 : state.support.prices[state.support.packageId as "basic" | "advanced" | "premium"] ?? pkg?.price ?? 0;
   const annualLic = licM * 12;
-  const includeOdoo = state.license.includeOdooInTotal;
   // VAT (e.g. 15% for Saudi Arabia) — applied to the one-time development
   // total only. Odoo license & hosting is quoted tax-free (indicative).
   const vatRate = getVatRate(state.client?.country || "");
   const vat = Math.round(dev * vatRate);
   const devWithVat = dev + vat;
-  const grandY1 = devWithVat + (includeOdoo ? annualLic : 0);
+  // Offer total & payments are based on development + VAT only — the Odoo
+  // license value is never included in the total.
+  const grandY1 = devWithVat;
   const firstPay = Math.round(grandY1 * (state.payment.firstPaymentPct || 30) / 100);
 
-  return { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, vatRate, vat, devWithVat, grandY1, firstPay, includeOdoo };
+  return { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, vatRate, vat, devWithVat, grandY1, firstPay };
 }
 
 /** §5 — Module details — creative card design */
@@ -383,7 +384,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   const cur = curSymbol(state.meta.currency);
-  const { optsTotal, devRaw, dev, licM, supM, vatRate, vat, devWithVat, firstPay, includeOdoo } = computeRenderTotals(state);
+  const { optsTotal, devRaw, dev, licM, supM, vatRate, vat, devWithVat, firstPay } = computeRenderTotals(state);
   const hasVat = vatRate > 0;
   const vatPct = Math.round(vatRate * 100);
   const selectedOpts = state.options.filter((o) => o.selected);
@@ -439,7 +440,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
     </tr>`;
   }
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
-    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type})${!includeOdoo ? ` <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span>` : ""}</td>
+    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type}) <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span></td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(licM)}</td>
     ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
@@ -493,8 +494,8 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
 export function renderInstallmentsHtml(state: QuoteBuilderState, isAr: boolean): string {
   if (state.payment.installments <= 1) return "";
   const cur = curSymbol(state.meta.currency);
-  const { devWithVat, licM, includeOdoo } = computeRenderTotals(state);
-  const total = devWithVat + (includeOdoo ? licM * 12 : 0);
+  const { devWithVat } = computeRenderTotals(state);
+  const total = devWithVat;
   const n = state.payment.installments;
   const fp = state.payment.firstPaymentPct || 30;
   const fa = Math.round(total * fp / 100);

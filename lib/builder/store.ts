@@ -313,14 +313,16 @@ export function computeTotals(state: QuoteBuilderState) {
     ? 0
     : (state.support.prices as Record<string, number>)[state.support.packageId] ?? pkg?.price ?? 0;
 
-  const installments = state.payment.installments > 1
-    ? Math.round(development / state.payment.installments)
-    : 0;
-
   // VAT (e.g. 15% for Saudi Arabia) on the one-time development total only.
   const vatRate = getVatRate(state.client?.country || "");
   const vat = Math.round(development * vatRate);
   const developmentWithVat = development + vat;
+
+  // Offer total & installments are based on development + VAT only.
+  // The Odoo license value is never included in the total.
+  const installments = state.payment.installments > 1
+    ? Math.round(developmentWithVat / state.payment.installments)
+    : 0;
 
   return {
     development,
