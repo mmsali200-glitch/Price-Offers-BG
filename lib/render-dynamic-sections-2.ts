@@ -7,7 +7,7 @@
 import type { QuoteBuilderState } from "./builder/types";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { MODULE_QUESTIONS, calculateComplexity } from "./module-questions";
-import { getCountryPricing } from "./country-pricing";
+import { getCountryPricing, getVatRate } from "./country-pricing";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
 import { getExtended } from "./modules-extended";
 
@@ -91,10 +91,15 @@ function computeRenderTotals(state: QuoteBuilderState) {
   const supM = state.support.packageId === "none" ? 0 : state.support.prices[state.support.packageId as "basic" | "advanced" | "premium"] ?? pkg?.price ?? 0;
   const annualLic = licM * 12;
   const includeOdoo = state.license.includeOdooInTotal;
-  const grandY1 = dev + (includeOdoo ? annualLic : 0);
+  // VAT (e.g. 15% for Saudi Arabia) — applied to the one-time development
+  // total only. Odoo license & hosting is quoted tax-free (indicative).
+  const vatRate = getVatRate(state.client?.country || "");
+  const vat = Math.round(dev * vatRate);
+  const devWithVat = dev + vat;
+  const grandY1 = devWithVat + (includeOdoo ? annualLic : 0);
   const firstPay = Math.round(grandY1 * (state.payment.firstPaymentPct || 30) / 100);
 
-  return { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo };
+  return { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, vatRate, vat, devWithVat, grandY1, firstPay, includeOdoo };
 }
 
 /** §5 — Module details — creative card design */
@@ -378,7 +383,9 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   const cur = curSymbol(state.meta.currency);
-  const { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, grandY1, firstPay, includeOdoo } = computeRenderTotals(state);
+  const { optsTotal, devRaw, dev, licM, supM, vatRate, vat, devWithVat, firstPay, includeOdoo } = computeRenderTotals(state);
+  const hasVat = vatRate > 0;
+  const vatPct = Math.round(vatRate * 100);
   const selectedOpts = state.options.filter((o) => o.selected);
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
 
@@ -395,6 +402,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
         <div style="font-size:10px;opacity:0.7;margin-bottom:6px;">${isAr ? "قيمة التطوير" : "Development"}</div>
         <div style="font-size:26px;font-weight:800;">${fmtNum(dev)}</div>
         <div style="font-size:10px;opacity:0.6;">${cur} — ${isAr ? "مرة واحدة" : "one-time"}</div>
+        ${hasVat ? `<div style="font-size:10px;opacity:0.85;margin-top:4px;border-top:1px solid rgba(255,255,255,0.2);padding-top:4px;">${isAr ? `شامل ضريبة ${vatPct}%` : `incl. ${vatPct}% VAT`}: <strong>${fmtNum(devWithVat)} ${cur}</strong></div>` : ""}
       </div>
       <div style="background:#c9a84c;color:#fff;border-radius:10px;padding:18px;text-align:center;">
         <div style="font-size:10px;opacity:0.8;margin-bottom:6px;">${isAr ? "متكرر شهرياً" : "Monthly Recurring"}</div>
@@ -413,30 +421,35 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
         <th style="padding:7px 10px;text-align:${isAr ? "right" : "left"};color:#1a5c37;">${isAr ? "البند" : "Item"}</th>
         <th style="padding:7px 10px;text-align:center;color:#1a5c37;">${isAr ? "النوع" : "Type"}</th>
         <th style="padding:7px 10px;text-align:center;color:#1a5c37;">${isAr ? "المبلغ" : "Amount"} (${cur})</th>
+        ${hasVat ? `<th style="padding:7px 10px;text-align:center;color:#1a5c37;">${isAr ? `ضريبة ${vatPct}%` : `VAT ${vatPct}%`}</th>` : ""}
       </tr></thead><tbody>`;
 
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
     <td style="padding:6px 10px;font-weight:700;color:#1a5c37;">${isAr ? "تطوير وتطبيق" : "Development"} — ${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}${selectedOpts.length ? ` + ${selectedOpts.length} ${isAr ? "مكون اختياري" : "optional"}` : ""}</td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "مرة واحدة" : "One-time"}</span></td>
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(dev)}</td>
+    ${hasVat ? `<td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(vat)}</td>` : ""}
   </tr>`;
   if (optsTotal > 0) {
     html += `<tr style="border-bottom:1px solid #e2e8e3;background:#fff9ed;">
       <td style="padding:6px 10px;color:#8a6010;padding-${isAr ? "right" : "left"}:24px;">↳ ${isAr ? "منها مكونات اختيارية" : "incl. optional components"}: ${selectedOpts.map((o) => esc(o.name)).join("، ")}</td>
       <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "ضمن التطوير" : "in dev"}</span></td>
       <td style="padding:6px 10px;text-align:center;font-weight:700;color:#8a6010;">${fmtNum(optsTotal)}</td>
+      ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#8a6010;">—</td>` : ""}
     </tr>`;
   }
   html += `<tr style="border-bottom:1px solid #e2e8e3;">
     <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (${state.license.type})${!includeOdoo ? ` <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span>` : ""}</td>
     <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
     <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(licM)}</td>
+    ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
   </tr>`;
   if (supM > 0) {
     html += `<tr style="border-bottom:1px solid #e2e8e3;">
       <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "دعم فني" : "Support"} (${pkg?.name ?? ""})</td>
       <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
       <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(supM)}</td>
+      ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>` : ""}
     </tr>`;
   }
   if (state.totalDiscount > 0) {
@@ -444,6 +457,26 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
       <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "خصم إجمالي" : "Total Discount"} (${state.totalDiscount}%)</td>
       <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "وفر" : "Saved"}</span></td>
       <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">-${fmtNum(devRaw - dev)}</td>
+      ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>` : ""}
+    </tr>`;
+  }
+  if (hasVat) {
+    html += `<tr style="border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
+      <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "المجموع قبل الضريبة (خاضع للضريبة)" : "Subtotal before VAT (taxable)"}</td>
+      <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "مرة واحدة" : "One-time"}</span></td>
+      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(dev)}</td>
+      <td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>
+    </tr>
+    <tr style="border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
+      <td style="padding:6px 10px;color:#1a5c37;">${isAr ? `ضريبة القيمة المضافة (${vatPct}%)` : `Value Added Tax (${vatPct}%)`}</td>
+      <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "ضريبة" : "VAT"}</span></td>
+      <td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>
+      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#8a6010;">${fmtNum(vat)}</td>
+    </tr>
+    <tr style="background:#1a5c37;color:#fff;font-weight:800;">
+      <td style="padding:8px 10px;">${isAr ? "إجمالي العرض شامل الضريبة" : "Offer Total (incl. VAT)"}</td>
+      <td style="padding:8px 10px;text-align:center;font-size:9px;">${isAr ? "ترخيص Odoo غير مشمول" : "excl. Odoo license"}</td>
+      <td colspan="2" style="padding:8px 10px;text-align:center;">${fmtNum(devWithVat)} ${cur}</td>
     </tr>`;
   }
   html += `</tbody></table>`;
@@ -460,8 +493,8 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
 export function renderInstallmentsHtml(state: QuoteBuilderState, isAr: boolean): string {
   if (state.payment.installments <= 1) return "";
   const cur = curSymbol(state.meta.currency);
-  const { dev, licM, includeOdoo } = computeRenderTotals(state);
-  const total = dev + (includeOdoo ? licM * 12 : 0);
+  const { devWithVat, licM, includeOdoo } = computeRenderTotals(state);
+  const total = devWithVat + (includeOdoo ? licM * 12 : 0);
   const n = state.payment.installments;
   const fp = state.payment.firstPaymentPct || 30;
   const fa = Math.round(total * fp / 100);

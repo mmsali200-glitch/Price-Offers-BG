@@ -16,6 +16,9 @@ export function SummaryBar() {
         licenseMonthly: t.licenseMonthly,
         supportMonthly: t.supportMonthly,
         installments: t.installments,
+        vatRate: t.vatRate,
+        vat: t.vat,
+        developmentWithVat: t.developmentWithVat,
         currency: s.meta.currency,
         userCount: s.license.users,
       };
@@ -23,8 +26,16 @@ export function SummaryBar() {
   );
   const cur = curSymbol(view.currency);
 
+  const hasVat = view.vatRate > 0;
+  const vatPct = Math.round(view.vatRate * 100);
   const items = [
     { label: "تطوير وتطبيق", value: fmtNum(view.development), sub: cur, gold: false },
+    ...(hasVat
+      ? [
+          { label: `ضريبة ${vatPct}%`, value: fmtNum(view.vat), sub: cur, gold: true },
+          { label: "شامل الضريبة", value: fmtNum(view.developmentWithVat), sub: cur, gold: false },
+        ]
+      : []),
     { label: "ترخيص/شهر", value: view.licenseMonthly > 0 ? fmtNum(view.licenseMonthly) : "—", sub: "إرشادي", gold: true },
     { label: "دعم/شهر", value: view.supportMonthly > 0 ? fmtNum(view.supportMonthly) : "—", sub: `${cur}/شهر`, gold: true },
     { label: "قسط شهري", value: view.installments > 0 ? fmtNum(view.installments) : "—", sub: `${cur}/شهر`, gold: true },
@@ -32,7 +43,7 @@ export function SummaryBar() {
   ];
 
   return (
-    <div className="rounded-card bg-gradient-to-br from-bg-green to-[#0e3a1e] p-5 grid grid-cols-2 lg:grid-cols-5 gap-3">
+    <div className={`rounded-card bg-gradient-to-br from-bg-green to-[#0e3a1e] p-5 grid grid-cols-2 gap-3 ${hasVat ? "lg:grid-cols-7" : "lg:grid-cols-5"}`}>
       {items.map((it) => (
         <div key={it.label} className="text-center">
           <span className="block text-[10px] uppercase tracking-wider text-white/60 mb-1">{it.label}</span>

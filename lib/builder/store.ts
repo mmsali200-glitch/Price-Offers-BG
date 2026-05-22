@@ -5,7 +5,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES, LICENSE_PRICING } from "@/lib/modules-catalog";
 import { makeInitialState } from "./defaults";
 import { calculateComplexity } from "@/lib/module-questions";
-import { getCountryPricing } from "@/lib/country-pricing";
+import { getCountryPricing, getVatRate } from "@/lib/country-pricing";
 import type {
   QuoteBuilderState,
   ModuleState,
@@ -317,6 +317,11 @@ export function computeTotals(state: QuoteBuilderState) {
     ? Math.round(development / state.payment.installments)
     : 0;
 
+  // VAT (e.g. 15% for Saudi Arabia) on the one-time development total only.
+  const vatRate = getVatRate(state.client?.country || "");
+  const vat = Math.round(development * vatRate);
+  const developmentWithVat = development + vat;
+
   return {
     development,
     developmentRaw: devRaw,
@@ -325,6 +330,9 @@ export function computeTotals(state: QuoteBuilderState) {
     licenseMonthly,
     supportMonthly,
     installments,
+    vatRate,
+    vat,
+    developmentWithVat,
     totalMonthly: licenseMonthly + supportMonthly + bgMonthly,
   };
 }
