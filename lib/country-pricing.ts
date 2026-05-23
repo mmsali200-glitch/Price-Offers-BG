@@ -101,6 +101,19 @@ export function getCountryPricing(country: string): CountryPricing {
 }
 
 /**
+ * VAT rate per country. Only countries listed here add value-added tax
+ * to quotes. Saudi Arabia applies a 15% VAT.
+ */
+export const VAT_RATES: Record<string, number> = {
+  "السعودية": 0.15,
+};
+
+/** VAT rate (fraction) for a country. Returns 0 when no VAT applies. */
+export function getVatRate(country: string): number {
+  return VAT_RATES[country] ?? 0;
+}
+
+/**
  * Calculate adjusted price: base × country × complexity
  */
 export function adjustPrice(
