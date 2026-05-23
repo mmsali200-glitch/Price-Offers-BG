@@ -418,76 +418,141 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
       </div>
     </div>
 
-    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px;">
-      <thead><tr style="background:#eaf3ed;">
-        <th style="padding:7px 10px;text-align:${isAr ? "right" : "left"};color:#1a5c37;">${isAr ? "البند" : "Item"}</th>
-        <th style="padding:7px 10px;text-align:center;color:#1a5c37;">${isAr ? "النوع" : "Type"}</th>
-        <th style="padding:7px 10px;text-align:center;color:#1a5c37;">${isAr ? "المبلغ" : "Amount"} (${cur})</th>
-        ${hasVat ? `<th style="padding:7px 10px;text-align:center;color:#1a5c37;">${isAr ? `ضريبة ${vatPct}%` : `VAT ${vatPct}%`}</th>` : ""}
-      </tr></thead><tbody>`;
+    <div style="border:1.5px solid #e2e8e3;border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(26,92,55,0.06);margin-bottom:14px;page-break-inside:avoid;">
+      <div style="background:linear-gradient(135deg,#1a5c37 0%,#247a4a 100%);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:16px;">📋</span><span style="color:#fff;font-size:13px;font-weight:800;letter-spacing:0.3px;">${isAr ? "تفاصيل البنود" : "Line Items"}</span></div>
+        <span style="color:#fff;font-size:10px;background:rgba(255,255,255,0.18);padding:3px 10px;border-radius:10px;font-weight:700;">${cur}</span>
+      </div>
+      <div style="background:#eaf3ed;padding:7px 16px;font-size:10px;font-weight:800;color:#1a5c37;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #d4e3d8;">
+        <span>💼</span><span>${isAr ? "بنود لمرة واحدة — التطوير والتطبيق" : "One-time — Development & Implementation"}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;"><tbody>
+        <tr style="border-bottom:1px solid #f0f2ef;">
+          <td style="padding:11px 14px;border-${isAr ? "right" : "left"}:3px solid #1a5c37;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;background:#eaf3ed;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📦</div>
+              <div>
+                <div style="font-size:12px;font-weight:800;color:#1a5c37;">${isAr ? "تطوير وتطبيق" : "Development & Implementation"}</div>
+                <div style="font-size:10px;color:#7a8e80;margin-top:1px;">${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}${selectedOpts.length ? ` + ${selectedOpts.length} ${isAr ? "اختياري" : "optional"}` : ""}</div>
+              </div>
+            </div>
+          </td>
+          <td style="padding:11px 14px;text-align:center;width:90px;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px;">${isAr ? "مرة واحدة" : "One-time"}</span></td>
+          <td style="padding:11px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;width:120px;"><span style="font-size:14px;font-weight:800;color:#1a5c37;">${fmtNum(dev)}</span> <span style="font-size:10px;color:#7a8e80;">${cur}</span></td>
+          ${hasVat ? `<td style="padding:11px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;width:110px;"><span style="font-size:12px;font-weight:700;color:#8a6010;">${fmtNum(vat)}</span> <span style="font-size:9px;color:#b48a30;">${cur}</span></td>` : ""}
+        </tr>`;
 
-  html += `<tr style="border-bottom:1px solid #e2e8e3;">
-    <td style="padding:6px 10px;font-weight:700;color:#1a5c37;">${isAr ? "تطوير وتطبيق" : "Development"} — ${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}${selectedOpts.length ? ` + ${selectedOpts.length} ${isAr ? "مكون اختياري" : "optional"}` : ""}</td>
-    <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "مرة واحدة" : "One-time"}</span></td>
-    <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(dev)}</td>
-    ${hasVat ? `<td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(vat)}</td>` : ""}
-  </tr>`;
   if (optsTotal > 0) {
-    html += `<tr style="border-bottom:1px solid #e2e8e3;background:#fff9ed;">
-      <td style="padding:6px 10px;color:#8a6010;padding-${isAr ? "right" : "left"}:24px;">↳ ${isAr ? "منها مكونات اختيارية" : "incl. optional components"}: ${selectedOpts.map((o) => esc(o.name)).join("، ")}</td>
-      <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "ضمن التطوير" : "in dev"}</span></td>
-      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#8a6010;">${fmtNum(optsTotal)}</td>
-      ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#8a6010;">—</td>` : ""}
+    html += `<tr style="border-bottom:1px solid #f0f2ef;background:#fffaf0;">
+      <td style="padding:8px 14px;border-${isAr ? "right" : "left"}:3px solid #c9a84c;padding-${isAr ? "right" : "left"}:30px;">
+        <div style="display:flex;align-items:flex-start;gap:8px;">
+          <span style="color:#8a6010;font-size:11px;font-weight:800;margin-top:1px;">↳</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#8a6010;">${isAr ? "منها مكونات اختيارية" : "incl. optional components"}</div>
+            <div style="font-size:9px;color:#a07a30;margin-top:1px;">${selectedOpts.map((o) => esc(o.name)).join("، ")}</div>
+          </div>
+        </div>
+      </td>
+      <td style="padding:8px 14px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:3px 10px;border-radius:10px;">${isAr ? "ضمن التطوير" : "in dev"}</span></td>
+      <td style="padding:8px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;"><span style="font-size:12px;font-weight:700;color:#8a6010;">${fmtNum(optsTotal)}</span> <span style="font-size:9px;color:#a07a30;">${cur}</span></td>
+      ${hasVat ? `<td style="padding:8px 14px;text-align:center;color:#b8c2bd;font-size:11px;">—</td>` : ""}
     </tr>`;
   }
-  html += `<tr style="border-bottom:1px solid #e2e8e3;">
-    <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} (Odoo.sh — ${state.license.type}) <span style="font-size:9px;color:#7a8e80;">(${isAr ? "غير مشمول في الإجمالي" : "not included in total"})</span></td>
-    <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
-    <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(licM)}</td>
-    ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
-  </tr>`;
-  html += `<tr style="border-bottom:1px solid #e2e8e3;background:#fdf9ef;">
-    <td style="padding:6px 10px;color:#8a6010;padding-${isAr ? "right" : "left"}:24px;">↳ ${isAr ? "الإجمالي السنوي — تجديد الترخيص والاستضافة (Odoo.sh)" : "Annual total — license & hosting renewal (Odoo.sh)"}</td>
-    <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "سنوي" : "Annual"}</span></td>
-    <td style="padding:6px 10px;text-align:center;font-weight:800;color:#c9a84c;">${fmtNum(annualLic)}</td>
-    ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
-  </tr>`;
-  if (supM > 0) {
-    html += `<tr style="border-bottom:1px solid #e2e8e3;">
-      <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "دعم فني" : "Support"} (${pkg?.name ?? ""})</td>
-      <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
-      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#c9a84c;">${fmtNum(supM)}</td>
-      ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>` : ""}
-    </tr>`;
-  }
+
   if (state.totalDiscount > 0) {
-    html += `<tr style="border-bottom:1px solid #e2e8e3;background:#eaf3ed;">
-      <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "خصم إجمالي" : "Total Discount"} (${state.totalDiscount}%)</td>
-      <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "وفر" : "Saved"}</span></td>
-      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">-${fmtNum(devRaw - dev)}</td>
-      ${hasVat ? `<td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>` : ""}
+    html += `<tr style="border-bottom:1px solid #f0f2ef;background:#f0f9f3;">
+      <td style="padding:10px 14px;border-${isAr ? "right" : "left"}:3px solid #22c55e;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:28px;height:28px;background:#dcfce7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">💸</div>
+          <div>
+            <div style="font-size:11px;font-weight:800;color:#15803d;">${isAr ? "خصم إجمالي" : "Total Discount"} (${state.totalDiscount}%)</div>
+            <div style="font-size:9px;color:#22c55e;margin-top:1px;">${isAr ? "خصم تشجيعي على قيمة التطوير" : "Promotional discount on development"}</div>
+          </div>
+        </div>
+      </td>
+      <td style="padding:10px 14px;text-align:center;"><span style="background:#dcfce7;color:#15803d;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px;">${isAr ? "وفر" : "Saved"}</span></td>
+      <td style="padding:10px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;"><span style="font-size:13px;font-weight:800;color:#15803d;">−${fmtNum(devRaw - dev)}</span> <span style="font-size:10px;color:#22c55e;">${cur}</span></td>
+      ${hasVat ? `<td style="padding:10px 14px;text-align:center;color:#b8c2bd;font-size:11px;">—</td>` : ""}
     </tr>`;
   }
-  if (hasVat) {
-    html += `<tr style="border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
-      <td style="padding:6px 10px;color:#1a5c37;">${isAr ? "المجموع قبل الضريبة (خاضع للضريبة)" : "Subtotal before VAT (taxable)"}</td>
-      <td style="padding:6px 10px;text-align:center;"><span style="background:#eaf3ed;color:#1a5c37;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "مرة واحدة" : "One-time"}</span></td>
-      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#1a5c37;">${fmtNum(dev)}</td>
-      <td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>
-    </tr>
-    <tr style="border-bottom:1px solid #e2e8e3;background:#f7f9f6;">
-      <td style="padding:6px 10px;color:#1a5c37;">${isAr ? `ضريبة القيمة المضافة (${vatPct}%)` : `Value Added Tax (${vatPct}%)`}</td>
-      <td style="padding:6px 10px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;">${isAr ? "ضريبة" : "VAT"}</span></td>
-      <td style="padding:6px 10px;text-align:center;color:#7a8e80;">—</td>
-      <td style="padding:6px 10px;text-align:center;font-weight:700;color:#8a6010;">${fmtNum(vat)}</td>
-    </tr>
-    <tr style="background:#1a5c37;color:#fff;font-weight:800;">
-      <td style="padding:8px 10px;">${isAr ? "إجمالي العرض شامل الضريبة" : "Offer Total (incl. VAT)"}</td>
-      <td style="padding:8px 10px;text-align:center;font-size:9px;">${isAr ? "ترخيص Odoo غير مشمول" : "excl. Odoo license"}</td>
-      <td colspan="2" style="padding:8px 10px;text-align:center;">${fmtNum(devWithVat)} ${cur}</td>
+
+  html += `</tbody></table>
+      <div style="background:#fdf9ef;padding:7px 16px;font-size:10px;font-weight:800;color:#8a6010;letter-spacing:0.5px;border-top:1px solid #e2e8e3;border-bottom:1px solid #f0e6cf;display:flex;align-items:center;gap:6px;">
+        <span>🔁</span><span>${isAr ? "بنود متكررة — غير مشمولة في إجمالي العرض" : "Recurring — excluded from offer total"}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;"><tbody>
+        <tr style="border-bottom:1px solid #f0f2ef;">
+          <td style="padding:11px 14px;border-${isAr ? "right" : "left"}:3px solid #c9a84c;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;background:#fdf5e0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🔌</div>
+              <div>
+                <div style="font-size:12px;font-weight:800;color:#8a6010;">${isAr ? "ترخيص واستضافة" : "License & Hosting"} <span style="font-size:9px;color:#b48a30;font-weight:600;">(Odoo.sh — ${state.license.type})</span></div>
+                <div style="font-size:10px;color:#a07a30;margin-top:1px;">${isAr ? "فاتورة شهرية مستقلة عن العرض" : "Billed monthly, separate from offer"}</div>
+              </div>
+            </div>
+          </td>
+          <td style="padding:11px 14px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
+          <td style="padding:11px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;"><span style="font-size:14px;font-weight:800;color:#c9a84c;">${fmtNum(licM)}</span> <span style="font-size:10px;color:#b48a30;">${cur}/${isAr ? "شهر" : "mo"}</span></td>
+          ${hasVat ? `<td style="padding:11px 14px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
+        </tr>
+        <tr style="border-bottom:1px solid #f0f2ef;background:#fffaf0;">
+          <td style="padding:9px 14px;border-${isAr ? "right" : "left"}:3px solid #c9a84c;padding-${isAr ? "right" : "left"}:30px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="color:#8a6010;font-size:11px;font-weight:800;">↳</span>
+              <div>
+                <div style="font-size:11px;font-weight:800;color:#8a6010;">${isAr ? "الإجمالي السنوي — تجديد الترخيص (Odoo.sh)" : "Annual total — license renewal (Odoo.sh)"}</div>
+                <div style="font-size:9px;color:#a07a30;margin-top:1px;">${fmtNum(licM)} × 12 ${isAr ? "شهر" : "months"}</div>
+              </div>
+            </div>
+          </td>
+          <td style="padding:9px 14px;text-align:center;"><span style="background:#c9a84c;color:#fff;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px;">${isAr ? "سنوي" : "Annual"}</span></td>
+          <td style="padding:9px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;"><span style="font-size:14px;font-weight:900;color:#8a6010;">${fmtNum(annualLic)}</span> <span style="font-size:10px;color:#b48a30;">${cur}/${isAr ? "سنة" : "yr"}</span></td>
+          ${hasVat ? `<td style="padding:9px 14px;text-align:center;color:#7a8e80;font-size:9px;">${isAr ? "بدون ضريبة" : "Tax-free"}</td>` : ""}
+        </tr>`;
+
+  if (supM > 0) {
+    html += `<tr style="border-bottom:1px solid #f0f2ef;">
+      <td style="padding:11px 14px;border-${isAr ? "right" : "left"}:3px solid #c9a84c;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:32px;height:32px;background:#fdf5e0;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🎧</div>
+          <div>
+            <div style="font-size:12px;font-weight:800;color:#8a6010;">${isAr ? "دعم فني" : "Support"} <span style="font-size:9px;color:#b48a30;font-weight:600;">(${pkg?.name ?? ""})</span></div>
+            <div style="font-size:10px;color:#a07a30;margin-top:1px;">${isAr ? "باقة دعم شهرية" : "Monthly support package"}</div>
+          </div>
+        </div>
+      </td>
+      <td style="padding:11px 14px;text-align:center;"><span style="background:#fdf5e0;color:#8a6010;font-size:9px;font-weight:800;padding:3px 10px;border-radius:10px;">${isAr ? "شهري" : "Monthly"}</span></td>
+      <td style="padding:11px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;"><span style="font-size:14px;font-weight:800;color:#c9a84c;">${fmtNum(supM)}</span> <span style="font-size:10px;color:#b48a30;">${cur}/${isAr ? "شهر" : "mo"}</span></td>
+      ${hasVat ? `<td style="padding:11px 14px;text-align:center;color:#b8c2bd;font-size:11px;">—</td>` : ""}
     </tr>`;
   }
+
   html += `</tbody></table>`;
+
+  if (hasVat) {
+    html += `<div style="background:#f7f9f6;padding:12px 16px;border-top:2px dashed #c4d6c8;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px;">
+        <span style="color:#3e5446;">${isAr ? "المجموع قبل الضريبة (التطوير فقط)" : "Subtotal before VAT (development only)"}</span>
+        <span style="font-weight:700;color:#1a5c37;font-family:monospace;">${fmtNum(dev)} ${cur}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:11px;">
+        <span style="color:#8a6010;">🧾 ${isAr ? `ضريبة القيمة المضافة (${vatPct}%)` : `VAT (${vatPct}%)`}</span>
+        <span style="font-weight:700;color:#8a6010;font-family:monospace;">+ ${fmtNum(vat)} ${cur}</span>
+      </div>
+    </div>`;
+  }
+
+  html += `<div style="background:linear-gradient(135deg,#1a5c37 0%,#0e3a1e 100%);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-top:3px solid #c9a84c;">
+    <div>
+      <div style="font-size:12px;color:#c9a84c;font-weight:800;letter-spacing:0.5px;margin-bottom:3px;">💎 ${isAr ? "إجمالي العرض" : "Offer Total"}${hasVat ? (isAr ? " (شامل الضريبة)" : " (incl. VAT)") : ""}</div>
+      <div style="font-size:9px;opacity:0.65;">${isAr ? "ترخيص Odoo.sh غير مشمول — يُجدَّد سنوياً مستقلاً" : "Odoo.sh license excluded — renewed annually"}</div>
+    </div>
+    <div style="text-align:${isAr ? "left" : "right"};">
+      <div style="font-size:32px;font-weight:900;color:#c9a84c;font-family:monospace;line-height:1;">${fmtNum(devWithVat)}</div>
+      <div style="font-size:11px;opacity:0.75;margin-top:4px;">${cur}</div>
+    </div>
+  </div>
+</div>`;
 
   // Odoo warning
   html += `<div style="background:#fdf5e0;border:1px solid #c9a84c;border-radius:6px;padding:8px 14px;font-size:10px;color:#8a6010;">
