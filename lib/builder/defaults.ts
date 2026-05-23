@@ -32,6 +32,7 @@ export function makeInitialState(): QuoteBuilderState {
       date: "",
       currency: "KWD",
       validity: "30 يوم",
+      displayMode: "detailed",
     },
     client: {
       nameAr: "",

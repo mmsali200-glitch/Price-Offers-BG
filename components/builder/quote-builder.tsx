@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { SectionClient, SectionVersion, SectionLanguage } from "./section-client";
+import { SectionClient, SectionVersion, SectionLanguage, SectionDisplayMode } from "./section-client";
 import { SectionOptions } from "./section-options";
 import { SectionPhases } from "./section-phases";
 import { SectionPayment } from "./section-payment";
@@ -46,6 +46,7 @@ export function QuoteBuilder({ quoteId }: { quoteId: string }) {
 
       <SectionClient />
       <SectionLanguage />
+      <SectionDisplayMode />
       <SectionVersion />
       <SectionModules />
       <SectionBGApps />
