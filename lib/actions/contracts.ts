@@ -10,6 +10,63 @@ import type { QuoteBuilderState } from "@/lib/builder/types";
 import { logActivity } from "./activity-log";
 
 /**
+ * Render the contract HTML from the quote's saved state + extras without
+ * persisting anything. Used by the form's "Preview" step so the user can
+ * review the populated contract before committing it to the database
+ * (and so the preview still works when migration 0017 is pending).
+ */
+export async function previewContract(
+  quoteId: string,
+  extras: ContractExtras
+): Promise<{ ok: true; html: string } | { ok: false; error: string }> {
+  try {
+    const ctx = await getUserContext();
+    if (!ctx.signedIn) return { ok: false, error: "يجب تسجيل الدخول" };
+
+    const supabase = await createClient();
+    let qQuery = supabase
+      .from("quotes")
+      .select("id, ref, status, owner_id")
+      .eq("id", quoteId);
+    if (ctx.role === "sales") qQuery = qQuery.eq("owner_id", ctx.userId);
+    const { data: quote, error: qErr } = await qQuery.single();
+    if (qErr || !quote) return { ok: false, error: "العرض غير موجود" };
+    if (quote.status !== "accepted") {
+      return {
+        ok: false,
+        error: "لا يمكن إنشاء العقد قبل تأكيد قبول وتوقيع العميل على عرض السعر.",
+      };
+    }
+
+    const { data: section, error: secErr } = await supabase
+      .from("quote_sections")
+      .select("payload")
+      .eq("quote_id", quoteId)
+      .single();
+    if (secErr || !section?.payload) {
+      return { ok: false, error: "لم يتم العثور على بيانات العرض. تأكد من حفظ العرض أولاً." };
+    }
+
+    const defaults = makeInitialState();
+    const raw = section.payload as Partial<QuoteBuilderState>;
+    const state: QuoteBuilderState = {
+      ...defaults,
+      ...raw,
+      meta: { ...defaults.meta, ...(raw.meta || {}), ref: quote.ref },
+      client: { ...defaults.client, ...(raw.client || {}) },
+      license: { ...defaults.license, ...(raw.license || {}) },
+      payment: { ...defaults.payment, ...(raw.payment || {}) },
+      support: { ...defaults.support, ...(raw.support || {}), prices: { ...defaults.support.prices, ...(raw.support?.prices || {}) } },
+    } as QuoteBuilderState;
+
+    return { ok: true, html: renderContractHtml(state, extras) };
+  } catch (e) {
+    console.error("[previewContract]", e);
+    return { ok: false, error: e instanceof Error ? e.message : "حدث خطأ غير متوقع" };
+  }
+}
+
+/**
  * Create a contract for an accepted quote. Renders the contract HTML from
  * the quote's saved state plus the per-contract extras provided in the
  * form, persists everything in the contracts table, and redirects to the
@@ -98,12 +155,18 @@ export async function createContract(quoteId: string, extras: ContractExtras) {
       .single();
 
     if (insErr || !inserted) {
-      const missingTable = insErr?.code === "42P01" || /relation .*contracts.* does not exist/i.test(insErr?.message || "");
+      const msg = insErr?.message || "";
+      const missingTable =
+        insErr?.code === "42P01" ||
+        insErr?.code === "PGRST205" ||
+        /relation .*contracts.* does not exist/i.test(msg) ||
+        /could not find the table .*contracts/i.test(msg) ||
+        /schema cache/i.test(msg);
       return {
         ok: false as const,
         error: missingTable
-          ? "جدول العقود غير موجود في قاعدة البيانات. يلزم تطبيق migration رقم 0017_contracts.sql على Supabase أولاً."
-          : insErr?.message || "تعذّر إنشاء العقد",
+          ? "جدول العقود غير موجود في Supabase (أو الذاكرة المؤقتة قديمة). افتح Supabase → SQL Editor ونفّذ migration رقم 0017_contracts.sql ثم: NOTIFY pgrst, 'reload schema';"
+          : msg || "تعذّر إنشاء العقد",
       };
     }
 

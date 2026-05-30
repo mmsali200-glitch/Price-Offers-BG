@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, AlertTriangle } from "lucide-react";
-import { createContract } from "@/lib/actions/contracts";
+import { FileText, AlertTriangle, Eye, Printer, Download } from "lucide-react";
+import { createContract, previewContract } from "@/lib/actions/contracts";
 import type { ContractParty, ContractBank } from "@/lib/contract-defaults";
 
 type Initial = {
@@ -86,25 +86,67 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
   const [provider, setProvider] = useState(initial.provider);
   const [bank, setBank] = useState(initial.bank);
 
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const previewRef = useRef<HTMLDivElement | null>(null);
+
+  function buildExtras() {
+    return { ref, contractDate, jurisdiction, pmName, pmPhone, pmEmail, provider, bank };
+  }
+
+  function validate(): string | null {
+    if (!client.nameAr || !client.crn || !pmName || !pmPhone) {
+      return "الرجاء تعبئة بيانات العميل ومدير المشروع الأساسية.";
+    }
+    return null;
+  }
+
+  function preview() {
+    setError(null);
+    const v = validate();
+    if (v) { setError(v); return; }
+    startTransition(async () => {
+      const res = await previewContract(quoteId, buildExtras());
+      if (res.ok) {
+        setPreviewHtml(res.html);
+        setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+      } else {
+        setError(res.error);
+      }
+    });
+  }
+
   function submit() {
     setError(null);
-    if (!client.nameAr || !client.crn || !pmName || !pmPhone) {
-      setError("الرجاء تعبئة بيانات العميل ومدير المشروع الأساسية.");
-      return;
-    }
+    const v = validate();
+    if (v) { setError(v); return; }
     startTransition(async () => {
-      const res = await createContract(quoteId, {
-        ref,
-        contractDate,
-        jurisdiction,
-        pmName,
-        pmPhone,
-        pmEmail,
-        provider,
-        bank,
-      });
+      const res = await createContract(quoteId, buildExtras());
       if (res && !res.ok) setError(res.error);
     });
+  }
+
+  function downloadPreview() {
+    if (!previewHtml) return;
+    const blob = new Blob([previewHtml], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `معاينة_عقد_${ref || "draft"}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function printPreview() {
+    if (!previewHtml) return;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.open();
+    win.document.write(previewHtml);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
   }
 
   return (
@@ -182,14 +224,81 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
         </button>
         <button
           type="button"
+          onClick={preview}
+          disabled={pending}
+          className="btn-outline h-10 inline-flex items-center gap-2"
+          title="عرض العقد بشكله النهائي قبل الحفظ"
+        >
+          <Eye className="size-4" />
+          {pending && !previewHtml ? "جاري التوليد..." : "معاينة العقد"}
+        </button>
+        <button
+          type="button"
           onClick={submit}
           disabled={pending}
           className="btn-primary h-10 inline-flex items-center gap-2"
+          title="حفظ العقد نهائياً في قاعدة البيانات"
         >
           <FileText className="size-4" />
-          {pending ? "جاري إنشاء العقد..." : "إنشاء العقد"}
+          {pending ? "جاري الحفظ..." : previewHtml ? "حفظ نهائي" : "إنشاء العقد"}
         </button>
       </div>
+
+      {previewHtml && (
+        <div ref={previewRef} className="card p-0 overflow-hidden border-2 border-bg-green/30">
+          <div className="bg-bg-green text-white px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Eye className="size-4 text-bg-gold" />
+              <strong className="text-sm">معاينة العقد قبل الحفظ</strong>
+              <span className="text-[10px] bg-white/15 px-2 py-0.5 rounded-full">غير محفوظ بعد</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={printPreview}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs h-7 px-2.5 rounded inline-flex items-center gap-1"
+              >
+                <Printer className="size-3.5" />
+                طباعة
+              </button>
+              <button
+                type="button"
+                onClick={downloadPreview}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs h-7 px-2.5 rounded inline-flex items-center gap-1"
+              >
+                <Download className="size-3.5" />
+                HTML
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewHtml(null)}
+                className="bg-white/10 hover:bg-white/20 text-white text-xs h-7 px-2.5 rounded"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+          <iframe
+            srcDoc={previewHtml}
+            sandbox="allow-same-origin allow-scripts allow-modals allow-popups"
+            className="w-full bg-white"
+            style={{ height: "75vh", border: 0 }}
+            title="معاينة العقد"
+          />
+          <div className="bg-bg-card-alt px-4 py-3 border-t border-bg-line text-[12px] text-bg-text-2 flex flex-wrap items-center justify-between gap-2">
+            <span>راجع المحتوى ثم اضغط <strong className="text-bg-green">«حفظ نهائي»</strong> أعلاه — أو عدّل البيانات وأعد المعاينة.</span>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={pending}
+              className="btn-primary h-8 text-xs inline-flex items-center gap-1.5"
+            >
+              <FileText className="size-3.5" />
+              {pending ? "جاري الحفظ..." : "حفظ نهائي"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
