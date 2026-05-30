@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { computeTotals } from "@/lib/builder/store";
+import { computeTotals } from "@/lib/builder/totals";
 import type { QuoteBuilderState } from "@/lib/builder/types";
 import { generateQuoteRef } from "./ref-generator";
 import { ODOO_MODULES } from "@/lib/modules-catalog";
