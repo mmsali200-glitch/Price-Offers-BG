@@ -23,7 +23,7 @@ export default async function EditQuotePage({
 
     let query = supabase
       .from("quotes")
-      .select("id, ref, title, status, generated_at")
+      .select("id, ref, title, status, generated_at, client_id")
       .eq("id", id);
 
     if (ctx.role === "sales") {
@@ -41,6 +41,53 @@ export default async function EditQuotePage({
       .single();
 
     const initial = (section?.payload ?? {}) as Partial<QuoteBuilderState>;
+
+    // Enrich the saved payload with the latest clients row so any field
+    // updated on the client record (legal rep, project manager…) flows
+    // into the builder without re-entry. The payload still wins when it
+    // already holds a non-empty value.
+    if (quote.client_id) {
+      try {
+        const { data: c } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("id", quote.client_id)
+          .single();
+        if (c) {
+          const row = c as Record<string, unknown>;
+          const str = (v: unknown) => (typeof v === "string" ? v : "");
+          const num = (v: unknown) => (typeof v === "number" ? v : 0);
+          const existing = (initial.client ?? {}) as Partial<QuoteBuilderState["client"]>;
+          const prefer = <T,>(a: T | undefined, b: T) => (a !== undefined && a !== "" ? a : b);
+          initial.client = {
+            ...existing,
+            nameAr: prefer(existing.nameAr, str(row.name_ar)),
+            nameEn: prefer(existing.nameEn, str(row.name_en)),
+            sector: prefer(existing.sector, str(row.sector)),
+            employeeSize: prefer(existing.employeeSize, str(row.employee_size)),
+            businessActivity: prefer(existing.businessActivity, str(row.business_activity)),
+            contactName: prefer(existing.contactName, str(row.contact_name)),
+            contactPhone: prefer(existing.contactPhone, str(row.contact_phone)),
+            contactEmail: prefer(existing.contactEmail, str(row.contact_email)),
+            country: prefer(existing.country, str(row.country)),
+            governorate: prefer(existing.governorate, str(row.governorate)),
+            city: prefer(existing.city, str(row.city)),
+            address: prefer(existing.address, str(row.address)),
+            website: prefer(existing.website, str(row.website)),
+            taxNumber: prefer(existing.taxNumber, str(row.tax_number)),
+            crn: prefer(existing.crn, str(row.crn)),
+            legalRep: prefer(existing.legalRep, str(row.legal_rep)),
+            pmName: prefer(existing.pmName, str(row.pm_name)),
+            pmPhone: prefer(existing.pmPhone, str(row.pm_phone)),
+            pmEmail: prefer(existing.pmEmail, str(row.pm_email)),
+            communicationLanguage: prefer(existing.communicationLanguage, (row.communication_language as "ar" | "en") || "ar"),
+            commissionPct: existing.commissionPct ?? num(row.commission_pct),
+          } as QuoteBuilderState["client"];
+        }
+      } catch {
+        // Optional enrichment — fall back to whatever the payload has.
+      }
+    }
 
     // Load DB prices and apply to modules/apps/support that don't have overrides
     try {

@@ -26,6 +26,12 @@ export type ClientInfo = {
   website: string;
   taxNumber: string;
   crn: string;
+  /** Legal representative (الممثل القانوني) — used in the contract. */
+  legalRep: string;
+  /** Project manager contact at the client — pre-fills the contract form. */
+  pmName: string;
+  pmPhone: string;
+  pmEmail: string;
   communicationLanguage: QuoteLanguage;
   commissionPct: number;
 };
