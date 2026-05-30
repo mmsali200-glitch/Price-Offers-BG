@@ -103,8 +103,74 @@ function computeRenderTotals(state: QuoteBuilderState) {
   return { modsTotal, bgImpl, optsTotal, devRaw, dev, licM, supM, annualLic, vatRate, vat, devWithVat, grandY1, firstPay };
 }
 
-/** §5 — Module details — creative card design */
+/** Package-mode module list — compact branded table listing modules with single bundled price. */
+function renderPackageModulesHtml(state: QuoteBuilderState, isAr: boolean): string {
+  const mods = getSelectedMods(state);
+  const bgApps = getSelectedBG(state);
+  const cur = curSymbol(state.meta.currency);
+  const { dev } = computeRenderTotals(state);
+  const items: Array<{ id: string; name: string; features: string[] }> = [
+    ...mods.map((m) => ({ id: m.id, name: m.name, features: m.features })),
+    ...bgApps.map((a) => ({ id: a.id, name: a.name, features: a.features })),
+  ];
+  if (items.length === 0) return "";
+  const enLabel = (id: string) => id.split(/[-_]/).map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+
+  let html = `<section id="dyn-modules" style="padding:28px 20px;border-bottom:1px solid #e2e8e3;background:#fff;">
+    <div style="border:1.5px solid #e2e8e3;border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(26,92,55,0.08);page-break-inside:avoid;">
+      <div style="background:linear-gradient(135deg,#1a5c37 0%,#247a4a 100%);padding:14px 20px;display:flex;align-items:center;gap:12px;">
+        <div style="width:34px;height:34px;background:#c9a84c;color:#1a5c37;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0;">1</div>
+        <div style="color:#fff;font-size:14px;font-weight:800;letter-spacing:0.2px;">${isAr ? "الموديولات الأساسية المشمولة في الباقة" : "Core modules included in the package"}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;">
+        <thead>
+          <tr style="background:#247a4a;color:#fff;">
+            <th style="padding:9px 14px;width:50px;text-align:center;font-weight:700;font-size:11px;">#</th>
+            <th style="padding:9px 14px;text-align:${isAr ? "right" : "left"};font-weight:700;font-size:11px;">${isAr ? "الموديول" : "Module"}</th>
+            <th style="padding:9px 14px;width:140px;text-align:center;font-weight:700;font-size:11px;">${isAr ? "الحالة" : "Status"}</th>
+          </tr>
+        </thead>
+        <tbody>`;
+
+  items.forEach((it, i) => {
+    const enName = enLabel(it.id);
+    const desc = it.features?.[0] || "";
+    const stripe = i % 2 === 0 ? "#fff" : "#f7f9f6";
+    html += `<tr style="border-bottom:1px solid #f0f2ef;background:${stripe};">
+      <td style="padding:12px 14px;text-align:center;color:#7a8e80;font-weight:700;font-family:monospace;font-size:12px;">${String(i + 1).padStart(2, "0")}</td>
+      <td style="padding:12px 14px;">
+        <div style="font-size:13px;font-weight:800;margin-bottom:3px;">
+          <span style="color:#1a5c37;border-bottom:2px solid #c9a84c;padding-bottom:1px;">${esc(enName)} — ${esc(it.name)}</span>
+        </div>
+        <div style="font-size:10px;color:#7a8e80;line-height:1.55;">${esc(desc)}</div>
+      </td>
+      <td style="padding:12px 14px;text-align:center;">
+        <span style="color:#15803d;font-size:11px;font-weight:800;">✓ ${isAr ? "ضمن الباقة" : "Included"}</span>
+      </td>
+    </tr>`;
+  });
+
+  html += `</tbody>
+        <tfoot>
+          <tr style="background:linear-gradient(90deg,#1a5c37 0%,#0e3a1e 100%);color:#fff;">
+            <td colspan="2" style="padding:14px 16px;">
+              <div style="font-size:13px;font-weight:800;">${isAr ? `الإجمالي — تطوير وتطبيق الباقة الأساسية (${items.length} ${items.length === 1 ? "موديول" : "موديولات"})` : `Total — Package implementation (${items.length} modules)`}</div>
+            </td>
+            <td style="padding:14px 16px;text-align:${isAr ? "left" : "right"};white-space:nowrap;">
+              <span style="font-size:20px;font-weight:900;color:#c9a84c;font-family:monospace;">${fmtNum(dev)}</span>
+              <span style="font-size:12px;color:#c9a84c;margin-${isAr ? "right" : "left"}:4px;">${cur}</span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </section>`;
+  return html;
+}
+
+/** §5 — Module details — creative card design (detailed) or package list (package mode) */
 export function renderModuleDetailsHtml(state: QuoteBuilderState, isAr: boolean): string {
+  if (state.meta.displayMode === "package") return renderPackageModulesHtml(state, isAr);
   const mods = getSelectedMods(state);
   const bgApps = getSelectedBG(state);
   if (mods.length === 0 && bgApps.length === 0) return "";
@@ -387,6 +453,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
   const { optsTotal, devRaw, dev, licM, supM, annualLic, vatRate, vat, devWithVat, firstPay } = computeRenderTotals(state);
   const hasVat = vatRate > 0;
   const vatPct = Math.round(vatRate * 100);
+  const isPackage = state.meta.displayMode === "package";
   const selectedOpts = state.options.filter((o) => o.selected);
   const pkg = SUPPORT_PACKAGES.find((p) => p.id === state.support.packageId);
 
@@ -424,16 +491,16 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
         <span style="color:#fff;font-size:10px;background:rgba(255,255,255,0.18);padding:3px 10px;border-radius:10px;font-weight:700;">${cur}</span>
       </div>
       <div style="background:#eaf3ed;padding:7px 16px;font-size:10px;font-weight:800;color:#1a5c37;letter-spacing:0.5px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #d4e3d8;">
-        <span>💼</span><span>${isAr ? "بنود لمرة واحدة — التطوير والتطبيق" : "One-time — Development & Implementation"}</span>
+        <span>💼</span><span>${isAr ? (isPackage ? "بنود لمرة واحدة — الباقة الأساسية" : "بنود لمرة واحدة — التطوير والتطبيق") : (isPackage ? "One-time — Core Package" : "One-time — Development & Implementation")}</span>
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:11px;"><tbody>
         <tr style="border-bottom:1px solid #f0f2ef;">
           <td style="padding:11px 14px;border-${isAr ? "right" : "left"}:3px solid #1a5c37;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <div style="width:32px;height:32px;background:#eaf3ed;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">📦</div>
+              <div style="width:32px;height:32px;background:#eaf3ed;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${isPackage ? "💎" : "📦"}</div>
               <div>
-                <div style="font-size:12px;font-weight:800;color:#1a5c37;">${isAr ? "تطوير وتطبيق" : "Development & Implementation"}</div>
-                <div style="font-size:10px;color:#7a8e80;margin-top:1px;">${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}${selectedOpts.length ? ` + ${selectedOpts.length} ${isAr ? "اختياري" : "optional"}` : ""}</div>
+                <div style="font-size:12px;font-weight:800;color:#1a5c37;">${isAr ? (isPackage ? "الباقة الأساسية المتكاملة" : "تطوير وتطبيق") : (isPackage ? "Complete Core Package" : "Development & Implementation")}</div>
+                <div style="font-size:10px;color:#7a8e80;margin-top:1px;">${mods.length + bgApps.length} ${isAr ? "موديول" : "modules"}${!isPackage && selectedOpts.length ? ` + ${selectedOpts.length} ${isAr ? "اختياري" : "optional"}` : ""}${isPackage ? ` ${isAr ? "— شاملة التدريب والتنفيذ" : "— incl. training & implementation"}` : ""}</div>
               </div>
             </div>
           </td>
@@ -442,7 +509,7 @@ export function renderPricingHtml(state: QuoteBuilderState, isAr: boolean): stri
           ${hasVat ? `<td style="padding:11px 14px;text-align:${isAr ? "left" : "right"};font-family:monospace;white-space:nowrap;width:110px;"><span style="font-size:12px;font-weight:700;color:#8a6010;">${fmtNum(vat)}</span> <span style="font-size:9px;color:#b48a30;">${cur}</span></td>` : ""}
         </tr>`;
 
-  if (optsTotal > 0) {
+  if (!isPackage && optsTotal > 0) {
     html += `<tr style="border-bottom:1px solid #f0f2ef;background:#fffaf0;">
       <td style="padding:8px 14px;border-${isAr ? "right" : "left"}:3px solid #c9a84c;padding-${isAr ? "right" : "left"}:30px;">
         <div style="display:flex;align-items:flex-start;gap:8px;">
