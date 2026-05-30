@@ -18,6 +18,15 @@ import {
   defaultJurisdiction,
 } from "./contract-defaults";
 
+export type ContractClientOverride = Partial<{
+  name: string;
+  cr: string;
+  vat: string;
+  address: string;
+  rep: string;
+  email: string;
+}>;
+
 export type ContractExtras = {
   ref: string;
   contractDate: string; // ISO date
@@ -27,6 +36,8 @@ export type ContractExtras = {
   pmEmail: string;
   provider?: Partial<ContractParty>;
   bank?: Partial<ContractBank>;
+  /** Client data entered in the contract form — overrides the snapshot from the quote. */
+  client?: ContractClientOverride;
 };
 
 function esc(s: string) {
@@ -128,13 +139,17 @@ export function renderContractHtml(state: QuoteBuilderState, extras: ContractExt
   const jurisdiction = extras.jurisdiction || defaultJurisdiction(country);
 
   const client = state.client;
+  const ov = extras.client || {};
   const p2: ContractParty = {
-    name: client?.nameAr || "—",
-    cr: client?.crn || "—",
-    vat: client?.taxNumber || "—",
-    address: [client?.governorate, client?.address].filter(Boolean).join("، ") || "—",
-    rep: client?.contactName || "—",
-    email: client?.contactEmail || "—",
+    name: ov.name || client?.nameAr || "—",
+    cr: ov.cr || client?.crn || "—",
+    vat: ov.vat || client?.taxNumber || "—",
+    address:
+      ov.address ||
+      [client?.governorate, client?.address].filter(Boolean).join("، ") ||
+      "—",
+    rep: ov.rep || client?.contactName || "—",
+    email: ov.email || client?.contactEmail || "—",
   };
 
   const modules = selectedModuleNames(state);
