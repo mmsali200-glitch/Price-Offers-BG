@@ -72,9 +72,11 @@ export default async function NewContractPage({
     ref: `CT-${quote.ref}`,
     contractDate: new Date().toISOString().slice(0, 10),
     jurisdiction: defaultJurisdiction(state.client?.country || ""),
-    pmName: state.client?.contactName || "",
-    pmPhone: state.client?.contactPhone || "",
-    pmEmail: state.client?.contactEmail || "",
+    // PM contact: prefer dedicated PM fields on the client; fall back to
+    // the primary contact only if the client record doesn't carry them.
+    pmName: state.client?.pmName || state.client?.contactName || "",
+    pmPhone: state.client?.pmPhone || state.client?.contactPhone || "",
+    pmEmail: state.client?.pmEmail || state.client?.contactEmail || "",
     provider: DEFAULT_PROVIDER,
     bank: DEFAULT_BANK,
     clientSnapshot: {
@@ -82,7 +84,7 @@ export default async function NewContractPage({
       crn: state.client?.crn || "",
       taxNumber: state.client?.taxNumber || "",
       address: [state.client?.governorate, state.client?.address].filter(Boolean).join("، "),
-      rep: state.client?.contactName || "",
+      rep: state.client?.legalRep || state.client?.contactName || "",
       email: state.client?.contactEmail || "",
     },
   };

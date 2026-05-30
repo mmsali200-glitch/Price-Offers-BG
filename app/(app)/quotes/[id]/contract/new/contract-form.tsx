@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition, useRef } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FileText, AlertTriangle, Eye, Printer, Download } from "lucide-react";
+import { FileText, AlertTriangle, Eye, Printer, Download, CheckCircle2, ArrowRight } from "lucide-react";
 import { createContract, previewContract } from "@/lib/actions/contracts";
 import type { ContractParty, ContractBank } from "@/lib/contract-defaults";
 
@@ -87,7 +88,20 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
   const [bank, setBank] = useState(initial.bank);
 
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [savedRef, setSavedRef] = useState<string | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
+
+  function triggerDownload(html: string, fileRef: string) {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `عقد_${fileRef || "draft"}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
 
   function buildExtras() {
     return {
@@ -134,25 +148,30 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
 
   function submit() {
     setError(null);
+    setSavedRef(null);
     const v = validate();
     if (v) { setError(v); return; }
     startTransition(async () => {
       const res = await createContract(quoteId, buildExtras());
-      if (res && !res.ok) setError(res.error);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      // Successful save: only the contract REF is persisted on the quote.
+      // Trigger an automatic HTML download so the user has the final file,
+      // surface a success banner with the saved reference, and stop here
+      // (we intentionally don't navigate away — they can re-preview / edit
+      // and download fresh copies as needed).
+      setSavedRef(res.ref);
+      setPreviewHtml(res.html);
+      triggerDownload(res.html, res.ref);
+      setTimeout(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
     });
   }
 
   function downloadPreview() {
     if (!previewHtml) return;
-    const blob = new Blob([previewHtml], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `معاينة_عقد_${ref || "draft"}.html`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    triggerDownload(previewHtml, ref);
   }
 
   function printPreview() {
@@ -171,7 +190,40 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
       {error && (
         <div className="rounded-card border border-bg-danger bg-bg-danger/10 text-bg-danger p-3 text-sm flex items-start gap-2">
           <AlertTriangle className="size-4 mt-0.5 flex-shrink-0" />
-          <span>{error}</span>
+          <span className="flex-1">{error}</span>
+        </div>
+      )}
+
+      {savedRef && (
+        <div className="rounded-card border-2 border-emerald-300 bg-emerald-50 text-emerald-900 p-4 flex items-start gap-3">
+          <CheckCircle2 className="size-5 mt-0.5 text-emerald-600 flex-shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="font-bold">
+              تم حفظ رقم العقد <span className="font-mono bg-emerald-100 px-2 py-0.5 rounded">{savedRef}</span> على هذا العرض.
+            </div>
+            <div className="text-xs text-emerald-700">
+              تم تحميل ملف العقد تلقائياً. لا يُحفظ من العقد سوى رقمه — يُعاد توليد المحتوى من بيانات العميل والعرض في كل مرة.
+            </div>
+            <div className="flex gap-2 pt-1">
+              {previewHtml && (
+                <button
+                  type="button"
+                  onClick={() => previewHtml && triggerDownload(previewHtml, savedRef)}
+                  className="btn-outline h-8 text-xs inline-flex items-center gap-1.5 border-emerald-400 text-emerald-700 hover:bg-emerald-100"
+                >
+                  <Download className="size-3.5" />
+                  تحميل مرة أخرى
+                </button>
+              )}
+              <Link
+                href={`/quotes/${quoteId}/preview`}
+                className="btn-outline h-8 text-xs inline-flex items-center gap-1.5 border-emerald-400 text-emerald-700 hover:bg-emerald-100"
+              >
+                <ArrowRight className="size-3.5" />
+                العودة إلى معاينة العرض
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 

@@ -191,6 +191,32 @@ export function SectionClient() {
       </div>
 
       <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-2">
+        ⚖️ بيانات العقد (تُستخدم تلقائياً عند إنشاء عقد لهذا العميل)
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+        <Field label="الممثل القانوني للعميل" hint="الاسم — الصفة (مثال: أحمد الخالد — مدير عام)">
+          <input className="input" value={client.legalRep ?? ""}
+            onChange={(e) => setClient("legalRep", e.target.value)}
+            placeholder="أحمد الخالد — مدير عام" />
+        </Field>
+        <Field label="اسم مدير المشروع لدى العميل">
+          <input className="input" value={client.pmName ?? ""}
+            onChange={(e) => setClient("pmName", e.target.value)}
+            placeholder="عبدالرحمن العمار" />
+        </Field>
+        <Field label="جوال مدير المشروع">
+          <input className="input tabular" dir="ltr" value={client.pmPhone ?? ""}
+            onChange={(e) => setClient("pmPhone", e.target.value)}
+            placeholder="+966 5XX XXX XXX" />
+        </Field>
+        <Field label="بريد مدير المشروع">
+          <input className="input" dir="ltr" value={client.pmEmail ?? ""}
+            onChange={(e) => setClient("pmEmail", e.target.value)}
+            placeholder="pm@example.com" />
+        </Field>
+      </div>
+
+      <div className="text-[10px] font-black text-bg-green uppercase tracking-wider mb-2">
         💼 الشروط التجارية
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
