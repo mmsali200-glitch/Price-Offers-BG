@@ -47,14 +47,27 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
     query = query.eq("owner_id", ctx.userId);
   }
 
-  const [{ error: qErr }, { error: sErr }] = await Promise.all([
+  // Upsert quote_sections — try with the denormalized selected_module_ids
+  // column first (added in migration 0016). If the column is missing on
+  // this database, retry without it so the payload still persists. Losing
+  // this upsert silently corrupts the round-trip and the user sees their
+  // module selections disappear on reload.
+  async function upsertSection(includeIds: boolean) {
+    const row: Record<string, unknown> = { quote_id: quoteId, payload: state };
+    if (includeIds) row.selected_module_ids = selectedModuleIds(state);
+    return supabase.from("quote_sections").upsert(row);
+  }
+
+  const [{ error: qErr }, sResult] = await Promise.all([
     query,
-    supabase.from("quote_sections").upsert({
-      quote_id: quoteId,
-      payload: state,
-      selected_module_ids: selectedModuleIds(state),
-    }),
+    upsertSection(true),
   ]);
+  let sErr = sResult.error;
+  const missingCol = sErr && (sErr.code === "42703" || /selected_module_ids/i.test(sErr.message));
+  if (missingCol) {
+    console.warn("[saveQuote] selected_module_ids column missing — retrying without it. Apply migration 0016.");
+    sErr = (await upsertSection(false)).error;
+  }
 
   if (qErr) return { ok: false as const, error: qErr.message };
   if (sErr) return { ok: false as const, error: sErr.message };
