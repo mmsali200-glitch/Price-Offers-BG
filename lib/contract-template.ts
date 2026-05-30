@@ -68,9 +68,10 @@ function buildScope(state: QuoteBuilderState): Array<{ title: string; desc: stri
 }
 
 function buildPayments(state: QuoteBuilderState, total: number): Array<{ label: string; desc: string; date: string; percent: number; amount: number }> {
-  const n = Math.max(1, state.payment.installments || 1);
-  const fpPct = state.payment.firstPaymentPct || 30;
-  const startISO = state.payment.startDate || new Date().toISOString().slice(0, 10);
+  const pay = state.payment ?? ({} as QuoteBuilderState["payment"]);
+  const n = Math.max(1, pay.installments || 1);
+  const fpPct = pay.firstPaymentPct || 30;
+  const startISO = pay.startDate || new Date().toISOString().slice(0, 10);
   const start = new Date(startISO);
   const fa = Math.round((total * fpPct) / 100);
   const perInst = n > 1 ? Math.round((total - fa) / (n - 1)) : 0;
@@ -144,9 +145,10 @@ export function renderContractHtml(state: QuoteBuilderState, extras: ContractExt
     ? fmtDateArabic(new Date(extras.contractDate))
     : fmtDateArabic(new Date());
 
+  const supportPrices = (state.support?.prices ?? {}) as Record<string, number>;
   const supportRows = SUPPORT_PACKAGES.filter((p) => p.id !== "none")
     .map((p) => {
-      const price = (state.support.prices as Record<string, number>)[p.id] ?? p.price;
+      const price = supportPrices[p.id] ?? p.price;
       const star = p.id === "advanced";
       return { name: p.name, price, features: p.features || [], star };
     });
