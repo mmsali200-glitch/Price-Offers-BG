@@ -90,7 +90,24 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
   const previewRef = useRef<HTMLDivElement | null>(null);
 
   function buildExtras() {
-    return { ref, contractDate, jurisdiction, pmName, pmPhone, pmEmail, provider, bank };
+    return {
+      ref,
+      contractDate,
+      jurisdiction,
+      pmName,
+      pmPhone,
+      pmEmail,
+      provider,
+      bank,
+      client: {
+        name: client.nameAr,
+        cr: client.crn,
+        vat: client.taxNumber,
+        address: client.address,
+        rep: client.rep,
+        email: client.email,
+      },
+    };
   }
 
   function validate(): string | null {
