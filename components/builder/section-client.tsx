@@ -258,39 +258,6 @@ export function SectionVersion() {
   );
 }
 
-export function SectionDisplayMode() {
-  const displayMode = useBuilderStore((s) => s.meta.displayMode);
-  const setMeta = useBuilderStore((s) => s.setMeta);
-  const opts = [
-    { v: "detailed" as const, label: "تفصيلي", sub: "سعر لكل موديول + ملخص مالي تفصيلي" },
-    { v: "package" as const, label: "إجمالي / باقة", sub: "قائمة موديولات + سعر إجمالي للباقة" },
-  ];
-  return (
-    <SectionCard icon="📊" title="نمط عرض الأسعار" subtitle="تفصيلي لكل موديول أو سعر إجمالي للباقة" tone="info">
-      <div className="flex gap-2">
-        {opts.map((opt) => (
-          <button
-            key={opt.v}
-            type="button"
-            onClick={() => setMeta("displayMode", opt.v)}
-            className={cn(
-              "flex-1 rounded-sm2 border-2 px-4 py-3 text-center transition-colors",
-              displayMode === opt.v
-                ? "border-bg-green bg-bg-green-lt text-bg-green"
-                : "border-bg-line text-bg-text-2 hover:border-bg-green-2"
-            )}
-          >
-            <div className="text-sm font-black">{opt.label}</div>
-            <div className={cn("text-[10px] mt-0.5", displayMode === opt.v ? "text-bg-green-2" : "text-bg-text-3")}>
-              {opt.sub}
-            </div>
-          </button>
-        ))}
-      </div>
-    </SectionCard>
-  );
-}
-
 export function SectionLanguage() {
   const language = useBuilderStore((s) => s.language);
   const setLanguage = useBuilderStore((s) => s.setLanguage);

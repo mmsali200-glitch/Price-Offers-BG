@@ -30,14 +30,11 @@ export type ClientInfo = {
   commissionPct: number;
 };
 
-export type QuoteDisplayMode = "detailed" | "package";
-
 export type QuoteMeta = {
   ref: string;
   date: string;
   currency: QuoteCurrency;
   validity: string;
-  displayMode: QuoteDisplayMode;
 };
 
 export type ModuleState = {
