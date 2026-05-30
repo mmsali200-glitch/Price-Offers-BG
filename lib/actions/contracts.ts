@@ -72,7 +72,14 @@ export async function previewContract(
  * form, persists everything in the contracts table, and redirects to the
  * contract preview.
  */
-export async function createContract(quoteId: string, extras: ContractExtras) {
+export type CreateContractResult =
+  | { ok: true }
+  | { ok: false; error: string; html?: string; supabaseUrl?: string };
+
+export async function createContract(
+  quoteId: string,
+  extras: ContractExtras
+): Promise<CreateContractResult> {
   // All work runs inside try/catch so an unexpected throw (missing table,
   // malformed payload, render error) surfaces as a clean Arabic message
   // instead of the opaque "Server Components render" production error.
@@ -164,12 +171,24 @@ export async function createContract(quoteId: string, extras: ContractExtras) {
         /relation .*contracts.* does not exist/i.test(msg) ||
         /could not find the table .*contracts/i.test(msg) ||
         /schema cache/i.test(msg);
-      return {
-        ok: false as const,
-        error: missingTable
-          ? "جدول العقود غير موجود في Supabase (أو الذاكرة المؤقتة قديمة). افتح Supabase → SQL Editor ونفّذ migration رقم 0017_contracts.sql ثم: NOTIFY pgrst, 'reload schema';"
-          : msg || "تعذّر إنشاء العقد",
-      };
+
+      if (missingTable) {
+        // Mark the rendered HTML so the client can offer a "save locally"
+        // download as a fallback. Also surface the connected project URL
+        // so the user can confirm they applied the migration to the right
+        // Supabase project (a very common cause of this error).
+        const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "(غير معرّف)";
+        return {
+          ok: false as const,
+          error:
+            `جدول العقود غير موجود في Supabase المتصل (${url}). ` +
+            "تأكد أنك طبّقت بلوك إنشاء الجدول على هذا المشروع تحديداً، " +
+            "ثم نفّذ NOTIFY pgrst, 'reload schema'; يمكنك حالياً تحميل نسخة HTML من العقد لحفظها لديك.",
+          html,
+          supabaseUrl: url,
+        };
+      }
+      return { ok: false as const, error: msg || "تعذّر إنشاء العقد" };
     }
 
     contractId = inserted.id;

@@ -87,6 +87,7 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
   const [bank, setBank] = useState(initial.bank);
 
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [saveFallback, setSaveFallback] = useState<{ html: string; url?: string } | null>(null);
   const previewRef = useRef<HTMLDivElement | null>(null);
 
   function buildExtras() {
@@ -134,12 +135,29 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
 
   function submit() {
     setError(null);
+    setSaveFallback(null);
     const v = validate();
     if (v) { setError(v); return; }
     startTransition(async () => {
       const res = await createContract(quoteId, buildExtras());
-      if (res && !res.ok) setError(res.error);
+      if (res && !res.ok) {
+        setError(res.error);
+        if (res.html) setSaveFallback({ html: res.html, url: res.supabaseUrl });
+      }
     });
+  }
+
+  function downloadFallback() {
+    if (!saveFallback) return;
+    const blob = new Blob([saveFallback.html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `عقد_${ref || "draft"}.html`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }
 
   function downloadPreview() {
@@ -171,7 +189,19 @@ export function ContractForm({ quoteId, initial }: { quoteId: string; initial: I
       {error && (
         <div className="rounded-card border border-bg-danger bg-bg-danger/10 text-bg-danger p-3 text-sm flex items-start gap-2">
           <AlertTriangle className="size-4 mt-0.5 flex-shrink-0" />
-          <span>{error}</span>
+          <div className="space-y-2 flex-1">
+            <div>{error}</div>
+            {saveFallback && (
+              <button
+                type="button"
+                onClick={downloadFallback}
+                className="btn-outline text-xs h-8 inline-flex items-center gap-1.5 border-bg-danger text-bg-danger hover:bg-bg-danger/10"
+              >
+                <Download className="size-3.5" />
+                تحميل العقد كـHTML بدل الحفظ
+              </button>
+            )}
+          </div>
         </div>
       )}
 
