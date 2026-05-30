@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowRight, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUserContext } from "@/lib/auth/user-context";
 import { makeInitialState } from "@/lib/builder/defaults";
@@ -23,6 +25,38 @@ export default async function NewContractPage({
   if (ctx.role === "sales") qQuery = qQuery.eq("owner_id", ctx.userId);
   const { data: quote } = await qQuery.single();
   if (!quote) notFound();
+
+  // Gate: contract creation requires the client to have accepted and
+  // signed the quote (status === "accepted"). Show a friendly message
+  // with a link back to preview instead of the form.
+  if (quote.status !== "accepted") {
+    return (
+      <div className="p-6 max-w-2xl mx-auto">
+        <div className="card p-8 text-center space-y-4">
+          <div className="inline-flex items-center justify-center size-14 rounded-full bg-amber-100 text-amber-600 mx-auto">
+            <AlertTriangle className="size-7" />
+          </div>
+          <h1 className="text-xl font-bold text-bg-green">
+            العرض لم يُعتمد بعد من العميل
+          </h1>
+          <p className="text-sm text-bg-text-3 max-w-md mx-auto leading-relaxed">
+            لا يمكن إنشاء عقد قبل تأكيد قبول وتوقيع العميل على عرض السعر.
+            ارجع إلى صفحة معاينة العرض واضغط زر <strong>«تأكيد قبول وتوقيع العميل»</strong>،
+            ثم سيظهر زر <strong>«إنشاء عقد»</strong>.
+          </p>
+          <div className="pt-2">
+            <Link
+              href={`/quotes/${id}/preview`}
+              className="btn-primary inline-flex items-center gap-1.5"
+            >
+              <ArrowRight className="size-4" />
+              العودة إلى معاينة العرض
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const { data: section } = await supabase
     .from("quote_sections")

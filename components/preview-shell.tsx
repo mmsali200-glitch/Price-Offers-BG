@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRef } from "react";
 import { fmtDateArabic } from "@/lib/utils";
 import { PdfDownloadButton } from "./pdf-download";
+import { PreviewQuoteActions } from "./preview-quote-actions";
 
 export function PreviewShell({
   quoteId,
@@ -13,6 +14,7 @@ export function PreviewShell({
   html,
   generatedAt,
   language,
+  status,
 }: {
   quoteId: string;
   ref_: string;
@@ -20,6 +22,7 @@ export function PreviewShell({
   html: string | null;
   generatedAt: string | null;
   language: "ar" | "en" | null;
+  status: string;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -89,6 +92,11 @@ export function PreviewShell({
             </span>
           )}
           <span className="text-xs text-bg-text-3 truncate">{title || "بدون عنوان"}</span>
+          {status === "accepted" && (
+            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
+              ✓ مقبول وموقّع
+            </span>
+          )}
           {generatedAt && (
             <span className="text-[10px] text-bg-text-3">
               · وُلِّد في {fmtDateArabic(generatedAt)}
@@ -96,6 +104,7 @@ export function PreviewShell({
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          <PreviewQuoteActions quoteId={quoteId} status={status} />
           <button
             onClick={handlePrint}
             className="btn-outline inline-flex items-center gap-1.5 h-8 text-xs"
