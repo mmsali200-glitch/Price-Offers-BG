@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Download, Printer, Edit3 } from "lucide-react";
+import { ArrowRight, Download, Printer, Edit3, FileText } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 import { fmtDateArabic } from "@/lib/utils";
@@ -96,6 +96,14 @@ export function PreviewShell({
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          <Link
+            href={`/quotes/${quoteId}/contract/new`}
+            className="btn-primary inline-flex items-center gap-1.5 h-8 text-xs"
+            title="إنشاء عقد مبني على هذا العرض"
+          >
+            <FileText className="size-3.5" />
+            إنشاء عقد
+          </Link>
           <button
             onClick={handlePrint}
             className="btn-outline inline-flex items-center gap-1.5 h-8 text-xs"

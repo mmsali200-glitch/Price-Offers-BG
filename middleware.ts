@@ -13,6 +13,7 @@ const STAFF_PREFIXES = [
   "/templates",
   "/settings",
   "/reports",
+  "/contracts",
 ];
 
 const CLIENT_PREFIX = "/client";
