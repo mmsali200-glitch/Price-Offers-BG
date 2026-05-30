@@ -6,7 +6,7 @@
  */
 
 import type { QuoteBuilderState } from "./builder/types";
-import { computeTotals } from "./builder/store";
+import { computeTotals } from "./builder/totals";
 import { ODOO_MODULES, BG_APPS, SUPPORT_PACKAGES } from "./modules-catalog";
 import { getVatRate } from "./country-pricing";
 import { fmtNum, curSymbol, fmtDateArabic } from "./utils";
