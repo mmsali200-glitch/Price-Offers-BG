@@ -54,16 +54,18 @@ export async function POST(
         payload.meta = { ...defaults.meta, ...body.state.meta, ref: quote.ref };
 
         // Defer payload persistence to after the response is sent.
+        // Tolerate missing selected_module_ids column (migration 0016).
         const persistState = body.state as QuoteBuilderState;
         after(async () => {
-          await supabase
-            .from("quote_sections")
-            .upsert({
-              quote_id: id,
-              payload: persistState,
-              selected_module_ids: selectedIds(persistState),
-            })
-            .then(null, (e: unknown) => console.warn("[generate] save payload:", e));
+          const row: Record<string, unknown> = { quote_id: id, payload: persistState };
+          const withIds = { ...row, selected_module_ids: selectedIds(persistState) };
+          const { error } = await supabase.from("quote_sections").upsert(withIds);
+          if (error && (error.code === "42703" || /selected_module_ids/i.test(error.message))) {
+            await supabase.from("quote_sections").upsert(row)
+              .then(null, (e: unknown) => console.warn("[generate] save payload retry:", e));
+          } else if (error) {
+            console.warn("[generate] save payload:", error);
+          }
         });
       } else {
         throw new Error("no state in body");
