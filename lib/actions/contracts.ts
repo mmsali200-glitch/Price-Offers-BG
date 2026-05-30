@@ -98,12 +98,18 @@ export async function createContract(quoteId: string, extras: ContractExtras) {
       .single();
 
     if (insErr || !inserted) {
-      const missingTable = insErr?.code === "42P01" || /relation .*contracts.* does not exist/i.test(insErr?.message || "");
+      const msg = insErr?.message || "";
+      const missingTable =
+        insErr?.code === "42P01" ||
+        insErr?.code === "PGRST205" ||
+        /relation .*contracts.* does not exist/i.test(msg) ||
+        /could not find the table .*contracts/i.test(msg) ||
+        /schema cache/i.test(msg);
       return {
         ok: false as const,
         error: missingTable
-          ? "جدول العقود غير موجود في قاعدة البيانات. يلزم تطبيق migration رقم 0017_contracts.sql على Supabase أولاً."
-          : insErr?.message || "تعذّر إنشاء العقد",
+          ? "جدول العقود غير موجود في Supabase (أو الذاكرة المؤقتة قديمة). افتح Supabase → SQL Editor ونفّذ migration رقم 0017_contracts.sql ثم: NOTIFY pgrst, 'reload schema';"
+          : msg || "تعذّر إنشاء العقد",
       };
     }
 
