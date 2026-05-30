@@ -72,8 +72,73 @@ export async function saveQuote(quoteId: string, state: QuoteBuilderState) {
   if (qErr) return { ok: false as const, error: qErr.message };
   if (sErr) return { ok: false as const, error: sErr.message };
 
+  // Sync the builder's client edits back to the clients row so the same
+  // customer's next quote and any future contract pulls the freshest data.
+  // Best-effort: a failure here (missing client_id link, missing column on
+  // older databases, RLS) must not block the autosave round-trip.
+  void syncClientFromState(supabase, quoteId, state);
+
   revalidatePath(`/quotes/${quoteId}/edit`);
   return { ok: true as const };
+}
+
+async function syncClientFromState(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  quoteId: string,
+  state: QuoteBuilderState
+) {
+  try {
+    const { data: q } = await supabase
+      .from("quotes")
+      .select("client_id")
+      .eq("id", quoteId)
+      .single();
+    const clientId = q?.client_id;
+    if (!clientId) return;
+
+    const c = state.client;
+    const update: Record<string, unknown> = {
+      name_ar: c.nameAr || null,
+      name_en: c.nameEn || null,
+      sector: c.sector || null,
+      employee_size: c.employeeSize || null,
+      contact_name: c.contactName || null,
+      contact_phone: c.contactPhone || null,
+      contact_email: c.contactEmail || null,
+      business_activity: c.businessActivity || null,
+      country: c.country || null,
+      governorate: c.governorate || null,
+      city: c.city || null,
+      address: c.address || null,
+      website: c.website || null,
+      tax_number: c.taxNumber || null,
+      crn: c.crn || null,
+      communication_language: c.communicationLanguage || null,
+      commission_pct: c.commissionPct ?? null,
+      legal_rep: c.legalRep || null,
+      pm_name: c.pmName || null,
+      pm_phone: c.pmPhone || null,
+      pm_email: c.pmEmail || null,
+    };
+
+    const { error } = await supabase.from("clients").update(update).eq("id", clientId);
+    if (!error) return;
+
+    // Likely a missing column on an older schema. Strip the columns the
+    // database doesn't know about and retry — anything left over is real.
+    const missingCol = error.code === "42703" || /column .* does not exist/i.test(error.message);
+    if (!missingCol) {
+      console.warn("[saveQuote] sync clients failed:", error.message);
+      return;
+    }
+    for (const key of ["legal_rep", "pm_name", "pm_phone", "pm_email", "communication_language", "commission_pct", "business_activity"]) {
+      delete update[key];
+    }
+    await supabase.from("clients").update(update).eq("id", clientId)
+      .then(null, (e: unknown) => console.warn("[saveQuote] sync clients fallback failed:", e));
+  } catch (e) {
+    console.warn("[saveQuote] sync clients threw:", e);
+  }
 }
 
 /**
@@ -122,29 +187,50 @@ export async function createQuote(formData: FormData) {
     commission_pct: commissionPct,
   };
 
+  // Contract-required columns (exist after migration 0018).
+  const contractClient = {
+    legal_rep: f("legalRep") || null,
+    pm_name: f("pmName") || null,
+    pm_phone: f("pmPhone") || null,
+    pm_email: f("pmEmail") || null,
+  };
+
   // Reuse existing client or create a new one.
   let clientId: string | null = existingClientId || null;
 
   if (!clientId) {
-    const { data: full, error: fullErr } = await supabase
+    // Try widest insert first (base + extended + contract fields). If
+    // the database hasn't seen migrations 0003 or 0018 yet, fall back
+    // to a smaller column set so the request still succeeds.
+    const { data: widest, error: widestErr } = await supabase
       .from("clients")
-      .insert({ ...baseClient, ...extendedClient })
+      .insert({ ...baseClient, ...extendedClient, ...contractClient })
       .select("id")
       .single();
-
-    if (!fullErr && full) {
-      clientId = full.id;
+    if (!widestErr && widest) {
+      clientId = widest.id;
     } else {
-      console.warn("[createQuote] full insert failed, retrying base:", fullErr?.message);
-      const { data: base, error: baseErr } = await supabase
+      console.warn("[createQuote] widest client insert failed, retrying extended only:", widestErr?.message);
+      const { data: full, error: fullErr } = await supabase
         .from("clients")
-        .insert(baseClient)
+        .insert({ ...baseClient, ...extendedClient })
         .select("id")
         .single();
-      if (baseErr || !base) {
-        throw new Error(`فشل إنشاء العميل: ${baseErr?.message ?? fullErr?.message}`);
+
+      if (!fullErr && full) {
+        clientId = full.id;
+      } else {
+        console.warn("[createQuote] full insert failed, retrying base:", fullErr?.message);
+        const { data: base, error: baseErr } = await supabase
+          .from("clients")
+          .insert(baseClient)
+          .select("id")
+          .single();
+        if (baseErr || !base) {
+          throw new Error(`فشل إنشاء العميل: ${baseErr?.message ?? fullErr?.message ?? widestErr?.message}`);
+        }
+        clientId = base.id;
       }
-      clientId = base.id;
     }
   }
 
@@ -219,6 +305,10 @@ export async function createQuote(formData: FormData) {
       contactName: baseClient.contact_name || "",
       contactPhone: baseClient.contact_phone || "",
       contactEmail: baseClient.contact_email || "",
+      legalRep: contractClient.legal_rep || "",
+      pmName: contractClient.pm_name || "",
+      pmPhone: contractClient.pm_phone || "",
+      pmEmail: contractClient.pm_email || "",
       country: extendedClient.country,
       governorate: extendedClient.governorate || "",
       city: extendedClient.city || "",
