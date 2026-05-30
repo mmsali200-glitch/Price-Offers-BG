@@ -8,6 +8,7 @@ import { ODOO_MODULES } from "@/lib/modules-catalog";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getUserContext } from "@/lib/auth/user-context";
+import { logActivity } from "./activity-log";
 
 function selectedModuleIds(state: QuoteBuilderState): string[] {
   const mods = (state.modules ?? {}) as Record<string, { selected?: boolean }>;
@@ -286,6 +287,55 @@ export async function updateQuoteStatus(
 }
 
 export type StageEvent = { status: string; at: string };
+
+/**
+ * Record that the client formally accepted and signed the quote. Sets
+ * status to "accepted" and logs a dedicated event so the audit log
+ * shows it as a signature confirmation, not a plain status flip. The
+ * contract creation flow gates on this status — until it runs, the
+ * "Create contract" entry stays hidden.
+ */
+export async function markClientAcceptedAndSigned(quoteId: string) {
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) return { ok: false as const, error: "auth_required" };
+  const supabase = await createClient();
+
+  let q = supabase
+    .from("quotes")
+    .select("id, ref, status, owner_id")
+    .eq("id", quoteId);
+  if (ctx.role === "sales") q = q.eq("owner_id", ctx.userId);
+  const { data: quote, error: qErr } = await q.single();
+  if (qErr || !quote) return { ok: false as const, error: "العرض غير موجود" };
+
+  if (quote.status !== "accepted") {
+    const { error: uErr } = await supabase
+      .from("quotes")
+      .update({ status: "accepted" })
+      .eq("id", quoteId);
+    if (uErr) return { ok: false as const, error: uErr.message };
+
+    await supabase.from("quote_events").insert({
+      quote_id: quoteId,
+      kind: "accepted",
+      actor_type: "user",
+      actor_id: ctx.userId,
+      metadata: { signed: true },
+    }).then(null, () => {});
+  }
+
+  await logActivity({
+    action: "تأكيد قبول وتوقيع العميل",
+    entityType: "quote",
+    entityId: quoteId,
+    entityName: quote.ref,
+  });
+
+  revalidatePath(`/quotes/${quoteId}`);
+  revalidatePath(`/quotes/${quoteId}/preview`);
+  revalidatePath(`/quotes/${quoteId}/edit`);
+  return { ok: true as const };
+}
 
 /**
  * Return the first timestamp at which each status was recorded for a

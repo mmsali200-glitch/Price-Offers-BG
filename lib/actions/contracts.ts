@@ -36,6 +36,13 @@ export async function createContract(quoteId: string, extras: ContractExtras) {
     const { data: quote, error: qErr } = await quoteQuery.single();
     if (qErr || !quote) return { ok: false as const, error: "العرض غير موجود أو لا تملك صلاحية الوصول إليه" };
 
+    if (quote.status !== "accepted") {
+      return {
+        ok: false as const,
+        error: "لا يمكن إنشاء العقد قبل تأكيد قبول وتوقيع العميل على عرض السعر.",
+      };
+    }
+
     const { data: section, error: secErr } = await supabase
       .from("quote_sections")
       .select("payload")
