@@ -17,7 +17,7 @@ export default async function PreviewPage({
 
   let query = supabase
     .from("quotes")
-    .select("id, ref, title, generated_html, generated_at")
+    .select("id, ref, title, status, generated_html, generated_at")
     .eq("id", id);
 
   if (ctx.role === "sales") {
@@ -45,6 +45,7 @@ export default async function PreviewPage({
       html={html}
       generatedAt={quote.generated_at}
       language={language}
+      status={quote.status || "draft"}
     />
   );
 }
