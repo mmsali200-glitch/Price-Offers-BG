@@ -138,14 +138,16 @@ export async function createContract(quoteId: string, extras: ContractExtras) {
         pm_email: extras.pmEmail || null,
         provider_data: extras.provider || null,
         bank_data: extras.bank || null,
+        // Snapshot reflects what the contract was rendered with — extras
+        // (form input) win over the saved quote, matching the template.
         client_data: {
-          nameAr: state.client?.nameAr,
-          crn: state.client?.crn,
-          taxNumber: state.client?.taxNumber,
-          address: state.client?.address,
+          nameAr: extras.client?.name || state.client?.nameAr,
+          crn: extras.client?.cr || state.client?.crn,
+          taxNumber: extras.client?.vat || state.client?.taxNumber,
+          address: extras.client?.address || state.client?.address,
           governorate: state.client?.governorate,
-          contactName: state.client?.contactName,
-          contactEmail: state.client?.contactEmail,
+          contactName: extras.client?.rep || state.client?.contactName,
+          contactEmail: extras.client?.email || state.client?.contactEmail,
         },
         html,
         status: "draft",
