@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   FileText,
+  FileSignature,
   Users,
   Settings,
   HelpCircle,
@@ -22,6 +23,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/quotes", label: "عروض الأسعار", icon: FileText },
+  { href: "/contracts", label: "العقود", icon: FileSignature },
   { href: "/clients", label: "العملاء", icon: Users },
   { href: "/templates", label: "القوالب الجاهزة", icon: Sparkles },
   { href: "/reports", label: "التقارير والتحليلات", icon: BarChart3 },

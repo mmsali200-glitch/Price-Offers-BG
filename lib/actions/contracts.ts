@@ -146,3 +146,108 @@ export async function getQuoteContractRef(quoteId: string): Promise<string | nul
     return null;
   }
 }
+
+export type ContractListItem = {
+  quoteId: string;
+  quoteRef: string;
+  quoteTitle: string | null;
+  contractRef: string;
+  contractCreatedAt: string | null;
+  clientId: string | null;
+  clientName: string | null;
+  clientCountry: string | null;
+  currency: string;
+  totalDevelopment: number;
+  ownerName: string | null;
+};
+
+/**
+ * List every quote that has a saved contract reference, newest first.
+ * Items carry enough info to group/filter by client without an extra
+ * round-trip and to deep-link back into the contract view.
+ */
+export async function listContracts(): Promise<ContractListItem[]> {
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) return [];
+  const supabase = await createClient();
+
+  // Pull quote_sections that actually have a contract.ref. RLS on the
+  // section row already follows the parent quote's owner, so sales users
+  // see only their own contracts.
+  const { data, error } = await supabase
+    .from("quote_sections")
+    .select(`
+      quote_id,
+      payload,
+      quotes:quote_id (
+        id, ref, title, currency, total_development, client_id, owner_id,
+        clients:client_id ( id, name_ar, country ),
+        profiles:owner_id ( full_name )
+      )
+    `)
+    .not("payload->contract->>ref", "is", null)
+    .limit(500);
+
+  if (error) {
+    console.warn("[listContracts]", error.message);
+    return [];
+  }
+
+  const rows = (data ?? []) as unknown as Array<{
+    quote_id: string;
+    payload: Record<string, unknown>;
+    quotes:
+      | {
+          id: string;
+          ref: string;
+          title: string | null;
+          currency: string;
+          total_development: number | null;
+          owner_id: string;
+          clients?: { id: string; name_ar: string; country: string | null } | { id: string; name_ar: string; country: string | null }[] | null;
+          profiles?: { full_name: string | null } | { full_name: string | null }[] | null;
+        }
+      | Array<{
+          id: string;
+          ref: string;
+          title: string | null;
+          currency: string;
+          total_development: number | null;
+          owner_id: string;
+          clients?: { id: string; name_ar: string; country: string | null } | { id: string; name_ar: string; country: string | null }[] | null;
+          profiles?: { full_name: string | null } | { full_name: string | null }[] | null;
+        }>
+      | null;
+  }>;
+
+  const items = rows
+    .map((r): ContractListItem | null => {
+      const q = Array.isArray(r.quotes) ? r.quotes[0] : r.quotes;
+      if (!q) return null;
+      const contract = (r.payload?.contract ?? {}) as { ref?: string; createdAt?: string };
+      if (!contract.ref) return null;
+      const client = Array.isArray(q.clients) ? q.clients[0] : q.clients ?? null;
+      const profile = Array.isArray(q.profiles) ? q.profiles[0] : q.profiles ?? null;
+      return {
+        quoteId: q.id,
+        quoteRef: q.ref,
+        quoteTitle: q.title,
+        contractRef: contract.ref,
+        contractCreatedAt: contract.createdAt ?? null,
+        clientId: client?.id ?? null,
+        clientName: client?.name_ar ?? q.title ?? null,
+        clientCountry: client?.country ?? null,
+        currency: q.currency,
+        totalDevelopment: q.total_development ?? 0,
+        ownerName: profile?.full_name ?? null,
+      };
+    })
+    .filter((x): x is ContractListItem => x !== null)
+    .sort((a, b) => {
+      const ad = a.contractCreatedAt ? Date.parse(a.contractCreatedAt) : 0;
+      const bd = b.contractCreatedAt ? Date.parse(b.contractCreatedAt) : 0;
+      return bd - ad;
+    });
+
+  return items;
+}
