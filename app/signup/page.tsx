@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { Mail, Lock, User, Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { adminCreateUser } from "@/lib/actions/signup-admin";
+import { Mail, Lock, User, Loader2, ArrowLeft, CheckCircle2, ShieldCheck } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState(false);
+  const [adminBootstrapped, setAdminBootstrapped] = useState(false);
 
   function validate(): string | null {
     if (!fullName.trim()) return "الرجاء كتابة الاسم الكامل.";
@@ -31,41 +33,78 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
     try {
-      const { data, error: signErr } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: { data: { full_name: fullName.trim() } },
-      });
-      if (signErr) {
-        const msg = signErr.message;
-        if (/already registered|already exists/i.test(msg)) {
-          throw new Error("هذا البريد مسجّل سابقاً. سجّل دخول مباشرة.");
+      // 1. Server-side: create the user with email already confirmed (via
+      //    service role). Bypasses the email-link flow entirely so the
+      //    user can log in immediately. Also promotes the first signup
+      //    to admin so the system has a real administrator from the start.
+      const res = await adminCreateUser(fullName.trim(), email.trim(), password);
+      if (!res.ok) {
+        // Fallback when the server is missing SUPABASE_SERVICE_ROLE_KEY —
+        // use the regular client signUp. It still works, just may require
+        // email confirmation depending on project settings.
+        if (/SUPABASE_SERVICE_ROLE_KEY/i.test(res.error)) {
+          const supabase = createClient();
+          const { data, error: signErr } = await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+            options: { data: { full_name: fullName.trim() } },
+          });
+          if (signErr) throw new Error(signErr.message);
+          if (data.session) {
+            router.push("/dashboard");
+            router.refresh();
+            return;
+          }
+          setPendingConfirm(true);
+          return;
         }
-        if (/weak password/i.test(msg)) {
-          throw new Error("كلمة المرور ضعيفة — اختر كلمة أقوى.");
-        }
-        if (/email.*invalid/i.test(msg)) {
-          throw new Error("البريد الإلكتروني غير صالح.");
-        }
-        throw new Error(msg);
+        throw new Error(res.error);
       }
 
-      // Two paths depending on Supabase project settings:
-      // (a) Email confirmations enabled  → session is null, user must confirm via email.
-      // (b) Auto-confirm or disabled     → session present, user is signed in.
-      if (data.session) {
+      // 2. Client-side: sign in with the same credentials. The user now
+      //    has a confirmed account and an active session.
+      const supabase = createClient();
+      const { error: loginErr } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (loginErr) throw new Error(loginErr.message);
+
+      if (res.promotedToAdmin) {
+        setAdminBootstrapped(true);
+        // Show the bootstrap confirmation for a moment, then redirect.
+        setTimeout(() => {
+          router.push("/dashboard");
+          router.refresh();
+        }, 1800);
+      } else {
         router.push("/dashboard");
         router.refresh();
-        return;
       }
-      setPendingConfirm(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "حدث خطأ أثناء إنشاء الحساب");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (adminBootstrapped) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 bg-bg-surface">
+        <div className="w-full max-w-md card p-8 text-center space-y-4">
+          <div className="inline-flex size-14 rounded-full bg-emerald-100 text-emerald-600 items-center justify-center mx-auto">
+            <ShieldCheck className="size-7" />
+          </div>
+          <h1 className="text-lg font-bold text-bg-green">تم إنشاء حسابك كأول مسؤول للنظام</h1>
+          <p className="text-sm text-bg-text-2 leading-relaxed">
+            حسابك <strong dir="ltr">{email}</strong> صار <strong>Admin</strong> بكل الصلاحيات.
+            جاري تحويلك إلى لوحة التحكم…
+          </p>
+          <Loader2 className="size-5 animate-spin text-bg-green mx-auto" />
+        </div>
+      </main>
+    );
   }
 
   if (pendingConfirm) {
