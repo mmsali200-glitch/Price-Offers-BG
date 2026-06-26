@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Mail, Lock, Loader2, ArrowRight } from "lucide-react";
@@ -91,8 +92,16 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="text-center text-[10px] text-bg-text-3">
-          للحصول على حساب، تواصل مع المسؤول (Admin) ليُنشئ لك حساباً من الإعدادات.
+        <div className="text-center text-[11px] text-bg-text-3 space-y-1">
+          <div>
+            ليس لديك حساب؟{" "}
+            <Link href="/signup" className="text-bg-green font-bold hover:underline">
+              أنشئ حساباً جديداً
+            </Link>
+          </div>
+          <div className="text-[10px]">
+            للأدوار المتقدّمة (Admin/Manager)، تواصل مع المسؤول لرفع صلاحيتك بعد التسجيل.
+          </div>
         </div>
       </div>
     </main>
