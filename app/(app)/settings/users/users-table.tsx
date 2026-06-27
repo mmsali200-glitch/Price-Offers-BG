@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import {
   Loader2, Check, ChevronDown, ChevronUp,
-  KeyRound, Ban, CircleCheck, Trash2, X,
+  KeyRound, Ban, CircleCheck, Trash2, X, Pencil,
 } from "lucide-react";
 import type { UserProfile, UserRole } from "@/lib/actions/users";
 import {
@@ -11,6 +11,7 @@ import {
   deleteUserAccount,
   setUserSuspended,
   adminSetUserPassword,
+  adminUpdateUser,
 } from "@/lib/actions/users";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +63,31 @@ export function UsersTable({
   const [pwOpenId, setPwOpenId] = useState<string | null>(null);
   const [pwValue, setPwValue] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
+  const [editOpenId, setEditOpenId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<{ full_name: string; email: string; phone: string }>(
+    { full_name: "", email: "", phone: "" }
+  );
+
+  function openEdit(u: UserProfile) {
+    setEditOpenId(editOpenId === u.id ? null : u.id);
+    setEditForm({ full_name: u.full_name ?? "", email: u.email ?? "", phone: u.phone ?? "" });
+    setError(null);
+  }
+
+  async function handleSaveEdit(u: UserProfile) {
+    setBusyAction(`${u.id}:edit`);
+    setError(null); setNotice(null);
+    const res = await adminUpdateUser(u.id, {
+      full_name: editForm.full_name,
+      email: editForm.email,
+      phone: editForm.phone,
+    });
+    setBusyAction(null);
+    if (!res.ok) { setError(res.error); return; }
+    setEditOpenId(null);
+    setNotice("تم تحديث بيانات المستخدم.");
+    startTransition(() => {});
+  }
 
   async function handleRoleChange(userId: string, role: UserRole) {
     setPendingId(userId);
@@ -206,6 +232,14 @@ export function UsersTable({
 
               {/* Management actions */}
               <div className="border-t border-bg-line bg-bg-card-alt/50 px-4 py-2.5 flex flex-wrap items-center gap-2">
+                {/* Edit user data */}
+                <button
+                  onClick={() => openEdit(u)}
+                  className="text-[11px] font-bold inline-flex items-center gap-1 px-2.5 py-1.5 rounded-sm2 border border-bg-line text-bg-text-2 hover:border-bg-green hover:text-bg-green"
+                >
+                  <Pencil className="size-3.5" /> تعديل البيانات
+                </button>
+
                 {/* Change password */}
                 <button
                   onClick={() => { setPwOpenId(pwOpenId === u.id ? null : u.id); setPwValue(""); setError(null); }}
@@ -244,6 +278,59 @@ export function UsersTable({
                     : <Trash2 className="size-3.5" />}
                   حذف
                 </button>
+
+                {/* Inline data editor */}
+                {editOpenId === u.id && (
+                  <div className="w-full pt-2 mt-1 border-t border-bg-line space-y-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <label className="block">
+                        <span className="block text-[10px] font-bold text-bg-text-2 mb-1">الاسم الكامل</span>
+                        <input
+                          className="input w-full text-xs"
+                          value={editForm.full_name}
+                          onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                          placeholder="الاسم"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="block text-[10px] font-bold text-bg-text-2 mb-1">البريد الإلكتروني</span>
+                        <input
+                          className="input w-full text-xs" dir="ltr"
+                          value={editForm.email}
+                          onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                          placeholder="name@example.com"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="block text-[10px] font-bold text-bg-text-2 mb-1">الهاتف</span>
+                        <input
+                          className="input w-full text-xs" dir="ltr"
+                          value={editForm.phone}
+                          onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                          placeholder="+9665..."
+                        />
+                      </label>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleSaveEdit(u)}
+                        disabled={busyAction === `${u.id}:edit`}
+                        className="btn-primary h-9 text-xs inline-flex items-center gap-1.5"
+                      >
+                        {busyAction === `${u.id}:edit`
+                          ? <Loader2 className="size-3.5 animate-spin" />
+                          : <Check className="size-3.5" />}
+                        حفظ
+                      </button>
+                      <button
+                        onClick={() => setEditOpenId(null)}
+                        className="h-9 px-2 text-xs text-bg-text-3 hover:text-bg-danger inline-flex items-center gap-1"
+                      >
+                        <X className="size-3.5" /> إلغاء
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Inline password editor */}
                 {pwOpenId === u.id && (
