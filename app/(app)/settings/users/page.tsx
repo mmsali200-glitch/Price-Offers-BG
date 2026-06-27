@@ -1,4 +1,5 @@
 import { getCurrentRole, listUsers } from "@/lib/actions/users";
+import { getUserContext } from "@/lib/auth/user-context";
 import { redirect } from "next/navigation";
 import { UsersTable } from "./users-table";
 import { InviteUserForm } from "./invite-form";
@@ -14,6 +15,8 @@ export default async function UsersPage() {
     redirect("/settings?forbidden=users");
   }
 
+  const ctx = await getUserContext();
+  const currentUserId = ctx.signedIn ? ctx.userId : "";
   const users = await listUsers();
 
   return (
@@ -48,7 +51,7 @@ export default async function UsersPage() {
 
       <InviteUserForm />
 
-      <UsersTable users={users} />
+      <UsersTable users={users} currentUserId={currentUserId} />
     </div>
   );
 }
