@@ -245,6 +245,65 @@ export async function adminSetUserPassword(
   }
 }
 
+/**
+ * Admin edit of a user's core data: name, email, phone. Email changes go
+ * through the auth admin API (auth.users) and are mirrored into profiles.
+ * Admin only.
+ */
+export async function adminUpdateUser(
+  userId: string,
+  patch: { full_name?: string; email?: string; phone?: string }
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return guard;
+
+  const fullName = patch.full_name?.trim();
+  const email = patch.email?.trim();
+  const phone = patch.phone?.trim();
+
+  if (email !== undefined && email !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: "البريد الإلكتروني غير صالح." };
+  }
+  if (fullName !== undefined && fullName === "") {
+    return { ok: false, error: "الاسم لا يمكن أن يكون فارغاً." };
+  }
+
+  try {
+    const admin = createAdminClient();
+
+    // 1. Email lives on auth.users — update it there first (also confirm it
+    //    so the user can keep signing in with the new address immediately).
+    if (email) {
+      const { error: authErr } = await admin.auth.admin.updateUserById(userId, {
+        email,
+        email_confirm: true,
+      });
+      if (authErr) {
+        if (/already.*registered|already.*exists|duplicate/i.test(authErr.message)) {
+          return { ok: false, error: "هذا البريد مستخدم في حساب آخر." };
+        }
+        return { ok: false, error: authErr.message };
+      }
+    }
+
+    // 2. Mirror into the profiles row.
+    const profilePatch: Record<string, string> = {};
+    if (fullName !== undefined) profilePatch.full_name = fullName;
+    if (email) profilePatch.email = email;
+    if (phone !== undefined) profilePatch.phone = phone;
+
+    if (Object.keys(profilePatch).length > 0) {
+      const { error: pErr } = await admin.from("profiles").update(profilePatch).eq("id", userId);
+      if (pErr) return { ok: false, error: pErr.message };
+    }
+
+    revalidatePath("/settings/users");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "تعذّر تحديث بيانات المستخدم" };
+  }
+}
+
 export async function updateUserProfile(
   userId: string,
   patch: { full_name?: string; phone?: string }
