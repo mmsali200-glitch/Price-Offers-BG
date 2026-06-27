@@ -1,10 +1,18 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Check, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Loader2, Check, ChevronDown, ChevronUp,
+  KeyRound, Ban, CircleCheck, Trash2, X,
+} from "lucide-react";
 import type { UserProfile, UserRole } from "@/lib/actions/users";
-import { updateUserRole } from "@/lib/actions/users";
-import { fmtDateArabic, cn } from "@/lib/utils";
+import {
+  updateUserRole,
+  deleteUserAccount,
+  setUserSuspended,
+  adminSetUserPassword,
+} from "@/lib/actions/users";
+import { cn } from "@/lib/utils";
 
 const ROLE_OPTIONS: Array<{ v: UserRole; label: string; cls: string }> = [
   { v: "sales",   label: "مندوب مبيعات", cls: "bg-bg-green-lt text-bg-green" },
@@ -36,12 +44,24 @@ const PERMS: Record<UserRole, Record<string, Record<string, boolean>>> = {
   },
 };
 
-export function UsersTable({ users }: { users: UserProfile[] }) {
+export function UsersTable({
+  users,
+  currentUserId,
+}: {
+  users: UserProfile[];
+  currentUserId: string;
+}) {
   const [, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [justUpdated, setJustUpdated] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Per-user management UI state
+  const [busyAction, setBusyAction] = useState<string | null>(null); // `${id}:${action}`
+  const [pwOpenId, setPwOpenId] = useState<string | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function handleRoleChange(userId: string, role: UserRole) {
     setPendingId(userId);
@@ -52,6 +72,41 @@ export function UsersTable({ users }: { users: UserProfile[] }) {
     setJustUpdated(userId);
     setTimeout(() => setJustUpdated(null), 1500);
     startTransition(() => {});
+  }
+
+  async function handleToggleSuspend(u: UserProfile) {
+    setBusyAction(`${u.id}:suspend`);
+    setError(null); setNotice(null);
+    const res = await setUserSuspended(u.id, !u.suspended);
+    setBusyAction(null);
+    if (!res.ok) { setError(res.error); return; }
+    setNotice(u.suspended ? "تم تفعيل المستخدم." : "تم إيقاف المستخدم.");
+    startTransition(() => {});
+  }
+
+  async function handleDelete(u: UserProfile) {
+    const ok = window.confirm(
+      `حذف المستخدم "${u.full_name}" نهائياً؟\nلا يمكن التراجع عن هذه العملية.`
+    );
+    if (!ok) return;
+    setBusyAction(`${u.id}:delete`);
+    setError(null); setNotice(null);
+    const res = await deleteUserAccount(u.id);
+    setBusyAction(null);
+    if (!res.ok) { setError(res.error); return; }
+    setNotice("تم حذف المستخدم.");
+    startTransition(() => {});
+  }
+
+  async function handleSavePassword(u: UserProfile) {
+    if (pwValue.length < 8) { setError("كلمة المرور 8 أحرف على الأقل."); return; }
+    setBusyAction(`${u.id}:pw`);
+    setError(null); setNotice(null);
+    const res = await adminSetUserPassword(u.id, pwValue);
+    setBusyAction(null);
+    if (!res.ok) { setError(res.error); return; }
+    setPwOpenId(null); setPwValue("");
+    setNotice(`تم تغيير كلمة مرور ${u.full_name}.`);
   }
 
   if (users.length === 0) {
@@ -69,6 +124,11 @@ export function UsersTable({ users }: { users: UserProfile[] }) {
           {error}
         </div>
       )}
+      {notice && (
+        <div className="text-xs text-bg-green bg-bg-green-lt border border-bg-green/30 rounded-sm2 px-3 py-2">
+          {notice}
+        </div>
+      )}
       <div className="space-y-3">
         {users.map((u) => {
           const isExpanded = expandedId === u.id;
@@ -82,7 +142,19 @@ export function UsersTable({ users }: { users: UserProfile[] }) {
                   {u.full_name.slice(0, 2)}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-black text-bg-text-1">{u.full_name}</div>
+                  <div className="text-sm font-black text-bg-text-1 flex items-center gap-2">
+                    {u.full_name}
+                    {u.suspended && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-red-50 text-bg-danger">
+                        موقوف
+                      </span>
+                    )}
+                    {u.id === currentUserId && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-bg-gold-lt text-[#8a6010]">
+                        أنت
+                      </span>
+                    )}
+                  </div>
                   <div className="text-[10px] text-bg-text-3" dir="ltr">{u.email ?? "—"}</div>
                   {u.phone && <div className="text-[10px] text-bg-text-3">{u.phone}</div>}
                 </div>
@@ -130,6 +202,78 @@ export function UsersTable({ users }: { users: UserProfile[] }) {
                   <div className="font-bold text-bg-green tabular">{u.quote_count}</div>
                   <div className="text-[9px]">عرض</div>
                 </div>
+              </div>
+
+              {/* Management actions */}
+              <div className="border-t border-bg-line bg-bg-card-alt/50 px-4 py-2.5 flex flex-wrap items-center gap-2">
+                {/* Change password */}
+                <button
+                  onClick={() => { setPwOpenId(pwOpenId === u.id ? null : u.id); setPwValue(""); setError(null); }}
+                  className="text-[11px] font-bold inline-flex items-center gap-1 px-2.5 py-1.5 rounded-sm2 border border-bg-line text-bg-text-2 hover:border-bg-green hover:text-bg-green"
+                >
+                  <KeyRound className="size-3.5" /> تغيير كلمة السر
+                </button>
+
+                {/* Suspend / activate */}
+                <button
+                  onClick={() => handleToggleSuspend(u)}
+                  disabled={busyAction === `${u.id}:suspend` || u.id === currentUserId}
+                  className={cn(
+                    "text-[11px] font-bold inline-flex items-center gap-1 px-2.5 py-1.5 rounded-sm2 border disabled:opacity-40",
+                    u.suspended
+                      ? "border-bg-green/40 text-bg-green hover:bg-bg-green-lt"
+                      : "border-amber-300 text-amber-700 hover:bg-amber-50"
+                  )}
+                  title={u.id === currentUserId ? "لا يمكنك إيقاف حسابك" : ""}
+                >
+                  {busyAction === `${u.id}:suspend`
+                    ? <Loader2 className="size-3.5 animate-spin" />
+                    : u.suspended ? <CircleCheck className="size-3.5" /> : <Ban className="size-3.5" />}
+                  {u.suspended ? "تفعيل" : "إيقاف"}
+                </button>
+
+                {/* Delete */}
+                <button
+                  onClick={() => handleDelete(u)}
+                  disabled={busyAction === `${u.id}:delete` || u.id === currentUserId}
+                  className="text-[11px] font-bold inline-flex items-center gap-1 px-2.5 py-1.5 rounded-sm2 border border-red-200 text-bg-danger hover:bg-red-50 disabled:opacity-40"
+                  title={u.id === currentUserId ? "لا يمكنك حذف حسابك" : ""}
+                >
+                  {busyAction === `${u.id}:delete`
+                    ? <Loader2 className="size-3.5 animate-spin" />
+                    : <Trash2 className="size-3.5" />}
+                  حذف
+                </button>
+
+                {/* Inline password editor */}
+                {pwOpenId === u.id && (
+                  <div className="w-full flex flex-wrap items-center gap-2 pt-2 mt-1 border-t border-bg-line">
+                    <input
+                      type="text"
+                      dir="ltr"
+                      value={pwValue}
+                      onChange={(e) => setPwValue(e.target.value)}
+                      placeholder="كلمة المرور الجديدة (8 أحرف+)"
+                      className="input flex-1 min-w-[200px] text-xs"
+                    />
+                    <button
+                      onClick={() => handleSavePassword(u)}
+                      disabled={busyAction === `${u.id}:pw`}
+                      className="btn-primary h-9 text-xs inline-flex items-center gap-1.5"
+                    >
+                      {busyAction === `${u.id}:pw`
+                        ? <Loader2 className="size-3.5 animate-spin" />
+                        : <Check className="size-3.5" />}
+                      حفظ
+                    </button>
+                    <button
+                      onClick={() => { setPwOpenId(null); setPwValue(""); }}
+                      className="h-9 px-2 text-xs text-bg-text-3 hover:text-bg-danger inline-flex items-center gap-1"
+                    >
+                      <X className="size-3.5" /> إلغاء
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Expanded permissions — EDITABLE */}

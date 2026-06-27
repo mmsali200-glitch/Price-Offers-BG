@@ -15,7 +15,22 @@ export type UserProfile = {
   phone: string | null;
   created_at: string;
   quote_count: number;
+  suspended: boolean;
 };
+
+/** Ensure the caller is an admin before privileged admin-client operations. */
+async function requireAdmin(): Promise<
+  { ok: true; userId: string } | { ok: false; error: string }
+> {
+  const ctx = await getUserContext();
+  if (!ctx.signedIn) return { ok: false, error: "يجب تسجيل الدخول" };
+  if (ctx.role !== "admin") return { ok: false, error: "هذه العملية للمسؤول فقط" };
+  return { ok: true, userId: ctx.userId };
+}
+
+// A far-future ban duration used to suspend an account (Supabase accepts a
+// Go-style duration string). "none" lifts the suspension.
+const SUSPEND_DURATION = "876000h"; // ~100 years
 
 /**
  * Get the current signed-in user's role. Returns null if unauthenticated.
@@ -51,6 +66,21 @@ export async function listUsers(): Promise<UserProfile[]> {
     quoteCounter.set(row.owner_id, row.quote_count);
   });
 
+  // Suspension state lives on auth.users (banned_until). Read it via the
+  // admin client; best-effort so the table still renders if it's missing.
+  const suspendedSet = new Set<string>();
+  try {
+    const admin = createAdminClient();
+    const { data: authList } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const now = Date.now();
+    (authList?.users ?? []).forEach((au) => {
+      const banned = (au as { banned_until?: string | null }).banned_until;
+      if (banned && new Date(banned).getTime() > now) suspendedSet.add(au.id);
+    });
+  } catch {
+    // service role unavailable — treat everyone as active
+  }
+
   return profiles.map((p) => ({
     id: p.id,
     full_name: p.full_name,
@@ -59,6 +89,7 @@ export async function listUsers(): Promise<UserProfile[]> {
     phone: p.phone,
     created_at: p.created_at,
     quote_count: quoteCounter.get(p.id) ?? 0,
+    suspended: suspendedSet.has(p.id),
   }));
 }
 
@@ -138,6 +169,79 @@ export async function createUserAccount(data: {
     return { ok: true, userId: newUser.user.id };
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : "خطأ غير متوقع" };
+  }
+}
+
+/**
+ * Delete a user account entirely (auth + cascade). Admin only.
+ * Refuses to delete the caller's own account.
+ */
+export async function deleteUserAccount(
+  userId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return guard;
+  if (guard.userId === userId) return { ok: false, error: "لا يمكنك حذف حسابك أنت." };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.auth.admin.deleteUser(userId);
+    if (error) return { ok: false, error: error.message };
+    // profiles row + owned data cascade via FK / triggers.
+    revalidatePath("/settings/users");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "تعذّر حذف المستخدم" };
+  }
+}
+
+/**
+ * Suspend or re-activate a user. Suspended users cannot sign in. Admin only.
+ * Refuses to suspend the caller's own account.
+ */
+export async function setUserSuspended(
+  userId: string,
+  suspended: boolean
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return guard;
+  if (guard.userId === userId && suspended) {
+    return { ok: false, error: "لا يمكنك إيقاف حسابك أنت." };
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.auth.admin.updateUserById(userId, {
+      ban_duration: suspended ? SUSPEND_DURATION : "none",
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/settings/users");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "تعذّر تحديث حالة المستخدم" };
+  }
+}
+
+/**
+ * Set a new password for any user. Admin only.
+ */
+export async function adminSetUserPassword(
+  userId: string,
+  password: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const guard = await requireAdmin();
+  if (!guard.ok) return guard;
+  if (!password || password.length < 8) {
+    return { ok: false, error: "كلمة المرور يجب أن تكون 8 أحرف على الأقل." };
+  }
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.auth.admin.updateUserById(userId, { password });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "تعذّر تغيير كلمة المرور" };
   }
 }
 
