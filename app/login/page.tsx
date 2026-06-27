@@ -73,7 +73,12 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="label block">كلمة المرور</label>
+            <div className="flex items-center justify-between">
+              <label className="label block">كلمة المرور</label>
+              <Link href="/forgot-password" className="text-[11px] text-bg-green font-bold hover:underline">
+                نسيت كلمة المرور؟
+              </Link>
+            </div>
             <div className="relative">
               <Lock className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-bg-text-3" />
               <input type="password" required minLength={6} disabled={loading}
